@@ -21,6 +21,13 @@ class Monster(pygame.sprite.Sprite):
         self.pattern_x = 0  # starting point on the left
         self.pattern_max = 100  # LIMIT ON X
 
+        if self.pattern == 1:  # Slow walking, fast attacking
+            self.speed_walking = 3
+            self.speed_attacking = 5
+        else:
+            print(f'ERROR: move pattern {self.pattern} not recognized')
+            exit(1)
+
         # Setting up walk animation
         self.animation = walk_anim
         self.image = walk_anim.image()
@@ -60,10 +67,9 @@ class Monster(pygame.sprite.Sprite):
         x = self.rect.left
         y = self.rect.top
 
-        pygame.Rect(0,0, self.width - self.X_ADJ, self.height - self.Y_ADJ)
         attack_rect = pygame.Rect(x + offset, y, 100, 100) 
         
-        pygame.draw.rect(self.screen, (255,0,0), attack_rect, 2 )  # DEBUG: to see hitbox for weapon
+        #pygame.draw.rect(self.screen, (255,0,0), attack_rect, 2 )  # DEBUG: to see hitbox for attack (red)
         return attack_rect
 
     def get_detect(self):
@@ -75,29 +81,25 @@ class Monster(pygame.sprite.Sprite):
         x = self.rect.left
         y = self.rect.top
 
-        pygame.Rect(0,0, self.width - self.X_ADJ, self.height - self.Y_ADJ)
-        attack_rect = pygame.Rect(x + offset, y, 200, 100) 
+        detect_rect = pygame.Rect(x + offset, y, 200, 100) 
         
-        pygame.draw.rect(self.screen, (0,0,255), attack_rect, 2 )  # DEBUG: to see hitbox for weapon
-        return attack_rect
+        #pygame.draw.rect(self.screen, (0,0,255), detect_rect, 2 )  # DEBUG: to see hitbox for detection (blue)
+        return detect_rect
 
 
     def move(self, platforms):
         self.platform_group = platforms
 
-        distance = 5  # How far we move in one go
+        distance = 3  # How far we move in one go
         dx = 0
         dy = 0
-        scroll = 0
-        global score
 
         self.animation.active = True  # Always animating
-
-        dx = distance
-        self.animation.active = True
+        dx = self.speed_walking  #  we start at walking speed
 
         if self.attacking == True:
             self.attack.anim_counter += 1
+            dx = self.speed_attacking  # once we're attacking we speed up
 
         if self.attack.anim_counter == self.attack.frames:
             self.attacking = False
