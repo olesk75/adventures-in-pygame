@@ -9,12 +9,13 @@ class PlayerData():
 
 
 # Player class
-class Player():
+class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, game_world, screen, walk_anim, attack_anim, death_anim):
         """
         The Player class constructor - note that x and y is only for initialization,
         the player position will be tracked by the rect
         """
+        super().__init__()
         self.world = game_world
         self.screen = screen
 
@@ -42,39 +43,28 @@ class Player():
         self.flip = False  # flip sprite/animations when moving left
         self.on_ground = False  # standing on solid ground
         self.attacking = False
-        #self.score_flag = False  # We can only add more score when this is True (avoiding dupes)
-        self.prev_y_lvl = self.rect.y  # Tracking vertical progress
 
-        self.alive = True  # Goes negative once we've been hit but are still playing death animations
+        self.dying = False  # Playing death animations
+        self.dead = False  # Death animation complete
 
-        self.SCREEN_WIDTH = pygame.display.get_window_size()[0]
-        self.SCREEN_HEIGHT = pygame.display.get_window_size()[1]
-
-    def die(self):
-
-        # print(f'self.death.anim_counter ({self.death.anim_counter})> self.death.frames ({self.death.frames})')  #
-        if self.alive == True:
-            self.alive = False
-            self.death.anim_counter = 0  # Animation counter for the Animation instance
-
+    def check_game_over(self):
+        # Manage the time from player is hit and dies until the death animation is complete and GAME OVER screen shows
+        # print(f'self.death.anim_counter ({self.death.anim_counter})> self.death.frames ({self.death.frames})')  # DEBUG
         if  self.death.anim_counter == self.death.frames -1:
-            #pygame.time.delay(3 * 100) # 1 second == 1000 milliseconds
+            self.dead = True
             return True
-        
-        return False
+        else:
+            return False
 
     def get_attack_rect(self):
         # Returns a the attack rect for collision detection
-        attack_width = 100
-        attack_height = 10
+        # The attack rect is an offset from the player rect
         if self.flip:
-            offset = -100
+            offset = -90
         else:
-            offset = 40
-        x = self.rect.left
+            offset = 30
+        x = self.rect.left 
         y = self.rect.top
-
-        pygame.Rect(0,0, self.width - self.X_ADJ, self.height - self.Y_ADJ)
         attack_rect = pygame.Rect(x + offset, y, 100, 100) 
         
         # pygame.draw.rect(self.screen, (255,0,0), attack_rect, 2 )  # DEBUG: to see hitbox for weapon
@@ -94,7 +84,7 @@ class Player():
 
         #(self.attack.anim_counter)  # DEBUG
         # Process keypresses
-        if self.alive == True:  # We ignore keypresses after death
+        if not self.dead and not self.dying:  # We ignore keypresses after death or deatn anim start
             key = pygame.key.get_pressed()
         
             # Left
@@ -135,18 +125,18 @@ class Player():
             self.attack.anim_counter = 0
 
         # Die
-        if self.alive == False:
+        if self.dying:
             self.death.anim_counter += 1
 
         # Gravity
         self.vel_y += self.world.GRAVITY
         dy += self.vel_y
 
-        # Watch screen boundaries
+        # Watch screen boundaries (effectively world boundaries since the screen scrolls to world edges before player can get to end of screen)
         if self.rect.left + dx < 0:
             dx = - self.rect.left
-        if self.rect.right + dx > self.SCREEN_WIDTH:
-            dx = self.SCREEN_WIDTH - self.rect.right
+        if self.rect.right + dx > self.world.SCREEN_WIDTH:
+            dx = self.world.SCREEN_WIDTH - self.rect.right
         if self.rect.top + dy < 0:
             dy = - self.rect.top
             self.vel_y = self.world.GRAVITY
@@ -154,7 +144,7 @@ class Player():
         # Check platform collision
         for platform in self.platform_group:
             # collision in the y direction only, so instead of using self.rect directly, we create
-            # this temporaty rectangle with dy added for where the rectange _would_ be after the move
+            # this temporaty rectangle with dy added for where the rectange _would_ be after the move (or we'd end up inside the platform)
             if platform.rect.colliderect(self.rect.x, self.rect.y + dy, self.width - self.X_ADJ, self.height - self.Y_ADJ):
                 if self.rect.bottom < platform.rect.centery:  # Is player above platform?
                     if self.vel_y > 0:  # Is player falling?
@@ -168,7 +158,7 @@ class Player():
             scroll = -dx  # We scroll left by the opposite of the player's x speed
         
          # Check if player has reached scroll threshold to the right (and we're not on the far right) + we're walking right
-        if dx > 0 and x_pos >= self.SCREEN_WIDTH - self.world.SCROLL_THRESHOLD and self.world_x_pos < self.world.TOT_WIDTH - 100:
+        if dx > 0 and x_pos >= self.world.SCREEN_WIDTH - self.world.SCROLL_THRESHOLD and self.world_x_pos < self.world.TOT_WIDTH - 100:
             scroll = -dx  # We scroll right by the opposite of the player's x speed
 
         # Update rectangle position
@@ -188,11 +178,11 @@ class Player():
             ATTACK_Y = -2 * 64
             self.screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x - self.X_CENTER + ATTACK_X, self.rect.y - self.Y_CENTER + ATTACK_Y))
         # Dying?
-        elif self.alive == False:
+        elif self.dying:
             self.image = self.death.image(repeat=False)
             self.image = self.image.convert_alpha()
             self.screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
-        # Nothins special going on
+        # Player walking, jumping or idle
         else:
             self.image = self.animation.image()
             self.image = self.image.convert_alpha()

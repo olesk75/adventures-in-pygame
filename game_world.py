@@ -3,8 +3,10 @@ from typing import NamedTuple
 
 # Game variables in a named tuple (new in Python 3.6)
 class WorldData(NamedTuple):
-    GRAVITY: int
+    SCREEN_WIDTH: int
+    SCREEN_HEIGHT: int
     TOT_WIDTH: int
+    GRAVITY: int
     MAX_PLATFORMS: int
     JUMP_HEIGHT: int
     PLAYER_BOUNCING: bool
@@ -19,6 +21,7 @@ class PlatformLocations(NamedTuple):
 class TiledPlatform(pygame.sprite.Sprite):
     """
     Since we inheritate from the Sprite class, draw etc. is also inherited
+    Platforms become a single object after we merge the tiles
     """
     def __init__(self, x, y, tile_image, width):
         super().__init__()
@@ -38,9 +41,6 @@ class TiledPlatform(pygame.sprite.Sprite):
         # update platform's vert pos
         self.rect.x += scroll
 
-        # check if platform is off screen
-        #if self.rect.top > pygame.display.get_window_size()[1]:
-        #    self.kill()
 
 class GameItem(pygame.sprite.Sprite):
     """

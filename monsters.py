@@ -47,6 +47,9 @@ class Monster(pygame.sprite.Sprite):
         self.Y_CENTER = 28
 
         self.rect = pygame.Rect(0,0, self.width - self.X_ADJ, self.height - self.Y_ADJ)
+        self.rect_detect = pygame.Rect(0,0,0,0)
+        self.rect_attack = pygame.Rect(0,0,0,0)
+
         self.rect.center = (x + self.X_CENTER, y + self.Y_CENTER)
         self.vel_y = 0
         self.flip = False
@@ -56,58 +59,46 @@ class Monster(pygame.sprite.Sprite):
         self.prev_y_lvl = self.rect.y  # Tracking vertical progress
 
 
-    def get_attack(self):
-        # Returns a the attack rect for collision detection
-        attack_width = 100
-        attack_height = 10
-        if self.flip:
-            offset = -200
-        else:
-            offset = 40
-        x = self.rect.left
-        y = self.rect.top
-
-        attack_rect = pygame.Rect(x + offset, y, 100, 100) 
-        
-        #pygame.draw.rect(self.screen, (255,0,0), attack_rect, 2 )  # DEBUG: to see hitbox for attack (red)
-        return attack_rect
-
-    def get_detect(self):
-        # Returns a the detection rect for collision detection (when the monster "sees" the player)
-        if self.flip:
-            offset = -200
-        else:
-            offset = 40
-        x = self.rect.left
-        y = self.rect.top
-
-        detect_rect = pygame.Rect(x + offset, y, 200, 100) 
-        
-        #pygame.draw.rect(self.screen, (0,0,255), detect_rect, 2 )  # DEBUG: to see hitbox for detection (blue)
-        return detect_rect
-
-
     def move(self, platforms):
         self.platform_group = platforms
-
-        distance = 3  # How far we move in one go
         dx = 0
         dy = 0
 
         self.animation.active = True  # Always animating
         dx = self.speed_walking  #  we start at walking speed
 
-        if self.attacking == True:
+        # Creating a detection rect where to mob will attack if the player rect collides
+        flip_offset = 200
+        x = self.rect.center[0]
+        y = self.rect.top
+        if self.flip:       
+            self.rect_detect = pygame.Rect(x - flip_offset, y, 200, 100) 
+        else:
+            self.rect_detect = pygame.Rect(x, y, 200, 100) 
+
+        # Creating an attack rect where to mob will kill player if player rect collides
+        if self.attacking:
+            # Progressom attack animation
             self.attack.anim_counter += 1
             dx = self.speed_attacking  # once we're attacking we speed up
+                    
+            # The attack rect is an offset from the mob rect
+            flip_offset = 100
+            x = self.rect.center[0]
+            y = self.rect.top
 
-        if self.attack.anim_counter == self.attack.frames:
-            self.attacking = False
-            # print('RESET MOB')  # DEBUG
-            self.attack.anim_counter = 0
+            if self.flip:
+                self.rect_attack = pygame.Rect(x - flip_offset, y, 90, 100) 
+            else:
+                self.rect_attack = pygame.Rect(x , y, 90, 100) 
+            
+            if self.attack.anim_counter == self.attack.frames:  # after each attack animation we stop the attack
+                self.attacking = False
+                self.rect_attack = self.rect
+                self.attack.anim_counter = 0
 
         # Gravity
-        self.vel_y += self.world.GRAVITY
+        self.vel_y += self.world.GRAVITY  # allows us to let mobs fall (including during death)
         dy += self.vel_y
 
         # Watch screen boundaries
@@ -149,14 +140,11 @@ class Monster(pygame.sprite.Sprite):
         if self.direction == -1: 
             self.flip = True
         # As collision detection is done with the rectangle, it's size and shape matters
-        if self.attacking == True:
+        if self.attacking:
             self.image = self.attack.image()
             self.image = self.image.convert_alpha()
-            # The sprite is larger when we attack, so we need to adjust center
-            ATTACK_X = 0
-            ATTACK_Y = 0
-            self.screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x - self.X_CENTER + ATTACK_X, self.rect.y - self.Y_CENTER + ATTACK_Y))
-        elif self.dead == True:
+            self.screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
+        elif self.dead:
             # Spin sprite
             """rotate an image while keeping its center and size"""
             angle = 5
@@ -166,11 +154,9 @@ class Monster(pygame.sprite.Sprite):
             rot_rect.center = rot_image.get_rect().center
             self.image = rot_image.subsurface(rot_rect).copy()
             self.screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
-
-
         else:
             self.image = self.animation.image()
             self.image = self.image.convert_alpha()
             self.screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
 
-        #pygame.draw.rect(self.screen, (255,255,255), self.rect, 2 )
+        #pygame.draw.rect(self.screen, (255,255,255), self.rect, 2 )  # Debug show rect on screen (white)
