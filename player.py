@@ -1,5 +1,7 @@
 import pygame
 
+WHITE = (255, 255, 255)
+
 # Game variables in a named tuple (new in Python 3.6)
 class PlayerData():
     def __init__(self):
@@ -8,45 +10,39 @@ class PlayerData():
 
 # Player class
 class Player():
-    def __init__(self, x, y, world, screen, walk_anim, attack_anim, death_anim):
+    def __init__(self, x, y, game_world, screen, walk_anim, attack_anim, death_anim):
         """
         The Player class constructor - note that x and y is only for initialization,
         the player position will be tracked by the rect
         """
-        WHITE = (255, 255, 255)
-        self.JUMP_HEIGHT = 30
-        self.SCROLL_THRESHOLD = 400
-
-        self.world = world
+        self.world = game_world
         self.screen = screen
+
         # Setting up walk animation
         self.animation = walk_anim
         self.image = walk_anim.image()
         self.width = walk_anim.ss.x_dim * walk_anim.ss.scale
         self.height = walk_anim.ss.y_dim * walk_anim.ss.scale
 
-        self.world_x_pos = x
-        self.vel_y = 0
+        self.world_x_pos = x  # The x position across the whole world, not just screen
+        self.vel_y = 0  # Jumping or falling
 
-        # Setting up attack animation
+        # Setting up animations
         self.attack = attack_anim
-
-        # Setting up death animation
         self.death = death_anim
 
-        # Manual adjustments of hitbox
+        # Manual adjustments of hitbox for player rect
         self.X_ADJ = walk_anim.ss.scale * 44
         self.Y_ADJ = walk_anim.ss.scale * 18
         self.X_CENTER = 40
         self.Y_CENTER = 28
-
         self.rect = pygame.Rect(0,0, self.width - self.X_ADJ, self.height - self.Y_ADJ)
         self.rect.center = (x + self.X_CENTER, y + self.Y_CENTER)
         
-        self.flip = False
-        self.at_bottom = False
+        self.flip = False  # flip sprite/animations when moving left
+        self.on_ground = False  # standing on solid ground
         self.attacking = False
-        self.score_flag = False  # We can only add more score when this is True
+        #self.score_flag = False  # We can only add more score when this is True (avoiding dupes)
         self.prev_y_lvl = self.rect.y  # Tracking vertical progress
 
         self.alive = True  # Goes negative once we've been hit but are still playing death animations
@@ -61,8 +57,8 @@ class Player():
             self.alive = False
             self.death.anim_counter = 0  # Animation counter for the Animation instance
 
-        if  self.death.anim_counter >= self.death.frames -2:  # TODO: why minus 2?
-            pygame.time.delay(3 * 100) # 1 second == 1000 milliseconds
+        if  self.death.anim_counter == self.death.frames -1:
+            #pygame.time.delay(3 * 100) # 1 second == 1000 milliseconds
             return True
         
         return False
@@ -107,7 +103,7 @@ class Player():
                     self.world_x_pos += dx
                     self.flip = True
                     self.attacking = False
-                    if self.at_bottom == True:
+                    if self.on_ground == True:
                         self.animation.active = True
             # Right
             if key[pygame.K_RIGHT] or key[pygame.K_d]:
@@ -115,15 +111,15 @@ class Player():
                     self.world_x_pos += dx
                     self.flip = False
                     self.attacking = False
-                    if self.at_bottom == True:
+                    if self.on_ground == True:
                         self.animation.active = True
             # Jump
             if key[pygame.K_UP] or key[pygame.K_w]:
-                    if self.vel_y == 0 and self.at_bottom == True:
+                    if self.vel_y == 0 and self.on_ground == True:
                         self.vel_y = - self.world.JUMP_HEIGHT
                         self.animation.active = False
                         self.attacking = False
-                        self.at_bottom = False
+                        self.on_ground = False
 
             #print(self.world_x_pos)  # DEBUG
 
@@ -163,16 +159,16 @@ class Player():
                 if self.rect.bottom < platform.rect.centery:  # Is player above platform?
                     if self.vel_y > 0:  # Is player falling?
                         dy = 0
-                        self.at_bottom = True
+                        self.on_ground = True
                         self.vel_y = 0
                 
         x_pos = self.rect.center[0]
         # Check if player has reached scroll threshold to the left (and we're not on the far left) + we're walking left
-        if dx < 0 and x_pos <= self.SCROLL_THRESHOLD and self.world_x_pos > 100:
+        if dx < 0 and x_pos <= self.world.SCROLL_THRESHOLD and self.world_x_pos > 100:
             scroll = -dx  # We scroll left by the opposite of the player's x speed
         
          # Check if player has reached scroll threshold to the right (and we're not on the far right) + we're walking right
-        if dx > 0 and x_pos >= self.SCREEN_WIDTH - self.SCROLL_THRESHOLD and self.world_x_pos < self.world.TOT_WIDTH - 100:
+        if dx > 0 and x_pos >= self.SCREEN_WIDTH - self.world.SCROLL_THRESHOLD and self.world_x_pos < self.world.TOT_WIDTH - 100:
             scroll = -dx  # We scroll right by the opposite of the player's x speed
 
         # Update rectangle position

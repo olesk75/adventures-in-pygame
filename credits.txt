@@ -1,5 +1,6 @@
 Heavily based on the tutorials by https://github.com/russs123 and some of the placeholder assets are also his. 
 
+Music and sound by Kevin MacLeod (licensed CC-BY): https://filmmusic.io/u/kmac
 
 
 

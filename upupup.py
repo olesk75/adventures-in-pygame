@@ -2,9 +2,8 @@ import pygame
 import random
 import pickle
 
-from game_world import FloatPlatform as Platform  # "Platform" clashes with built-in type
-from game_world import TiledPlatform, WorldData, PlatformLocations, GameItems
-from animation import Animation
+from game_world import TiledPlatform, WorldData, PlatformLocations, GameItem
+from animation import Animation, StaticImage
 from spritesheet import SpriteSheet
 from player import Player, PlayerData
 from monsters import Monster
@@ -34,13 +33,11 @@ monster_list = [  # [x, y, type, behaviour_num]
 ]
 
 items_list = [  # [x, y, type, behaviour_num]
-    [320, 400, 'diamond', 1],
-    [120, 100, 'diamond', 1],
-    [520, 500, 'diamond', 1],
-    [620, 600, 'diamond', 1],
-
+    [150, 304, 'diamond', 1],
+    [120, 100, 'ruby', 1],
+#    [520, 500, 'diamond', 1],
+#    [620, 600, 'diamond', 1],
 ]
-
 
 # Main window constants - 1080p for now
 SCREEN_WIDTH = 1920
@@ -61,7 +58,7 @@ upupup_world = WorldData(
     MAX_PLATFORMS = 10,
     JUMP_HEIGHT = 15,
     PLAYER_BOUNCING = False,
-    SCROLL_THRESHOLD = SCREEN_WIDTH * 0.8,  # 400 in vertical scroll 
+    SCROLL_THRESHOLD = SCREEN_WIDTH * 0.2
 )
  
 # Player state
@@ -85,20 +82,21 @@ font_big = pygame.font.SysFont('Lucida Sans', 60)
 
 # Load images
 bg_image = pygame.transform.scale(pygame.image.load('assets/bg - wide.png').convert_alpha(), (9000, 1080))
-platform_image = pygame.image.load('assets/wood.png').convert_alpha()  # Scaled in each instance
 tiled_platform_image = pygame.image.load('assets/wood_box.png').convert_alpha()
 
-# Create items
+# Create static items
 items_sprite_sheet = SpriteSheet(pygame.image.load('assets/gems.png').convert_alpha(), 125,125, BLACK, 2)
-items_anim = Animation(items_sprite_sheet, row=2, frames=2, speed=100)
+items_sprites = StaticImage(items_sprite_sheet, 2, 2)
+
+# Create item animatios
+flag_sprite_sheet = SpriteSheet(pygame.image.load('assets/flag.png').convert_alpha(), 125,125, BLACK, 2)
 
 # Create player animations
 p_sprite_sheet = SpriteSheet(pygame.image.load('assets/character-sprites2.png').convert_alpha(), 64, 64, BLACK, 2)
 p_sprite_sheet_oversize = SpriteSheet(pygame.image.load('assets/character-sprites2.png').convert_alpha(), 64*3, 64*3, BLACK, 2)
-player_anim_walk = Animation(p_sprite_sheet, row=11, frames=10, speed=100)
-player_anim_attack = Animation(p_sprite_sheet_oversize, row=10, frames=9, speed=50)
-player_anim_death = Animation(p_sprite_sheet, row=20, frames=10, speed=500)
-
+player_anim_walk = Animation(p_sprite_sheet, row=11, frames=10, speed=75)
+player_anim_attack = Animation(p_sprite_sheet_oversize, row=10, frames=9, speed=100)
+player_anim_death = Animation(p_sprite_sheet, row=20, frames=9, speed=500)
 
 # Create monster animations
 m_sprite_sheet = SpriteSheet(pygame.image.load('assets/minotaur-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
@@ -163,11 +161,21 @@ def add_monsters(monster_list):
 def add_items(items_list, tiled_items_image):
     # Items in the game world [x, y, type, behaviour_num]
     items_group = pygame.sprite.Group()
+    items_rect_group = []  # list of rectangles for collision detection
+    game_sprite_list = []  # list of all the game item sprites (not sprite group, just plain list)
+
     for i in items_list:
         if i[2] == 'diamond':
-            items_group.add(GameItems(i[0], i[1], tiled_items_image))
-    return items_group
-
+            item_image = items_sprites.image(3)  # 3 is diamond
+        elif i[2] == 'ruby':
+            item_image = items_sprites.image(2)  # 2 is ruby
+            
+        game_sprite = GameItem(i[0], i[1], item_image)
+        items_group.add(game_sprite)
+        game_sprite_list.append(game_sprite)
+        items_rect_group.append(game_sprite.rect)
+                  
+    return items_group, items_rect_group, game_sprite_list
 
 
 
@@ -186,8 +194,7 @@ monster_group = add_monsters(monster_list)
 # Items
 tiled_items_image = pygame.image.load('assets/gems.png').convert_alpha()
 
-items_group = add_items(items_list, tiled_items_image)
-
+(items_group, items_rect_group, game_sprite_list) = add_items(items_list, tiled_items_image)
 
 # Load previous high score
 high_score = load_high_score()
@@ -201,7 +208,7 @@ run = True
 while run:
     clock.tick(FPS)
     
-    if game_over == False:
+    if not game_over:
         # check keypresses and update position (and get back scroll value if any)
         scroll, score_add = player.move(platform_group)
         player_state.score += score_add
@@ -214,9 +221,6 @@ while run:
             bg_scroll = 0
         draw_bg(bg_scroll)
 
-        # Test sprites
-        #screen.blit(items_sprite_sheet.image, (0,0))  # DEBUG: Show entire sprite sheet
-        
         #player_anim_walk.show(10,10)
   
         # draw temporary scroll threshold
@@ -232,10 +236,7 @@ while run:
         items_group.draw(screen)
         player.draw()
 
-        
-
         # draw monsters
-        #minotaur_group.draw(screen)
         for m in monster_group:
             m.draw()
 
@@ -247,37 +248,54 @@ while run:
             game_over = True
             print('!!!GAME OVER!!!')  # DEBUG
 
-        # check interactions with monsters
-        if player_dying == False:
-            for mob in monster_group:
-                # Can the monster detect the player
-                if pygame.Rect.colliderect(player.rect, mob.get_detect()):
-                    mob.attacking = True
-                    #print(f'Monster {mob.name} attacking!')  # DEBUG
-                else:
-                    mob.attacking = False
-                # Have we walked into a monster? --> DEATH
-                if pygame.Rect.colliderect(player.rect, mob.rect) and mob.attacking and not mob.dead:  # Collision detection (we ignore player damage after mob is dead)
-                    player_dying = True  # we start the death sequence
-                    #print('Collision detected - player dying')  # DEBUG
-                # Are we currently attacking? --> Check if attack connects
-                if player.attacking:
-                    attack_rect = player.get_attack_rect()
-                    if pygame.Rect.colliderect(attack_rect, mob.rect):  # Collision detection
-                        if not mob.dead:  # First time collision detected
-                            mob.vel_y = -5
-                            mob.direction  *= -1
-                            player_state.score += 100
-                        mob.dead = True
-                        # On death - bounce backwards a bit
-                        
-                        
-        else:
+        # If player has been hit and is dying, we skip checking for more hits
+        if player_dying:
             game_over = player.die()
-            #if game_over == True:
-            #    pygame.time.delay(3000)
-            
+            if game_over:
+                print('waiting')
+                pygame.time.delay(3000)
+                print('done')
+            next
 
+        # Check if player is finding any items
+        item_collision = player.rect.collidelist(items_rect_group)
+        if item_collision != -1:  # We hit something
+            if  items_list[item_collision][2] == 'diamond':
+                player_state.score += 500 
+            elif items_list[item_collision][2] == 'ruby':
+                player_state.score += 300
+            else:
+                print(f'ERROR: unknown item "{items_list[item_collision][2]}"')
+
+            items_rect_group[item_collision] = pygame.Rect(0, 0, 0, 0)  # Replacing rectange with empty one to avoid collision detection
+            game_sprite_list[item_collision].kill()  # remove sprite from sprite list
+
+
+        # TODO: we need a mechanism to track monsters when off-screen. They should be persistent, but also not need collision detection etc. 
+        for mob in monster_group:
+            if pygame.Rect.colliderect(player.rect, mob.get_detect()):  # check if mob can detect player
+                mob.attacking = True
+                #print(f'Monster {mob.name} attacking!')  # DEBUG
+            else:
+                mob.attacking = False  # if we move out of range, the mob will stop attacking
+            
+            # Player dies if a) collision with mob, b) mob is in attack mode and c) mob is not already dead
+            if pygame.Rect.colliderect(player.rect, mob.rect) and mob.attacking and not mob.dead:
+                player_dying = True  # we start the death sequence
+                #print('Collision detected - player dying')  # DEBUG
+
+            # If player is attacking, check if mob hit --> mob dead
+            if player.attacking:
+                attack_rect = player.get_attack_rect()
+                if pygame.Rect.colliderect(attack_rect, mob.rect): 
+                    if not mob.dead:  # First time collision detected, we bump the mob back to indicate hit
+                        mob.vel_y = -5
+                        mob.direction  *= -1
+                        player_state.score += 100
+                    mob.dead = True  # we run through the death anim sequence
+                        
+
+            
 
     else:  # Game over 
         if fade_counter < SCREEN_WIDTH / 2:

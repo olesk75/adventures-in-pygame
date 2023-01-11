@@ -1,1 +1,5 @@
-Fix side scroll effect on monsters (they must move while screen is scrolling)
+1. Optimize for sprite groups
+
+
+
+DONE: Fix side scroll effect on monsters (they must move while screen is scrolling)

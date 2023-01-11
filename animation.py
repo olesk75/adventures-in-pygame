@@ -25,7 +25,20 @@ class Animation():
             if self.anim_counter >= len(self.sprites) - 1 and self.repeat == True:
                 self.anim_counter = 0
             self.start_ticks = pygame.time.get_ticks()  # reset tick counter
-        
-        #print(f'self.anim_counter: {self.anim_counter} and len(self.sprites): {len(self.sprites)}')
 
+        return sprite
+
+# Adds sprites on one long array
+class StaticImage():
+    def __init__(self, sprite_sheet, rows, columns):
+        super().__init__()
+        self.rows = rows
+        self.columns = columns
+        self.sprites = []
+        for column in range(self.columns):
+            for row in range(self.rows):
+                self.sprites.append(sprite_sheet.get_sprite(column, row))
+        
+    def image(self, number):
+        sprite = self.sprites[number]
         return sprite
