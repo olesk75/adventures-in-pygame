@@ -1,66 +1,87 @@
 import pygame
+import csv
 from typing import NamedTuple
 
 # Game variables in a named tuple (new in Python 3.6)
 class WorldData(NamedTuple):
     SCREEN_WIDTH: int
     SCREEN_HEIGHT: int
+    LEVEL_WIDTH: int
     TOT_WIDTH: int
     GRAVITY: int
     MAX_PLATFORMS: int
     JUMP_HEIGHT: int
     PLAYER_BOUNCING: bool
     SCROLL_THRESHOLD: int
+    ROWS: int
+    MAX_COLS: int
+    TILE_SIZE: int
+    TILE_TYPES: int
 
-# Game variables in a named tuple (new in Python 3.6)
-class PlatformLocations(NamedTuple):
-    x: int
-    y: int
-    width: int
-
-class TiledPlatform(pygame.sprite.Sprite):
+class GameTile(pygame.sprite.Sprite):
     """
-    Since we inheritate from the Sprite class, draw etc. is also inherited
-    Platforms become a single object after we merge the tiles
+    Customized Sprite class which allows update with scroll value, which will be triggerd by spritegroup.update(scroll)
     """
-    def __init__(self, x, y, tile_image, width):
+    def __init__(self):
         super().__init__()
+        
+    def update(self, scroll):
+        # Moves the rectangle of this sprite 
+        self.rect.x += scroll
+        #print(f'scrolling {self.dx}, new x_pos: {self.rect.left}')
 
-        self.tile_size = 32
-        self.image = pygame.Surface((self.tile_size * width, self.tile_size), pygame.SRCALPHA)  # Empty image with space for tiles
+class GameWorld():
+    """
+    All non-background tiles in the game (not player, not mobs)
+    world_data: 2D matrix of all objects in game
 
-        for n in range(width):
-            self.image.blit(tile_image, (n * self.tile_size, 0))
+    We return sprite groups of all objects    
 
-        self.rect = self.image.get_rect()
+    """
+    def __init__(self, game_data):
+        
+        self.data = game_data
+        self.rows = self.data.MAX_COLS
+        self.columns = self.data.ROWS
+        self.tile_size = self.data.TILE_SIZE
+
+        self.platforms = [[-1]*self.columns] * self.rows
+        self.pickups = [[-1]*self.columns]*self.rows
+        self.decor = [[-1]*self.columns]*self.rows
+        self.platforms_sprite_group = pygame.sprite.Group()
+        self.pickups_sprite_group = pygame.sprite.Group()
+        self.decor_sprite_group = pygame.sprite.Group()
+
+    def load(self, level_file):
+        self.level_file = level_file
+        img_list = []
+
+        for x in range(self.data.TILE_TYPES):
+            img = pygame.image.load(f'assets/tile/{x}.png').convert_alpha()
+            img = pygame.transform.scale(img, (self.data.TILE_SIZE, self.data.TILE_SIZE))
+            img_list.append(img)
+
+        # Load world data
     
-        self.rect.x = x
-        self.rect.y = y
+        with open(self.level_file, newline='') as csvfile:
+            reader = csv.reader(csvfile, delimiter = ',')
+            for y, row in enumerate(reader):
+                for x, tile in enumerate(row):
+                    # For each tile we create a sprite and add to the relevant group
+                    if not int(tile) == -1:  # -1 means empty
+                        sprite = GameTile()  # we must initialize every time, or we're only updating the same sprite over and over
+                        sprite.image = pygame.Surface((self.tile_size, self.tile_size), pygame.SRCALPHA)  # Empty image with space for tiles
+                        sprite.image.blit(img_list[int(tile)], (0, 0))  # we blit the right image onto the surface from top left
+                        sprite.rect = sprite.image.get_rect()  # we get the rect for the sprite
+                        sprite.rect.x = x * self.tile_size # we correct the x pos
+                        sprite.rect.y = y * self.tile_size # we correct the y pos
 
-    def update(self, scroll):
-        # update platform's vert pos
-        self.rect.x += scroll
+                        if int(tile) <= 8:  # platforms
+                            self.platforms_sprite_group.add(sprite)
+                            #print(f'Added platform sprite to group with x: {x} and y: {y} and tile: {tile}, which now containts {len(self.platforms_sprite_group.sprites())} sprites\n')  # DEBUG
 
+                        elif int(tile) >= 9:  # TODO: simplify for now
+                            #self.decor[x][y] = int(tile)
+                            self.decor_sprite_group.add(sprite)
 
-class GameItem(pygame.sprite.Sprite):
-    """
-    Since we inheritate from the Sprite class, draw etc. is also inherited
-    """
-    def __init__(self, x, y, tile_image):
-        super().__init__()
-        self.sprite_size = 50
-        self.image = pygame.transform.scale(tile_image, (self.sprite_size, self.sprite_size)).convert_alpha()  # 32x32px  tall hardcoded
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-
-    def update(self, scroll):
-        # update platform's vert pos
-        self.rect.x += scroll
-
-        # check if platform is off screen
-        #if self.rect.top > pygame.display.get_window_size()[1]:
-        #    self.kill()
-
-    def die(self):
-        self.kill()
+        return(self.platforms_sprite_group, self.pickups_sprite_group, self.decor_sprite_group)

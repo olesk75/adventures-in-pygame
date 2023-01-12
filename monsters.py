@@ -1,25 +1,19 @@
 import pygame
 
-# Monster class
 class Monster(pygame.sprite.Sprite):
-    def __init__(self, name, world,x, y, screen, walk_anim, attack_anim, move_pattern):
+    def __init__(self,x, y, walk_anim, attack_anim, move_pattern):
         """
         The Player class constructor - note that x and y is only for initialization,
         the player position will be tracked by the rect
         """
         super().__init__()
-        self.name = name
-        self.screen = screen
-        self.world = world
-
-        self.SCREEN_WIDTH = pygame.display.get_window_size()[0]
-        self.SCREEN_HEIGHT = pygame.display.get_window_size()[1]
+        self.gravity = 0.5 
+        
 
         # 1: back and forth continuously
         self.pattern = move_pattern 
         self.direction = 1  # right
         self.pattern_x = 0  # starting point on the left
-        self.pattern_max = 100  # LIMIT ON X
 
         if self.pattern == 1:  # Slow walking, fast attacking
             self.speed_walking = 3
@@ -59,12 +53,14 @@ class Monster(pygame.sprite.Sprite):
         self.prev_y_lvl = self.rect.y  # Tracking vertical progress
 
 
-    def move(self, platforms):
-        self.platform_group = platforms
-        dx = 0
-        dy = 0
+    def update(self, scroll, platforms_sprite_group):
+        
+        self.platforms_sprite_group = platforms_sprite_group
 
-        self.animation.active = True  # Always animating
+        self.scroll = scroll
+        self.rect.x += scroll
+        
+        dy = 0  # we start with no vertical speed
         dx = self.speed_walking  #  we start at walking speed
 
         # Creating a detection rect where to mob will attack if the player rect collides
@@ -97,56 +93,50 @@ class Monster(pygame.sprite.Sprite):
                 self.rect_attack = self.rect
                 self.attack.anim_counter = 0
 
-        # Gravity
-        self.vel_y += self.world.GRAVITY  # allows us to let mobs fall (including during death)
+        self.vel_y += self.gravity  # allows us to let mobs fall (including during death)
         dy += self.vel_y
 
-        # Watch screen boundaries
-        # Left and right
-        if self.rect.left + dx < 0:
-            dx = - self.rect.left
-        if self.rect.right + dx > self.SCREEN_WIDTH:
-            dx = self.SCREEN_WIDTH - self.rect.right
-
         # Check platform collision
-        for platform in self.platform_group:
+        all_platforms = self.platforms_sprite_group.sprites()
+        for platform in all_platforms:
             # collision in the y direction only, so instead of using self.rect directly, we create
             # this temporaty rectangle with dy added for where the rectange _would_ be after the move
-            if platform.rect.colliderect(self.rect.x, self.rect.y + dy, self.width - self.X_ADJ, self.height - self.Y_ADJ):
+            if platform.rect.colliderect(self.rect.x, self.rect.y + dy, self.width - self.X_ADJ, self.height - self.Y_ADJ) and not self.dead:
                 if self.rect.bottom < platform.rect.centery:  # Is player above platform?
                     if self.vel_y > 0 and self.dead == False:  # Is monster falling and not dead?
                         dy = 0
                         self.at_bottom = True                     
                         self.vel_y = 0
                 
-                if not self.dead:
-                    # Very simple stay-on-platform strategy, where monster just goes back and forth
-                    if self.rect.right >= platform.rect.right:  # If we hit the right limit we turn
-                        self.direction = -1
-                    if self.rect.left <= platform.rect.left:  # If we hit the left limit we turn
-                        self.direction = 1
+                # X: change direction if hit a rect
+                if platform.rect.colliderect(self.rect.x + dx, self.rect.y, self.width - self.X_ADJ, self.height - self.Y_ADJ):
+                    dx = 6
+                    self.direction *= -1
+                else:
+                    # X: change direction if no rect in front and also below (falling off edge) - must test ALL
+                    left_fall_rect  = pygame.Rect(self.rect.x + dx + 35, self.rect.y + 30 , self.width - self.X_ADJ, self.height - self.Y_ADJ)
+                    right_fall_rect = pygame.Rect(self.rect.x + dx - 35, self.rect.y + 30 , self.width - self.X_ADJ, self.height - self.Y_ADJ)
+                    if  left_fall_rect.collidelist(all_platforms) == -1 or right_fall_rect.collidelist(all_platforms) == -1:
+                        self.direction *= -1
 
         # Update rectangle position
         self.rect.x += dx * self.direction
         self.rect.y += dy 
 
-    def update(self, scroll):
-        # update platform's vert pos
-        self.rect.x += scroll
 
-
-    def draw(self):
+    def draw(self, screen):
+        self.screen = screen
         self.flip = False
+
         if self.direction == -1: 
             self.flip = True
+
         # As collision detection is done with the rectangle, it's size and shape matters
         if self.attacking:
-            self.image = self.attack.image()
-            self.image = self.image.convert_alpha()
+            self.image = self.attack.image().convert_alpha()
             self.screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
         elif self.dead:
             # Spin sprite
-            """rotate an image while keeping its center and size"""
             angle = 5
             orig_rect = self.image.get_rect()
             rot_image = pygame.transform.rotate(self.image, angle)
@@ -155,8 +145,7 @@ class Monster(pygame.sprite.Sprite):
             self.image = rot_image.subsurface(rot_rect).copy()
             self.screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
         else:
-            self.image = self.animation.image()
-            self.image = self.image.convert_alpha()
+            self.image = self.animation.image().convert_alpha()
             self.screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
 
         #pygame.draw.rect(self.screen, (255,255,255), self.rect, 2 )  # Debug show rect on screen (white)

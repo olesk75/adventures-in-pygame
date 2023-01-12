@@ -9,9 +9,9 @@ class Animation():
         self.frames = frames
         self.sprites = []
         self.speed = speed   # Effecticely the ms we wait for next animation frame - bigger means slower
-        self.active = False  # Determines if we're actually updating the animation counter 
+        self.active = False  # We begin in the stopped state
         for frame in range(frames):
-            self.sprites.append(sprite_sheet.get_sprite(row, frame))
+            self.sprites.append(sprite_sheet.get_image(row, frame))
         
         self.anim_counter = 0
         self.start_ticks = pygame.time.get_ticks()
@@ -31,6 +31,7 @@ class Animation():
 
     # Scale override is non-funtional
     def show_anim(self, screen, scale_override=False):
+        # This function is only to display every frame of an animation in a grid for testing
         self.screen = screen
         if scale_override:
             scale = scale_override
@@ -51,20 +52,3 @@ class Animation():
             self.screen.blit(sprite, (frame_x + n * sprite_width, frame_y))  # draw sprites horisontally
             self.screen.blit(sprite, (frame_x, frame_y + n * sprite_height))
             n += 1
-
-            
-
-# Adds sprites on one long array
-class StaticImage():
-    def __init__(self, sprite_sheet, rows, columns):
-        super().__init__()
-        self.rows = rows
-        self.columns = columns
-        self.sprites = []
-        for column in range(self.columns):
-            for row in range(self.rows):
-                self.sprites.append(sprite_sheet.get_sprite(column, row))
-        
-    def image(self, number):
-        sprite = self.sprites[number]
-        return sprite
