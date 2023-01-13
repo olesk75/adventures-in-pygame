@@ -1,7 +1,7 @@
 import pygame
 
 class Monster(pygame.sprite.Sprite):
-    def __init__(self,x, y, walk_anim, attack_anim, move_pattern):
+    def __init__(self,x, y, walk_anim, attack_anim, ai):
         """
         The Player class constructor - note that x and y is only for initialization,
         the player position will be tracked by the rect
@@ -9,18 +9,7 @@ class Monster(pygame.sprite.Sprite):
         super().__init__()
         self.gravity = 0.5 
         
-
-        # 1: back and forth continuously
-        self.pattern = move_pattern 
-        self.direction = 1  # right
-        self.pattern_x = 0  # starting point on the left
-
-        if self.pattern == 1:  # Slow walking, fast attacking
-            self.speed_walking = 3
-            self.speed_attacking = 5
-        else:
-            print(f'ERROR: move pattern {self.pattern} not recognized')
-            exit(1)
+        self.ai = ai  # a MonsterAI() instance
 
         # Setting up walk animation
         self.animation = walk_anim
@@ -61,32 +50,33 @@ class Monster(pygame.sprite.Sprite):
         self.rect.x += scroll
         
         dy = 0  # we start with no vertical speed
-        dx = self.speed_walking  #  we start at walking speed
+        dx = self.ai.speed_walking  #  we start at walking speed
 
-        # Creating a detection rect where to mob will attack if the player rect collides
-        flip_offset = 200
+        # 
+        # Creating a DETECTION rect where to mob will attack if the player rect collides
+        #
         x = self.rect.center[0]
         y = self.rect.top
         if self.flip:       
-            self.rect_detect = pygame.Rect(x - flip_offset, y, 200, 100) 
+            self.rect_detect = pygame.Rect(x - self.ai.detection_range, y, self.ai.detection_range, self.height) 
         else:
-            self.rect_detect = pygame.Rect(x, y, 200, 100) 
+            self.rect_detect = pygame.Rect(x, y, self.ai.detection_range, self.height) 
 
-        # Creating an attack rect where to mob will kill player if player rect collides
+        #
+        # Creating an ATTACK rect where to mob will kill player if player rect collides
+        #
         if self.attacking:
-            # Progressom attack animation
-            self.attack.anim_counter += 1
-            dx = self.speed_attacking  # once we're attacking we speed up
+            self.attack.anim_counter += 1  # update the attack animation
+            dx = self.ai.speed_attacking  # once we're attacking we speed up
                     
             # The attack rect is an offset from the mob rect
-            flip_offset = 100
             x = self.rect.center[0]
             y = self.rect.top
 
             if self.flip:
-                self.rect_attack = pygame.Rect(x - flip_offset, y, 90, 100) 
+                self.rect_attack = pygame.Rect(x - self.ai.attack_range, y, self.ai.attack_range, self.height) 
             else:
-                self.rect_attack = pygame.Rect(x , y, 90, 100) 
+                self.rect_attack = pygame.Rect(x , y, self.ai.attack_range, self.height) 
             
             if self.attack.anim_counter == self.attack.frames:  # after each attack animation we stop the attack
                 self.attacking = False
@@ -96,7 +86,9 @@ class Monster(pygame.sprite.Sprite):
         self.vel_y += self.gravity  # allows us to let mobs fall (including during death)
         dy += self.vel_y
 
-        # Check platform collision
+        #
+        # Checking platform collision to prevent falling and to turn when either at end of platform or hitting a solid tile
+        #
         all_platforms = self.platforms_sprite_group.sprites()
         for platform in all_platforms:
             # collision in the y direction only, so instead of using self.rect directly, we create
@@ -108,19 +100,19 @@ class Monster(pygame.sprite.Sprite):
                         self.at_bottom = True                     
                         self.vel_y = 0
                 
-                # X: change direction if hit a rect
-                if platform.rect.colliderect(self.rect.x + dx, self.rect.y, self.width - self.X_ADJ, self.height - self.Y_ADJ):
-                    dx = 6
-                    self.direction *= -1
-                else:
-                    # X: change direction if no rect in front and also below (falling off edge) - must test ALL
-                    left_fall_rect  = pygame.Rect(self.rect.x + dx + 35, self.rect.y + 30 , self.width - self.X_ADJ, self.height - self.Y_ADJ)
-                    right_fall_rect = pygame.Rect(self.rect.x + dx - 35, self.rect.y + 30 , self.width - self.X_ADJ, self.height - self.Y_ADJ)
-                    if  left_fall_rect.collidelist(all_platforms) == -1 or right_fall_rect.collidelist(all_platforms) == -1:
-                        self.direction *= -1
+                # # X: change direction if hit a rect
+                # if platform.rect.colliderect(self.rect.x + dx, self.rect.y, self.width - self.X_ADJ, self.height - self.Y_ADJ):
+                #     dx = 6
+                #     self.ai.direction *= -1
+                # else:
+                #     # X: change direction if no rect in front and also below (falling off edge) - must test ALL
+                left_fall_rect  = pygame.Rect(self.rect.x + dx + 35, self.rect.y + 30 , self.width - self.X_ADJ, self.height - self.Y_ADJ)
+                right_fall_rect = pygame.Rect(self.rect.x + dx - 35, self.rect.y + 30 , self.width - self.X_ADJ, self.height - self.Y_ADJ)
+                if  left_fall_rect.collidelist(all_platforms) == -1 or right_fall_rect.collidelist(all_platforms) == -1:
+                    self.ai.direction *= -1
 
         # Update rectangle position
-        self.rect.x += dx * self.direction
+        self.rect.x += dx * self.ai.direction
         self.rect.y += dy 
 
 
@@ -128,7 +120,7 @@ class Monster(pygame.sprite.Sprite):
         self.screen = screen
         self.flip = False
 
-        if self.direction == -1: 
+        if self.ai.direction == -1: 
             self.flip = True
 
         # As collision detection is done with the rectangle, it's size and shape matters

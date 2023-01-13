@@ -30,7 +30,7 @@ class Animation():
         return sprite
 
     # Scale override is non-funtional
-    def show_anim(self, screen, scale_override=False):
+    def _show_anim(self, screen, scale_override=False):
         # This function is only to display every frame of an animation in a grid for testing
         self.screen = screen
         if scale_override:

@@ -55,6 +55,90 @@ Authors: bluecarrot16, Evert, TheraHedwig, MuffinElZangano, Durrani, Sander Fren
     - https://opengameart.org/content/lpc-extended-weapon-animations
 
 
+CREDITS FOR MONSTER SPRITES
+Authors: bluecarrot16, Benjamin K. Smith (BenCreating), Evert, Eliza Wyatt (ElizaWy), TheraHedwig, MuffinElZangano, Durrani, Johannes Sj?lund (wulax), Stephen Challener (Redshrike), Matthew Krohn (makrohn), Zi Ye, Fabzy, Nila122, Michael Whitlock (bigbeargames), Johannes Sjölund (wulax), David Conway Jr. (JaidynReiman), Daniel Eddeland (daneeklu), gr3yh47
+
+- body/bodies/male/universal/light.png: by bluecarrot16, Benjamin K. Smith (BenCreating), Evert, Eliza Wyatt (ElizaWy), TheraHedwig, MuffinElZangano, Durrani, Johannes Sj?lund (wulax), Stephen Challener (Redshrike). License(s): CC-BY-SA 3.0, GPL 3.0. 
+    - https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles
+    - https://opengameart.org/content/lpc-medieval-fantasy-character-sprites
+    - https://opengameart.org/content/lpc-male-jumping-animation-by-durrani
+    - https://opengameart.org/content/lpc-runcycle-and-diagonal-walkcycle
+    - https://opengameart.org/content/lpc-revised-character-basics
+
+- head/heads/orc_male/universal/light.png: by bluecarrot16, Matthew Krohn (makrohn), Stephen Challener (Redshrike), Zi Ye. License(s): CC-BY-SA 3.0, GPL 3.0. 
+    - https://opengameart.org/content/four-characters-my-lpc-entries
+    - https://opengameart.org/content/sinbad-the-ogre
+    - https://opengameart.org/content/lpc-male-sheets
+    - https://opengameart.org/content/lpc-character-bases
+
+- hair/spiked_porcupine/male/black.png: by Fabzy, bluecarrot16. License(s): CC-BY-SA 3.0. 
+    - https://opengameart.org/content/the-revolution-hair
+    - https://opengameart.org/content/lpc-hair
+
+- head/fins/fin_short/light.png: by bluecarrot16, Nila122. License(s): OGA-BY 3.0, GPL 3.0, CC-BY-SA 3.0. 
+    - https://opengameart.org/content/lpc-lizard-headgear
+    - http://opengameart.org/content/lpc-clothing-updates
+
+- shoulders/legion/male/steel.png: by Nila122. License(s): OGA-BY 3.0, CC-BY-SA 3.0, GPL 2.0, GPL 3.0. 
+    - https://opengameart.org/content/lpc-roman-armor
+
+- arms/armour/plate/male/silver.png: by Michael Whitlock (bigbeargames), Matthew Krohn (makrohn), Johannes Sjölund (wulax). License(s): CC-BY-SA 3.0, GPL 3.0. 
+    - https://opengameart.org/content/lpc-medieval-fantasy-character-sprites
+    - http://opengameart.org/content/lpc-clothing-updates
+
+- bauldron/male/slate.png: by Nila122. License(s): GPL 2.0, GPL 3.0, CC-BY-SA 3.0. 
+    - https://opengameart.org/content/more-lpc-clothes-and-hair
+
+- cape/solid/female/red.png: by bluecarrot16, David Conway Jr. (JaidynReiman). License(s): CC-BY-SA 3.0, GPL 3.0. 
+    - https://opengameart.org/content/lpc-curly-hair-elven-ears-white-cape-with-blue-trim-and-more
+    - https://opengameart.org/content/lpc-roman-armor
+    - http://opengameart.org/content/lpc-clothing-updates
+
+- cape/solid_behind/red.png: by Nila122, David Conway Jr. (JaidynReiman). License(s): CC-BY-SA 3.0, GPL 3.0. 
+    - https://opengameart.org/content/lpc-curly-hair-elven-ears-white-cape-with-blue-trim-and-more
+    - https://opengameart.org/content/lpc-roman-armor
+
+- legs/armour/plate/male/steel.png: by bluecarrot16, Michael Whitlock (bigbeargames), Johannes Sjölund (wulax). License(s): CC-BY-SA 3.0, GPL 3.0. 
+    - https://opengameart.org/content/lpc-medieval-fantasy-character-sprites
+
+- weapon/bow/great.png: by Daniel Eddeland (daneeklu), gr3yh47, Johannes Sjölund (wulax). License(s): CC-BY-SA 3.0. 
+    - https://opengameart.org/content/lpc-weapons-two-bows-a-spear-and-a-trident
+
+- ammo/arrow.png: by Johannes Sjölund (wulax). License(s): CC-BY-SA 3.0, GPL 3.0. 
+    - https://opengameart.org/content/lpc-medieval-fantasy-character-sprites
+
+
+Authors: bluecarrot16, Evert, TheraHedwig, MuffinElZangano, Durrani, Sander Frenken (castelonia), Benjamin K. Smith (BenCreating), Eliza Wyatt (ElizaWy), dalonedrau, Stephen Challener (Redshrike), Nila122, Daniel Eddeland (daneeklu), Pierre Vigier (pvigier), Johannes Sjölund (wulax), Inboxninja
+
+- body/bodies/muscular/universal/green.png: by bluecarrot16, Evert, TheraHedwig, MuffinElZangano, Durrani, Sander Frenken (castelonia), Benjamin K. Smith (BenCreating), Eliza Wyatt (ElizaWy), dalonedrau, Stephen Challener (Redshrike). License(s): CC-BY-SA 3.0. 
+    - https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles
+    - https://opengameart.org/content/lpc-barbarian-sprite-base
+    - https://opengameart.org/content/lpc-muscular-swing-animation
+    - https://opengameart.org/content/lpc-muscular-hurt-animation
+    - https://opengameart.org/content/lpc-jump-expanded
+
+- body/wings/lizard/fg/green.png: by Nila122, bluecarrot16. License(s): CC-BY-SA 3.0, GPL 3.0. 
+    - https://opengameart.org/content/drakes-and-lizardfolk
+
+- body/wings/lizard/bg/green.png: by Nila122, bluecarrot16. License(s): CC-BY-SA 3.0, GPL 3.0. 
+    - https://opengameart.org/content/drakes-and-lizardfolk
+
+- body/tail/lizard/fg/green.png: by Nila122, bluecarrot16. License(s): CC-BY-SA 3.0, GPL 3.0. 
+    - https://opengameart.org/content/drakes-and-lizardfolk
+
+- body/tail/lizard/bg/green.png: by Nila122, bluecarrot16. License(s): CC-BY-SA 3.0, GPL 3.0. 
+    - https://opengameart.org/content/drakes-and-lizardfolk
+
+- head/heads/minotaur/universal/green.png: by Evert, Nila122, Daniel Eddeland (daneeklu). License(s): CC-BY-SA 3.0, GPL 3.0. 
+    - https://opengameart.org/content/lpc-style-farm-animals
+    - https://opengameart.org/content/lpc-lizard-headgear
+    - https://opengameart.org/content/lpc-faun-and-minotaur
+
+- weapon/thrust/male/spear_metal.png: by Pierre Vigier (pvigier), Johannes Sjölund (wulax), Inboxninja. License(s): CC-BY-SA 3.0. 
+    - https://opengameart.org/content/lpc-spear-and-shovel-reworked
+
+
+
 
 ALSO (jewl icoins)
 

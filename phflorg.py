@@ -25,6 +25,7 @@ phflorg_data = WorldData(
     MAX_COLS = 150,
     TILE_SIZE = 1080 // 16,
     TILE_TYPES = 21,
+    OBJECT_TYPES = 9
 )
 
 # Initializing
@@ -80,9 +81,9 @@ sky_img = pygame.image.load('assets/sky_cloud.png').convert_alpha()
 
 level = 1  # TODO: placeholder
 
-phflorg_world = GameWorld(phflorg_data)  # Loading all tiles in the world, less background, mobs and player
+phflorg_world = GameWorld(phflorg_data)  # Loading all tiles in the world, less background and player
 
-(platforms_sprite_group, pickups_sprite_group, decor_sprite_group) = phflorg_world.load(f'level{level}_data.csv')
+(platforms_sprite_group, pickups_sprite_group, decor_sprite_group, monster_import_list) = phflorg_world.load(f'level{level}_data.csv')
 
 # Create player animations
 p_sprite_sheet = SpriteSheet(pygame.image.load('assets/character-sprites2.png').convert_alpha(), 64, 64, BLACK, 2)
@@ -92,9 +93,13 @@ player_anim_attack = Animation(p_sprite_sheet_oversize, row=10, frames=6, speed=
 player_anim_death = Animation(p_sprite_sheet, row=20, frames=6, speed=500)
 
 # Create monster animations
-m_sprite_sheet = SpriteSheet(pygame.image.load('assets/minotaur-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
-minotaur_anim_walk = Animation(m_sprite_sheet, row=11, frames=9, speed=100)
-minotaur_anim_attack = Animation(m_sprite_sheet, row=7, frames=8, speed=100)
+minotaur_ss = SpriteSheet(pygame.image.load('assets/minotaur-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
+minotaur_anim_walk = Animation(minotaur_ss, row=11, frames=9, speed=100)
+minotaur_anim_attack = Animation(minotaur_ss, row=7, frames=8, speed=150)
+ogre_archer_ss = SpriteSheet(pygame.image.load('assets/ogre-archer-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
+ogre_anim_walk = Animation(ogre_archer_ss, row=11, frames=9, speed=50)
+ogre_anim_attack = Animation(ogre_archer_ss, row=19, frames=13, speed=150)
+
 
 # Function for text output
 def draw_text(text, font, text_col, x, y):
@@ -135,16 +140,17 @@ def save_high_score(high_score):
     with open('highscore.dat', 'wb') as save_file:
         pickle.dump(high_score, save_file)    
 
-def add_monsters(mobs):
+# def add_monsters(mobs):
     # Monster instances (for loop later)
-    minotaur_list = []
-    for monster in mobs:
-        if monster[2] == 'm':  # minotaur
-            minotaur_list.append(Monster(monster[0], monster[1], minotaur_anim_walk, minotaur_anim_attack, monster[3]))
 
-    return minotaur_list
+    # for monster in monster_list:
+    #     if monster[2] == 'minotaur':
+    #         minotaur_list.append(Monster(monster[0], monster[1], minotaur_anim_walk, minotaur_anim_attack, monster[3]))
+    #     if monster[2] == 'ogre-archer':
+    #         ogre_archer_list.append(Monster(monster[0], monster[1], ogre_anim_walk, ogre_anim_attack, monster[3]))
 
-monster_list = add_monsters(monsters)
+    # return minotaur_list + ogre_archer_list
+
 
 """
 Defining instances
@@ -154,7 +160,12 @@ player = Player(phflorg_data.SCREEN_WIDTH // 2, phflorg_data.SCREEN_HEIGHT -150 
     player_anim_walk, player_anim_attack, player_anim_death, player_sound_effects)
 
 # Monsters
-add_monsters(monsters)
+monster_list = []
+for mob in monster_import_list:
+    if mob['monster'] == 'minotaur':
+        monster_list.append(Monster(mob['x'], mob['y'], minotaur_anim_walk, minotaur_anim_attack, mob['ai']))
+    if mob['monster'] == 'ogre-archer':
+        monster_list.append(Monster(mob['x'], mob['y'], ogre_anim_walk, ogre_anim_attack, mob['ai']))
 
 # Load previous high score
 high_score = load_high_score()
@@ -202,23 +213,21 @@ while run:
             player.dead = True
             print('!!!GAME OVER!!!')  # DEBUG
 
-
         # If player has been hit and is dying, we skip checking for more hits
         if player.dying:
             game_over = player.check_game_over()  # if we're done dying, we're dead
 
     
-        # TODO: we need a mechanism to track monsters when off-screen. They should be persistent, but also not need collision detection etc. 
         for mob in monster_list:
             mob.animation.active = True
             mob.update(scroll, platforms_sprite_group)
             mob.draw(screen)
-            #pygame.draw.rect(screen, (0,0,255), mob.rect_detect, 2 )  # DEBUG: to see hitbox for detection (blue)
+            pygame.draw.rect(screen, (0,0,255), mob.rect_detect, 2 )  # DEBUG: to see hitbox for detection (blue)
             
             # Mob detecting player
             if pygame.Rect.colliderect(player.rect, mob.rect_detect):
                 mob.attacking = True
-                #pygame.draw.rect(screen, (255,0,0), mob.rect_attack, 2 )  # DEBUG: to see hitbox for detection (red)
+                pygame.draw.rect(screen, (255,0,0), mob.rect_attack, 2 )  # DEBUG: to see hitbox for detection (red)
                 #print(f'Monster {mob.name} attacking!')  # DEBUG
             else:  # Mob not detecting player
                 mob.attacking = False  # if we move out of range, the mob will stop attacking
