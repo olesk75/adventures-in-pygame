@@ -10,7 +10,6 @@ class WorldData(NamedTuple):
     SCREEN_WIDTH: int
     SCREEN_HEIGHT: int
     LEVEL_WIDTH: int
-    TOT_WIDTH: int
     GRAVITY: int
     MAX_PLATFORMS: int
     JUMP_HEIGHT: int

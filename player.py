@@ -181,8 +181,9 @@ class Player(pygame.sprite.Sprite):
             scroll = -dx  # We scroll left by the opposite of the player's x speed
         
          # Check if player has reached scroll threshold to the right (and we're not on the far right) + we're walking right
-        if dx > 0 and x_pos >= self.world.SCREEN_WIDTH - self.world.SCROLL_THRESHOLD and self.world_x_pos < self.world.TOT_WIDTH - 100:
+        if dx > 0 and x_pos >= self.world.SCREEN_WIDTH - self.world.SCROLL_THRESHOLD and self.world_x_pos < self.world.TILE_SIZE * self.world.MAX_COLS - self.world.SCROLL_THRESHOLD:
             scroll = -dx  # We scroll right by the opposite of the player's x speed
+        
 
         # Update rectangle position
         self.rect.x += dx + scroll

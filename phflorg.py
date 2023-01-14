@@ -15,7 +15,6 @@ phflorg_data = WorldData(
     SCREEN_WIDTH = 1920,
     SCREEN_HEIGHT = 1080,
     LEVEL_WIDTH = 4,
-    TOT_WIDTH = 20000,
     GRAVITY = 0.5,
     MAX_PLATFORMS = 10,
     JUMP_HEIGHT = 15,
@@ -116,7 +115,7 @@ def draw_bg(bg_scroll):
     screen.fill(SKY_BLUE)
     width = sky_img.get_width()
 
-    for x in range(phflorg_data.LEVEL_WIDTH):
+    for x in range(phflorg_data.LEVEL_WIDTH+ 300):
         screen.blit(sky_img, ((x * width) + bg_scroll * 0.5, 0))
         screen.blit(mountain_img, ((x * width) + bg_scroll * 0.6, phflorg_data.SCREEN_HEIGHT - mountain_img.get_height() - 300))
         screen.blit(pine1_img, ((x * width) + bg_scroll * 0.7, phflorg_data.SCREEN_HEIGHT - pine1_img.get_height() - 150))
@@ -140,16 +139,14 @@ def save_high_score(high_score):
     with open('highscore.dat', 'wb') as save_file:
         pickle.dump(high_score, save_file)    
 
-# def add_monsters(mobs):
-    # Monster instances (for loop later)
 
-    # for monster in monster_list:
-    #     if monster[2] == 'minotaur':
-    #         minotaur_list.append(Monster(monster[0], monster[1], minotaur_anim_walk, minotaur_anim_attack, monster[3]))
-    #     if monster[2] == 'ogre-archer':
-    #         ogre_archer_list.append(Monster(monster[0], monster[1], ogre_anim_walk, ogre_anim_attack, monster[3]))
-
-    # return minotaur_list + ogre_archer_list
+def load_monsters(monster_import_list):
+    for mob in monster_import_list:
+        if mob['monster'] == 'minotaur':
+            monster_list.append(Monster(mob['x'], mob['y'], minotaur_anim_walk, minotaur_anim_attack, mob['ai']))
+        if mob['monster'] == 'ogre-archer':
+            monster_list.append(Monster(mob['x'], mob['y'], ogre_anim_walk, ogre_anim_attack, mob['ai']))
+    return monster_list
 
 
 """
@@ -160,12 +157,10 @@ player = Player(phflorg_data.SCREEN_WIDTH // 2, phflorg_data.SCREEN_HEIGHT -150 
     player_anim_walk, player_anim_attack, player_anim_death, player_sound_effects)
 
 # Monsters
-monster_list = []
-for mob in monster_import_list:
-    if mob['monster'] == 'minotaur':
-        monster_list.append(Monster(mob['x'], mob['y'], minotaur_anim_walk, minotaur_anim_attack, mob['ai']))
-    if mob['monster'] == 'ogre-archer':
-        monster_list.append(Monster(mob['x'], mob['y'], ogre_anim_walk, ogre_anim_attack, mob['ai']))
+monster_list= []
+monster_list = load_monsters(monster_import_list)
+
+
 
 # Load previous high score
 high_score = load_high_score()
@@ -183,6 +178,7 @@ while run:
         scroll, score_add = player.move(platforms_sprite_group)
         player_state.score += score_add
 
+        
 
          # Update tiles
         platforms_sprite_group.update(scroll)
@@ -191,9 +187,12 @@ while run:
         
        
         # draw background
+        #if not bg_scroll < -((phflorg_data.MAX_COLS * phflorg_data.TILE_SIZE) - (phflorg_data.SCREEN_WIDTH + phflorg_data.SCROLL_THRESHOLD)):
+        #    print(f'bg_scroll: {bg_scroll}, scroll: {scroll}, LIMIT: {-((phflorg_data.MAX_COLS * phflorg_data.TILE_SIZE) - (phflorg_data.SCREEN_WIDTH +  + phflorg_data.SCROLL_THRESHOLD))}')
         bg_scroll += scroll
-        if bg_scroll >= phflorg_data.SCREEN_WIDTH:
-            bg_scroll = 0
+        #else:
+        #    scroll = 0
+
         draw_bg(bg_scroll)
 
 
@@ -219,38 +218,42 @@ while run:
 
     
         for mob in monster_list:
+            
             mob.animation.active = True
             mob.update(scroll, platforms_sprite_group)
             mob.draw(screen)
-            pygame.draw.rect(screen, (0,0,255), mob.rect_detect, 2 )  # DEBUG: to see hitbox for detection (blue)
-            
-            # Mob detecting player
-            if pygame.Rect.colliderect(player.rect, mob.rect_detect):
-                mob.attacking = True
-                pygame.draw.rect(screen, (255,0,0), mob.rect_attack, 2 )  # DEBUG: to see hitbox for detection (red)
-                #print(f'Monster {mob.name} attacking!')  # DEBUG
-            else:  # Mob not detecting player
-                mob.attacking = False  # if we move out of range, the mob will stop attacking
-                mob.rect_attack = pygame.Rect(0,0,0,0)  # resetting attack rect
-            
-            # Mob attack: trigger player dying if a) collision with mob, b) mob is in attack mode and c) mob is not already dead
-            if pygame.Rect.colliderect(player.rect, mob.rect_attack) and mob.attacking and not mob.dead:
-                player.dying = True  # we start the death sequence
-                player.death.anim_counter = 0  # Animation counter the death animation
 
-            # Mob collision: trigger player dying if a) collision with mob, b) mob is not already dead
-            if pygame.Rect.colliderect(player.rect, mob.rect) and not mob.dead:
-                player.dying = True  # we start the death sequence
-                player.death.anim_counter = 0  # Animation counter the death animation
+            if not mob.dead:
+                pygame.draw.rect(screen, (0,0,255), mob.rect_detect, 2 )  # DEBUG: to see hitbox for detection (blue)
+                
+                # Mob detecting player
+                if pygame.Rect.colliderect(player.rect, mob.rect_detect):
+                    mob.attacking = True
+                    pygame.draw.rect(screen, (255,0,0), mob.rect_attack, 2 )  # DEBUG: to see hitbox for detection (red)
+                    #print(f'Monster {mob.name} attacking!')  # DEBUG
+                else:  # Mob not detecting player
+                    mob.attacking = False  # if we move out of range, the mob will stop attacking
+                    mob.rect_attack = pygame.Rect(0,0,0,0)  # resetting attack rect
+                
+                # Mob attack: trigger player dying if a) collision with mob, b) mob is in attack mode and c) mob is not already dead
+                if pygame.Rect.colliderect(player.rect, mob.rect_attack) and mob.attacking and not mob.dead:
+                    player.dying = True  # we start the death sequence
+                    player.death.anim_counter = 0  # Animation counter the death animation
 
-            # If player is attacking, check if mob hit --> mob dead
-            if player.attacking:
-                if pygame.Rect.colliderect(player.get_attack_rect(), mob.rect): 
-                    if not mob.dead:  # First time collision detected, we bump the mob back to indicate hit
+                # Mob collision: trigger player dying if a) collision with mob, b) mob is not already dead
+                if pygame.Rect.colliderect(player.rect, mob.rect) and not mob.dead:
+                    player.dying = True  # we start the death sequence
+                    player.death.anim_counter = 0  # Animation counter the death animation
+
+                # If player is attacking, check if mob hit --> mob dead
+                if player.attacking:
+                    if pygame.Rect.colliderect(player.get_attack_rect(), mob.rect): 
                         mob.vel_y = -5
-                        mob.direction  = -player.flip
+                        mob.ai.direction = -player.flip
                         player_state.score += 100
-                    mob.dead = True  # we run through the death anim sequence
+                        mob.dead = True  # we run through the death anim sequence
+                            # monster_list.remove(mob)
+
                         
 
     else:  # Game over 
@@ -296,7 +299,9 @@ while run:
                 fade_counter = 0
                 # Add monsters
 
-                monster_list = add_monsters(monsters)
+                monster_list = []
+                monster_list = load_monsters(monster_import_list)
+
 
     # The main even handler
     for event in pygame.event.get():
