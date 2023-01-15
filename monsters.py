@@ -12,13 +12,13 @@ class Monster(pygame.sprite.Sprite):
         self.ai = ai  # a MonsterAI() instance
 
         # Setting up walk animation
-        self.animation = walk_anim
+        self.walk_anim = walk_anim
         self.image = walk_anim.image()
         self.width = walk_anim.ss.x_dim * walk_anim.ss.scale
         self.height = walk_anim.ss.y_dim * walk_anim.ss.scale
 
         # Setting up attack animation
-        self.attack = attack_anim
+        self.attack_anim = attack_anim
 
         # Setting up death animation
         self.dead = False
@@ -38,6 +38,8 @@ class Monster(pygame.sprite.Sprite):
         self.flip = False
         self.at_bottom = False
         self.attacking = False
+        self.last_attack = 0
+        self.ready_to_attack = True  
         self.score_flag = False  # We can only add more score when this is True
         self.prev_y_lvl = self.rect.y  # Tracking vertical progress
 
@@ -53,10 +55,8 @@ class Monster(pygame.sprite.Sprite):
         else:
             self.rect_detect = pygame.Rect(x, y, self.ai.detection_range, self.height) 
 
-
-        # Creating an ATTACK rect where to mob will kill player if player rect collides
+        # Creating an ATTACK rect 
         if self.attacking:
-            self.attack.anim_counter += 1  # update the attack animation
             dx = self.ai.speed_attacking  # once we're attacking we speed up
                     
             # The attack rect is an offset from the mob rect
@@ -68,10 +68,8 @@ class Monster(pygame.sprite.Sprite):
             else:
                 self.rect_attack = pygame.Rect(x , y, self.ai.attack_range, self.height) 
             
-            if self.attack.anim_counter == self.attack.frames:  # after each attack animation we stop the attack
-                self.attacking = False
-                self.rect_attack = self.rect
-                self.attack.anim_counter = 0
+
+
 
     def _check_platform_collision(self, dx, dy, platforms_sprite_group):
          #
@@ -104,15 +102,29 @@ class Monster(pygame.sprite.Sprite):
                 if platform.rect.colliderect(tile_collider_rect):
                     #print(f'crash: {self.ai.monster}')
                     self.ai.direction *= -1
-                    self.rect.x += dx
+                    self.rect.x += dx * 2  * self.ai.direction # far enough to avoid re-triggering in an endless loop
                     self.flip = not self.flip
-                
+
+    def attack_start(self): 
+        """ Called to set attack variables and keep track of attack timings for repeat attacks """                
+        if self.ready_to_attack:
+            self.attacking = True  # set the "is attacking" flag to true
+            self.attack_anim.active = True
+            self.last_attack = pygame.time.get_ticks()
+
+    def attack_stop(self): 
+        self.attacking = False  # set the "is attacking" flag to true
+        self.attack_anim.active = False
+        self.rect_attack = pygame.Rect(0,0,0,0)
 
     def update(self, scroll, platforms_sprite_group):
         
         # we set start speeds for x and y
         dy = 0
-        dx = self.ai.speed_walking  #  we start at walking speed
+        if self.attacking:
+            dx = self.ai.speed_attacking
+        else:
+            dx = self.ai.speed_walking  #  we start at walking speed
 
         # we compensate for scrolling
         self.scroll = scroll
@@ -121,7 +133,8 @@ class Monster(pygame.sprite.Sprite):
         # we compensate for graivty
         self.vel_y += self.gravity  # allows us to let mobs fall (including during death)
         dy += self.vel_y
-                # Update rectangle position
+        
+        # Update rectangle position
         self.rect.x += dx * self.ai.direction
         self.rect.y += dy 
 
@@ -129,18 +142,22 @@ class Monster(pygame.sprite.Sprite):
             self._create_rects()
             self._check_platform_collision(dx, dy, platforms_sprite_group)
         else:
+            print('OOOF')
             self.rect_attack = None
             self.rect_detect = None
 
-
-
-    
+        # Updating the ready_to_attack flag 
+        now = pygame.time.get_ticks()
+        if now - self.last_attack > self.ai.attack_delay:
+            self.ready_to_attack = True
+        else:
+            self.ready_to_attack = False
 
 
     def draw(self, screen):
         # As collision detection is done with the rectangle, it's size and shape matters
         if self.attacking:
-            self.image = self.attack.image().convert_alpha()
+            self.image = self.attack_anim.image(self.ai.attack_delay).convert_alpha()
             screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
         elif self.dead:
             # Spin sprite
@@ -152,7 +169,55 @@ class Monster(pygame.sprite.Sprite):
             self.image = rot_image.subsurface(rot_rect).copy()
             screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
         else:
-            self.image = self.animation.image().convert_alpha()
+            self.image = self.walk_anim.image().convert_alpha()
             screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
 
         #pygame.draw.rect(self.screen, (255,255,255), self.rect, 2 )  # Debug show rect on screen (white)
+
+
+class Projectile(pygame.sprite.Sprite):
+    def __init__(self,x, y, image):
+        """
+        The Player class constructor - note that x and y is only for initialization,
+        the player position will be tracked by the rect
+        """
+        super().__init__()
+        # self.gravity = 0.5  # TODO
+
+        self.image = image
+        self.dead = False  
+        self.speed = 10
+        self.width = image.get_width()
+        self.height = image.get_height()
+        self.rect = pygame.Rect(x, y, self.width, self.height)
+        self.flip = False
+        
+    def update(self, scroll, platforms_sprite_group):
+        
+        # we set start speeds for x and y
+        dx = self.speed
+        if self.flip:
+            dx = -self.speed
+            
+        dy = 0
+
+        # we compensate for scrolling
+        self.scroll = scroll
+        self.rect.x += scroll
+
+        # we compensate for graivty  # TODO
+        #self.vel_y += self.gravity  # allows us to let mobs fall (including during death)
+        #dy += self.vel_y
+        
+        # Update rectangle position
+        self.rect.x += dx 
+        self.rect.y += dy 
+
+        #if not self.dead:
+        #    self._check_platform_collision(dx, dy, platforms_sprite_group)
+        #else:
+        #    self.rect_attack = None
+
+    def draw(self, screen):
+        self.image = self.anim.image().convert_alpha()
+        screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x, self.rect.y))

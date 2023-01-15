@@ -2,11 +2,6 @@ import pygame
 
 WHITE = (255, 255, 255)
 
-# Game variables in a named tuple (new in Python 3.6)
-class PlayerData():
-    def __init__(self):
-        self.score = 0
-
 
 # Player class
 class Player(pygame.sprite.Sprite):
@@ -48,6 +43,7 @@ class Player(pygame.sprite.Sprite):
         self.Y_CENTER = 28
         self.rect = pygame.Rect(0,0, self.width - self.X_ADJ, self.height - self.Y_ADJ)
         self.rect.center = (x + self.X_CENTER, y + self.Y_CENTER)
+        self.attack_rect = pygame.Rect(0,0,0,0)
         
         self.flip = False  # flip sprite/animations when moving left
         self.on_ground = False  # standing on solid ground
@@ -57,6 +53,20 @@ class Player(pygame.sprite.Sprite):
         self.dead = False  # Death animation complete
 
         self.world_x_pos = x + self.X_CENTER # player x position across the whole world, not just screen
+
+
+    def _get_attack_rect(self):
+        # Returns a the attack rect for collision detection
+        # The attack rect is an offset from the player rect
+        if self.flip:
+            offset = -90
+        else:
+            offset = 30
+        x = self.rect.left 
+        y = self.rect.top
+        self.attack_rect = pygame.Rect(x + offset, y, 100, 100) 
+        
+        # pygame.draw.rect(self.screen, (255,0,0), attack_rect, 2 )  # DEBUG: to see hitbox for weapon
 
     def check_game_over(self):
         # Manage the time from player is hit and dies until the death animation is complete and GAME OVER screen shows
@@ -68,20 +78,10 @@ class Player(pygame.sprite.Sprite):
         else:
             return False
 
-    def get_attack_rect(self):
-        # Returns a the attack rect for collision detection
-        # The attack rect is an offset from the player rect
-        if self.flip:
-            offset = -90
-        else:
-            offset = 30
-        x = self.rect.left 
-        y = self.rect.top
-        attack_rect = pygame.Rect(x + offset, y, 100, 100) 
-        
-        # pygame.draw.rect(self.screen, (255,0,0), attack_rect, 2 )  # DEBUG: to see hitbox for weapon
-        return attack_rect
-
+    def die(self):
+        if not self.dying:
+            self.dying = True  # we start the death sequence
+            self.death.anim_counter = 0  # Animation counter the death animation
 
     def move(self, platforms_sprite_group):
         distance = 5  # How far we move in one keypress
@@ -130,10 +130,10 @@ class Player(pygame.sprite.Sprite):
             if key[pygame.K_SPACE]:
                 self.attacking = True
                 if not self.fx_attack_channel.get_busy():
-                    #self.fx_attack.play()
                     self.fx_attack_channel.play(self.fx_attack)
 
         if self.attacking == True:
+            self._get_attack_rect()
             self.attack.anim_counter += 1
 
         if self.attack.anim_counter == self.attack.frames:
@@ -207,7 +207,7 @@ class Player(pygame.sprite.Sprite):
             self.screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x - self.X_CENTER + ATTACK_X, self.rect.y - self.Y_CENTER + ATTACK_Y))
         # Dying?
         elif self.dying:
-            self.image = self.death.image(repeat=False)
+            self.image = self.death.image()
             self.image = self.image.convert_alpha()
             self.screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
         # Player walking, jumping or idle

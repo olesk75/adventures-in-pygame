@@ -3,31 +3,37 @@ import pygame
 # Animation class
 class Animation():
     # Getting a sprite sheet
-    def __init__(self, sprite_sheet, row, frames, speed):
+    def __init__(self, sprite_sheet, row, frames, speed, attack_anim = False):
         self.ss = sprite_sheet
         self.row = row
         self.frames = frames
         self.sprites = []
         self.speed = speed   # Effecticely the ms we wait for next animation frame - bigger means slower
+        self.attack_anim = attack_anim  # different rules for attack animations than walk animations
         self.active = False  # We begin in the stopped state
         for frame in range(frames):
             self.sprites.append(sprite_sheet.get_image(row, frame))
         
         self.anim_counter = 0
-        self.start_ticks = pygame.time.get_ticks()
+        self.last_run = 0
+        self.repeat_start = 0  # ticks when we're done with one animation frame cycle
         
-    def image(self, repeat=True):
-        sprite = self.sprites[self.anim_counter]
-        self.repeat = repeat
-        self.elapsed = pygame.time.get_ticks() - self.start_ticks
-        if self.elapsed > self.speed: # animate every half second
-            if self.active == True:
-                self.anim_counter += 1
-            if self.anim_counter >= len(self.sprites) - 1 and self.repeat == True:
-                self.anim_counter = 0
-            self.start_ticks = pygame.time.get_ticks()  # reset tick counter
+    def image(self, repeat_delay=0):
+        now = pygame.time.get_ticks()
+        time_since_last = now - self.last_run  # ticks since last run
+        if now > self.repeat_start + repeat_delay:
 
+            if self.active == True and time_since_last > self.speed:  # time for a new frame
+                self.anim_counter += 1
+                if self.anim_counter == len(self.sprites):    
+                    self.anim_counter = 0
+                    self.repeat_start = now
+
+                self.last_run = now
+        
+        sprite = self.sprites[self.anim_counter]
         return sprite
+
 
     # Scale override is non-funtional
     def _show_anim(self, screen, scale_override=False):
@@ -48,7 +54,7 @@ class Animation():
         for sprite in self.sprites:
             pygame.draw.rect(self.screen, GRAY, (frame_x + n * sprite_width, frame_y, sprite_width, sprite_height), border_radius)
             pygame.draw.rect(self.screen, GRAY, (frame_x, frame_y + n * sprite_height , sprite_width, sprite_height), border_radius)
-            sprite = picture = pygame.transform.scale(sprite, (sprite_width, sprite_height)).convert_alpha()
+            sprite  = pygame.transform.scale(sprite, (sprite_width, sprite_height)).convert_alpha()
             self.screen.blit(sprite, (frame_x + n * sprite_width, frame_y))  # draw sprites horisontally
             self.screen.blit(sprite, (frame_x, frame_y + n * sprite_height))
             n += 1
