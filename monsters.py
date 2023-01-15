@@ -63,7 +63,7 @@ class Monster(pygame.sprite.Sprite):
         # Creating an ATTACK rect 
         if self.attacking:
             y = y + (self.data.detection_range_high * 100)
-            height = self.height / 2 + (self.data.detection_range_high * 100)
+            height = self.height / 2
             if self.flip:
                 self.rect_attack = pygame.Rect(x - self.data.attack_range, y, self.data.attack_range, height) 
             else:
@@ -88,13 +88,13 @@ class Monster(pygame.sprite.Sprite):
                         self.at_bottom = True                     
                         self.vel_y = 0
                 
-                # Preventing falling off left/right edge of platforms if there is NO collision (-1) to the side and down
+                # Preventing falling off left/right edge of platforms if there is NO collision (-1) to the side and down (and it's not a jumping mob
                 left_fall_rect  = pygame.Rect(self.rect.x + dx + 35, self.rect.y + 30 , self.width - self.X_ADJ, self.height - self.Y_ADJ)
                 right_fall_rect = pygame.Rect(self.rect.x + dx - 35, self.rect.y + 30 , self.width - self.X_ADJ, self.height - self.Y_ADJ)
-                if  left_fall_rect.collidelist(all_platforms) == -1:
+                if  left_fall_rect.collidelist(all_platforms) == -1 and not self.data.attack_jumper:
                     self.data.direction = -1
                     self.flip = True
-                if right_fall_rect.collidelist(all_platforms) == -1:
+                if right_fall_rect.collidelist(all_platforms) == -1 and not self.data.attack_jumper:
                     self.data.direction = 1
                     self.flip = False
                 
@@ -119,12 +119,28 @@ class Monster(pygame.sprite.Sprite):
         self.attack_anim.active = False
         self.rect_attack = pygame.Rect(0,0,0,0)
 
-    def update(self, scroll, platforms_sprite_group):
+    def update(self, scroll, platforms_sprite_group, player):
         
+        # if we've fallen off the screen, kill sprite TODO: doesn't wor
+        #print(f'self.rect.top: {self.rect.top}, player.world_data.SCREEN_HEIGHT: {player.world_data.SCREEN_HEIGHT}')
+        # if int(self.rect.top) > int(player.world_data.SCREEN_HEIGHT):
+        #     self.kill()
+        #     print('die')
+
         # we set start speeds for x and y
         dy = 0
         if self.attacking:
             dx = self.data.speed_attacking
+
+            # Sometimes a jumping mob can jump if player is higher than the mob and mob is attacking
+            #print(f'player.rect.centery: {player.rect.centery}, self.rect.center: {self.rect.centery }')
+            max_dist_centery = -7
+            player_above_mob = player.rect.centery -  (self.rect.centery + max_dist_centery)
+            #print(f'player is this much above attacking mob: {player_above_mob}')
+
+            if self.data.attack_jumper and player_above_mob < 0 and self.vel_y == 0:  # player is higher up and we're not already jumping
+                if 0.001  > random.random():  
+                    self.vel_y = -10
         else:
             dx = self.data.speed_walking  #  we start at walking speed
 
@@ -133,6 +149,8 @@ class Monster(pygame.sprite.Sprite):
                 dx *= -1
                 self.data.direction *= -1
                 self.flip = not self.flip
+
+
                 
 
 

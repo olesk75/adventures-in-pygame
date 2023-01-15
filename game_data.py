@@ -27,6 +27,7 @@ class MonsterData():
             self.detection_range = 200
             self.detection_range_high = False
             self.attack_range = 50
+            self.attack_jumper = False
             self.attack_instant_damage = True  # if the mob attacks, and the player is in range, player dies
             self.attack_delay = 0  # delay between attacks (ms)
             self.attack_damage = 100
@@ -39,6 +40,7 @@ class MonsterData():
             self.speed_walking = 1
             self.speed_attacking = 0
             self.detection_range = 400
+            self.attack_jumper = False
             self.detection_range_high = False
             self.attack_range = 400
             self.attack_instant_damage = False  # the mob spawns an arrow wchi the player can evade
@@ -53,6 +55,7 @@ class MonsterData():
             self.speed_walking = 4
             self.speed_attacking = 5
             self.detection_range = 400
+            self.attack_jumper = True
             self.detection_range_high = True
             self.attack_range = 150
             self.attack_instant_damage = True

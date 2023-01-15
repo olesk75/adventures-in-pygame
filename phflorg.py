@@ -255,7 +255,7 @@ while run:
 
         for mob in monster_list:
             mob.walk_anim.active = True
-            mob.update(scroll, phflorg_world.platforms_sprite_group)
+            mob.update(scroll, phflorg_world.platforms_sprite_group, player)
             mob.draw(screen)
 
             if not mob.dead:
