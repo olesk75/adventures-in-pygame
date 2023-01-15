@@ -41,9 +41,11 @@ class Player(pygame.sprite.Sprite):
         self.fx_attack = sounds[0]
         self.fx_jump = sounds[1]
         self.fx_die = sounds[2]
+        self.fx_hit = sounds[3]
         self.fx_attack.set_volume(0.5)
         self.fx_jump.set_volume(0.5)
         self.fx_die.set_volume(0.5)
+        self.fx_hit.set_volume(0.2)
 
         self.fx_attack_channel = pygame.mixer.Channel(0)  # we sue separate channel to avoid overlapping sounds with repeat attacks
         
@@ -92,6 +94,7 @@ class Player(pygame.sprite.Sprite):
             return False
 
     def hit(self, damage, flip):
+        self.fx_hit.play()
         # Adjust health and bars
         self.health_current -= damage
         if self.health_current <= 0:

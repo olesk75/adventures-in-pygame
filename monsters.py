@@ -1,7 +1,8 @@
+import random
 import pygame
 
 class Monster(pygame.sprite.Sprite):
-    def __init__(self,x, y, walk_anim, attack_anim, ai):
+    def __init__(self,x, y, walk_anim, attack_anim, mob_data):
         """
         The Player class constructor - note that x and y is only for initialization,
         the player position will be tracked by the rect
@@ -9,7 +10,7 @@ class Monster(pygame.sprite.Sprite):
         super().__init__()
         self.gravity = 0.5 
         
-        self.ai = ai  # a MonsterAI() instance
+        self.data = mob_data  # a MonsterData() instance
 
         # Setting up walk animation
         self.walk_anim = walk_anim
@@ -49,19 +50,24 @@ class Monster(pygame.sprite.Sprite):
 
         # Creating a DETECTION rect where to mob will attack if the player rect collides
         x = self.rect.centerx
-        y = self.rect.top
+        y = self.rect.top + 30 + (self.data.detection_range_high * -100)
+
+        width = self.data.detection_range
+        height = self.height - 100 + (self.data.detection_range_high * 200)
 
         if self.flip:       
-            self.rect_detect = pygame.Rect(x - self.ai.detection_range, y, self.ai.detection_range, self.height) 
+            self.rect_detect = pygame.Rect(x - self.data.detection_range, y, width, height) 
         else:
-            self.rect_detect = pygame.Rect(x, y, self.ai.detection_range, self.height) 
+            self.rect_detect = pygame.Rect(x, y,width, height) 
 
         # Creating an ATTACK rect 
         if self.attacking:
+            y = y + (self.data.detection_range_high * 100)
+            height = self.height / 2 + (self.data.detection_range_high * 100)
             if self.flip:
-                self.rect_attack = pygame.Rect(x - self.ai.attack_range, y, self.ai.attack_range, self.height) 
+                self.rect_attack = pygame.Rect(x - self.data.attack_range, y, self.data.attack_range, height) 
             else:
-                self.rect_attack = pygame.Rect(x , y, self.ai.attack_range, self.height) 
+                self.rect_attack = pygame.Rect(x , y, self.data.attack_range, height) 
             
 
 
@@ -86,18 +92,18 @@ class Monster(pygame.sprite.Sprite):
                 left_fall_rect  = pygame.Rect(self.rect.x + dx + 35, self.rect.y + 30 , self.width - self.X_ADJ, self.height - self.Y_ADJ)
                 right_fall_rect = pygame.Rect(self.rect.x + dx - 35, self.rect.y + 30 , self.width - self.X_ADJ, self.height - self.Y_ADJ)
                 if  left_fall_rect.collidelist(all_platforms) == -1:
-                    self.ai.direction = -1
+                    self.data.direction = -1
                     self.flip = True
                 if right_fall_rect.collidelist(all_platforms) == -1:
-                    self.ai.direction = 1
+                    self.data.direction = 1
                     self.flip = False
                 
                 # Turning around if hitting a solid tile  TODO: separate collision and non-collision tiles
                 tile_collider_rect = pygame.Rect(self.rect.x + dx, self.rect.y, self.width - self.X_ADJ, (self.height - self.Y_ADJ) - 10)
                 if platform.rect.colliderect(tile_collider_rect):
-                    #print(f'crash: {self.ai.monster}')
-                    self.ai.direction *= -1
-                    self.rect.x += dx * 2  * self.ai.direction # far enough to avoid re-triggering in an endless loop
+                    #print(f'crash: {self.data.monster}')
+                    self.data.direction *= -1
+                    self.rect.x += dx * 2  * self.data.direction # far enough to avoid re-triggering in an endless loop
                     self.flip = not self.flip
 
     def attack_start(self): 
@@ -118,9 +124,17 @@ class Monster(pygame.sprite.Sprite):
         # we set start speeds for x and y
         dy = 0
         if self.attacking:
-            dx = self.ai.speed_attacking
+            dx = self.data.speed_attacking
         else:
-            dx = self.ai.speed_walking  #  we start at walking speed
+            dx = self.data.speed_walking  #  we start at walking speed
+
+            # We throw in random cahnges in direction, different by mod type
+            if self.data.random_turns / 100  > random.random():
+                dx *= -1
+                self.data.direction *= -1
+                self.flip = not self.flip
+                
+
 
         # we compensate for scrolling
         self.scroll = scroll
@@ -131,7 +145,7 @@ class Monster(pygame.sprite.Sprite):
         dy += self.vel_y
         
         # Update rectangle position
-        self.rect.x += dx * self.ai.direction
+        self.rect.x += dx * self.data.direction
         self.rect.y += dy 
 
         if not self.dead:
@@ -143,7 +157,7 @@ class Monster(pygame.sprite.Sprite):
 
         # Updating the ready_to_attack flag 
         now = pygame.time.get_ticks()
-        if now - self.last_attack > self.ai.attack_delay:
+        if now - self.last_attack > self.data.attack_delay:
             self.ready_to_attack = True
         else:
             self.ready_to_attack = False
@@ -153,7 +167,7 @@ class Monster(pygame.sprite.Sprite):
         # As collision detection is done with the rectangle, it's size and shape matters
         if self.attacking:
             # If we have a diffent size attack sprites, we need to take scale into account
-            self.image = self.attack_anim.image(self.ai.attack_delay).convert_alpha()
+            self.image = self.attack_anim.image(self.data.attack_delay).convert_alpha()
             x_correction = self.attack_anim.ss.x_dim - self.walk_anim.ss.x_dim
             y_correction = self.attack_anim.ss.y_dim - self.walk_anim.ss.y_dim
             x = (self.rect.x - self.X_CENTER) - x_correction

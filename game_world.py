@@ -1,7 +1,16 @@
+"""
+WorldData (named tuple class)       : basic world information
+GameTile (Sprite class)             : the background tiles, including platforms
+GameTileAnimation (GameTile class)  : animated background tiles (flames, torches etc.)
+GameWorld (class)                   : contains sprite groups and lists of sprites loaded from the level file
+GamePanel(class)                    : contans the player information for the screen - score, health etc.
+"""
+
+
 import pygame
 import csv
 from typing import NamedTuple
-from game_data import MonsterAI
+from game_data import MonsterData
 from game_data import monsters
 
 
@@ -143,5 +152,59 @@ class GameWorld():
                             x_pos = x * self.tile_size
                             y_pos = y * self.tile_size
                             
-                            self.monster_import_list.append({'monster': monster_type, 'x': x_pos, 'y': y_pos, 'ai': MonsterAI(monster_type)})
+                            self.monster_import_list.append({'monster': monster_type, 'x': x_pos, 'y': y_pos, 'ai': MonsterData(monster_type)})
 
+
+class GamePanel():
+    def __init__(self, screen, player):
+        self.screen = screen
+        self.player = player
+
+        # Define fonts
+        self.font_small = pygame.font.SysFont('Lucida Sans', 40)
+        self.font_big = pygame.font.SysFont('Lucida Sans', 60)
+
+        self.blink_counter = 0
+        self.blink = False
+        self.last_health = 0
+        
+    # Function for text output
+    def _draw_text(self, text, font, text_col, x, y):
+        img = font.render(text, True, text_col)
+        self.screen.blit(img, (x, y))
+
+    def _blink_bar(self, bar_frame, duration):
+        if self.blink == True:
+            if self.blink_counter < duration:
+                self.blink_counter += 1
+                pygame.draw.rect(self.screen, (255,0,0), (20,40,self.player.health_bar_max_length+4,20) ,2 )
+            else:
+                self.blink_counter = 0
+                self.blink = False
+        else:
+            if self.player.health_current < self.last_health: 
+                self.blink = True
+        
+            
+
+    def draw(self):
+        WHITE = (255, 255, 255)
+        self._draw_text(f'SCORE: {self.player.score}', self.font_small, WHITE, 20, 10)  # score
+
+        # background bar, white and semi transparent
+        bar_frame = pygame.Surface((self.player.health_bar_max_length+4,20), pygame.SRCALPHA)   # per-pixel alpha
+        bar_frame.fill((255,255,255,128))                         # notice the alpha value in the color
+        self.screen.blit(bar_frame, (20,40))
+
+        self._blink_bar(bar_frame, 10)  # blink if we should
+
+        ratio = self.player.health_bar_length / self.player.health_bar_max_length
+        GREEN = 255 * ratio
+        RED = 255 * (1-ratio)
+        BLUE = 0
+
+        health_bar = pygame.Surface((self.player.health_bar_length,16), pygame.SRCALPHA)   # per-pixel alpha
+        health_bar.fill((RED,GREEN,BLUE,200))                         # notice the alpha value in the color
+        self.screen.blit(health_bar, (22,42))
+    
+        self.last_health = self.player.health_current

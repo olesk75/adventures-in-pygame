@@ -2,11 +2,15 @@ import pygame
 import random
 import pickle
 
-from game_world import GameWorld, WorldData
+from game_world import GameWorld, WorldData, GamePanel
 from animation import Animation
 from spritesheet import SpriteSheet
 from player import Player
 from monsters import Monster, Projectile
+
+
+# Flags for debug functionality
+DEBUG_BOXES = True
 
 
 # Game variables in a named tuple (new in Python 3.6) - we pass this to instances who need it
@@ -64,10 +68,11 @@ font_small = pygame.font.SysFont('Lucida Sans', 40)
 font_big = pygame.font.SysFont('Lucida Sans', 60)
 
 # Load audio for player
-hit_fx = pygame.mixer.Sound('assets/sound/Hit/OGG/Hit 2 - Sound effects Pack 2.ogg')
+attack_fx = pygame.mixer.Sound('assets/sound/Hit/OGG/Hit 2 - Sound effects Pack 2.ogg')
 jump_fx = pygame.mixer.Sound('assets/sound/Jump/OGG/Jump 5 - Sound effects Pack 2.ogg')
 death_fx = pygame.mixer.Sound('assets/sound/Lose/OGG/Lose 7 - Sound effects Pack 2.ogg')
-player_sound_effects = [hit_fx, jump_fx, death_fx]
+hit_fx = pygame.mixer.Sound('assets/sound/Laser-weapon/OGG/Laser-weapon 8 - Sound effects Pack 2.ogg')
+player_sound_effects = [attack_fx, jump_fx, death_fx, hit_fx]
 
 # Load audio for world
 item_pickup_fx = pygame.mixer.Sound('assets/sound/Power-up/OGG/Powerup 7 - Sound effects Pack 2.ogg')
@@ -127,19 +132,6 @@ arrow_img = pygame.image.load('assets/arrow.png').convert_alpha()
 def draw_text(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
     screen.blit(img, (x, y))
-
-# Funtion to draw score and life panel
-def draw_panel():
-    draw_text(f'SCORE: {score}', font_small, WHITE, 0, 0)  # score
-
-
-    bar_frame = pygame.Surface((player.health_bar_max_length+4,20), pygame.SRCALPHA)   # per-pixel alpha
-    bar_frame.fill((255,255,255,128))                         # notice the alpha value in the color
-    screen.blit(bar_frame, (20,40))
-    #print(player.health_bar_max_length, player.health_bar_length)
-    health_bar = pygame.Surface((player.health_bar_length,16), pygame.SRCALPHA)   # per-pixel alpha
-    health_bar.fill((0,255,0,200))                         # notice the alpha value in the color
-    screen.blit(health_bar, (22,42))
 
 # Function for drawing the background
 def draw_bg(bg_scroll):
@@ -205,6 +197,7 @@ last_arrow = 0
 # Load previous high score
 high_score = load_high_score()
 
+panel = GamePanel(screen, player)
 
 """
 Main game loop
@@ -243,7 +236,7 @@ while run:
         player.draw(screen)
 
         # Draw panel
-        draw_panel()
+        panel.draw()
 
         # Check animation imports
         # skeleton_boss_anim_attack._show_anim(screen)
@@ -266,15 +259,15 @@ while run:
             mob.draw(screen)
 
             if not mob.dead:
-                pygame.draw.rect(screen, (0,0,255), mob.rect_detect, 2 )  # DEBUG: to see hitbox for detection (blue)
+                if DEBUG_BOXES:  pygame.draw.rect(screen, (0,0,255), mob.rect_detect, 2 )  # DEBUG: to see hitbox for detection (blue)
                 now = pygame.time.get_ticks()
                 
                 # Mob detecting player and starting attack...
                 if pygame.Rect.colliderect(player.rect, mob.rect_detect):
-                    # attack_start_time = mob.last_attack + mob.ai.attack_delay
+                    # attack_start_time = mob.last_attack + mob.data.attack_delay
                     # if now > attack_start_time:  # ...if enough time has passed
                     mob.attack_start()
-                    pygame.draw.rect(screen, (255,0,0), mob.rect_attack, 2 )  # DEBUG: to see hitbox for detection (red)
+                    if DEBUG_BOXES: pygame.draw.rect(screen, (255,0,0), mob.rect_attack, 2 )  # DEBUG: to see hitbox for detection (red)
                     
                 else:  # Mob not detecting player
                     if mob.attacking:
@@ -282,10 +275,10 @@ while run:
                 
                 # Mob attack: trigger attack if a) collision with mob, b) mob is in attack mode and c) mob is not already dead
                 if pygame.Rect.colliderect(player.rect, mob.rect_attack) and mob.attacking and not mob.dead:
-                    if mob.ai.attack_instadeath:  # typically melee
-                        player.hit(5, mob.flip)
+                    if mob.data.attack_instant_damage:  # typically melee
+                        player.hit(mob.data.attack_damage, mob.flip)
                         
-                    elif now - last_arrow > mob.ai.attack_delay:  # typically mob launching projectile
+                    elif now - last_arrow > mob.data.attack_delay:  # typically mob launching projectile
                         arrow = Projectile(mob.rect.centerx, mob.rect.centery, arrow_img)
 
                         #arrow.direction = mob.direction
@@ -315,7 +308,7 @@ while run:
                     # Check if mob hit
                     if pygame.Rect.colliderect(player.attack_rect, mob.rect): 
                         mob.vel_y = -5
-                        mob.ai.direction = -player.flip
+                        mob.data.direction = -player.flip
                         score += 100
                         mob.dead = True  # we run through the death anim sequence
                     # Check if projectile hit
@@ -351,10 +344,8 @@ while run:
 
                 # Reset all variables
                 game_over = False
-                player.alive = True
-                player.dying = False
-                player.dead = False
-                player.attacking = False
+                player = Player(phflorg_data.SCREEN_WIDTH // 2, phflorg_data.SCREEN_HEIGHT -150 , phflorg_data, phflorg_world, \
+                    player_anim_walk, player_anim_attack, player_anim_death, player_sound_effects)
 
                 score = 0
                 scroll = 0
@@ -362,7 +353,7 @@ while run:
                 
                 # Reset player position
                 
-                player.rect.center = (phflorg_data.SCREEN_WIDTH // 2, phflorg_data.SCREEN_HEIGHT - 150)
+                #player.rect.center = (phflorg_data.SCREEN_WIDTH // 2, phflorg_data.SCREEN_HEIGHT - 150)
                 phflorg_world.load(f'level{level}_data.csv')
 
                 fade_counter = 0
