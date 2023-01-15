@@ -19,7 +19,9 @@ class WorldData(NamedTuple):
     MAX_COLS: int
     TILE_SIZE: int
     TILE_TYPES: int
+    ANIMATION_TYPES: int
     OBJECT_TYPES: int
+    ANIMATIONS_DICT: dict
 
 class GameTile(pygame.sprite.Sprite):
     """
@@ -31,7 +33,28 @@ class GameTile(pygame.sprite.Sprite):
     def update(self, scroll):
         # Moves the rectangle of this sprite 
         self.rect.x += scroll
+
+class GameTileAnimation(GameTile):
+    """
+    Customized Sprite class which allows update with scroll value, which will be triggerd by spritegroup.update(scroll)
+    """
+    def __init__(self, animation):
+        super().__init__()
+        self.animation = animation
+        self.X_CENTER = self.animation.image().get_width() // 2
+        self.Y_CENTER = self.animation.image().get_height() // 2
+        self.sprites = self.animation.sprites
+        self.animation.active = True
+        
+    def update(self, scroll):
+        # Moves the rectangle of this sprite 
+        self.rect.x += scroll
         #print(f'scrolling {self.dx}, new x_pos: {self.rect.left}')
+    
+    def draw(self, screen):
+        self.image = self.animation.image().convert_alpha()
+        screen.blit(self.image, (self.rect.x, self.rect.y))
+
 
 class GameWorld():
     """
@@ -54,6 +77,7 @@ class GameWorld():
         self.platforms_sprite_group = pygame.sprite.Group()
         self.pickups_sprite_group = pygame.sprite.Group()
         self.decor_sprite_group = pygame.sprite.Group()
+        self.anim_objects_sprite_list = []  # we need custom draw method due to the animations for the underlying sprites, so list, not sprite group (we could override the group draw method)
 
         self.monster_import_list = []  # here we put all monsters from tile map, their type, x, y and AI properties
 
@@ -61,7 +85,13 @@ class GameWorld():
         self.level_file = level_file
         img_list = []
 
-        for x in range(self.data.TILE_TYPES):
+        # We null the list and sprite groups to avoid dupes when starting a new game without quitting
+        self.monster_import_list = []
+        self.platforms_sprite_group.empty()
+        self.pickups_sprite_group.empty()
+        self.decor_sprite_group.empty()
+
+        for x in range(self.data.TILE_TYPES + self.data.ANIMATION_TYPES):
             img = pygame.image.load(f'assets/tile/{x}.png').convert_alpha()
             img = pygame.transform.scale(img, (self.data.TILE_SIZE, self.data.TILE_SIZE))
             img_list.append(img)
@@ -89,12 +119,24 @@ class GameWorld():
                             elif int(tile) >= 9:  # TODO: simplify for now
                                 #self.decor[x][y] = int(tile)
                                 self.decor_sprite_group.add(sprite)
-                        elif int(tile) < self.data.TILE_TYPES + self.data.OBJECT_TYPES:
-                            obj_type = int(tile) - self.data.TILE_TYPES
+                        elif int(tile) < (self.data.ANIMATION_TYPES + self.data.TILE_TYPES):
+                            
+                            # SIMPLIFIED FOR NOW
+                            if int(tile) - self.data.TILE_TYPES == 0:  # fire
+                                animation = self.data.ANIMATIONS_DICT['fire']
+                            sprite = GameTileAnimation(animation)  # -> GameTile -> pygame.sprite.Sprite
+                            sprite.image = pygame.Surface((self.tile_size, self.tile_size), pygame.SRCALPHA)  # Empty image with space for tiles
+                            sprite.image.blit(img_list[int(tile)], (0, 0))  # we blit the right image onto the surface from top left
+                            sprite.rect = sprite.image.get_rect()  # we get the rect for the sprite
+                            sprite.rect.x = x * self.tile_size # we correct the x pos
+                            sprite.rect.y = y * self.tile_size # we correct the y pos
+                            self.anim_objects_sprite_list.append(sprite)
+
+                        else:
+                            obj_type = int(tile) - (self.data.TILE_TYPES + self.data.ANIMATION_TYPES)
                             monster_type = monsters[obj_type]
                             x_pos = x * self.tile_size
                             y_pos = y * self.tile_size
                             
                             self.monster_import_list.append({'monster': monster_type, 'x': x_pos, 'y': y_pos, 'ai': MonsterAI(monster_type)})
 
-        return(self.platforms_sprite_group, self.pickups_sprite_group, self.decor_sprite_group, self.monster_import_list)

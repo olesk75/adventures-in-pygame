@@ -1,5 +1,5 @@
 
-monsters = ['minotaur', 'ogre-archer']  # used to recognize tiles from level files
+monsters = ['minotaur', 'ogre-archer', 'skeleton-boss']  # used to recognize tiles from level files
 
 
 class MonsterAI():
@@ -24,6 +24,16 @@ class MonsterAI():
             self.attack_delay = 0  # delay between attacks (ms)
 
         if monster == 'ogre-archer':
+            #self.pattern == 2:  # Faster walking, full stop when attacking with bow
+            self.direction = 1  # right
+            self.speed_walking = 1
+            self.speed_attacking = 0
+            self.detection_range = 400
+            self.attack_range = 400
+            self.attack_instadeath = False  # the mob spawns an arrow wchi the player can evade
+            self.attack_delay = 2500  # delay between attacks (ms)
+
+        if monster == 'skeleton-boss':
             #self.pattern == 2:  # Faster walking, full stop when attacking with bow
             self.direction = 1  # right
             self.speed_walking = 1

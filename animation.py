@@ -3,13 +3,12 @@ import pygame
 # Animation class
 class Animation():
     # Getting a sprite sheet
-    def __init__(self, sprite_sheet, row, frames, speed, attack_anim = False):
+    def __init__(self, sprite_sheet, row, frames, speed):
         self.ss = sprite_sheet
         self.row = row
         self.frames = frames
         self.sprites = []
         self.speed = speed   # Effecticely the ms we wait for next animation frame - bigger means slower
-        self.attack_anim = attack_anim  # different rules for attack animations than walk animations
         self.active = False  # We begin in the stopped state
         for frame in range(frames):
             self.sprites.append(sprite_sheet.get_image(row, frame))

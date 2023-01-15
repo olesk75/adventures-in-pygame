@@ -142,7 +142,6 @@ class Monster(pygame.sprite.Sprite):
             self._create_rects()
             self._check_platform_collision(dx, dy, platforms_sprite_group)
         else:
-            print('OOOF')
             self.rect_attack = None
             self.rect_detect = None
 
