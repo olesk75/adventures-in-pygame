@@ -105,6 +105,7 @@ class GameWorld():
                     # For each tile we create a sprite and add to the relevant group
                     if int(tile) != -1:
                         if int(tile) < self.data.TILE_TYPES:  # -1 means empty
+                            """ Background tiles """
                             sprite = GameTile()  # we must initialize every time, or we're only updating the same sprite over and over
                             sprite.image = pygame.Surface((self.tile_size, self.tile_size), pygame.SRCALPHA)  # Empty image with space for tiles
                             sprite.image.blit(img_list[int(tile)], (0, 0))  # we blit the right image onto the surface from top left
@@ -112,15 +113,18 @@ class GameWorld():
                             sprite.rect.x = x * self.tile_size # we correct the x pos
                             sprite.rect.y = y * self.tile_size # we correct the y pos
 
-                            if int(tile) <= 8:  # platforms
+                            if int(tile) <= 8:
+                                """ Platforms """
                                 self.platforms_sprite_group.add(sprite)
                                 #print(f'Added platform sprite to group with x: {x} and y: {y} and tile: {tile}, which now containts {len(self.platforms_sprite_group.sprites())} sprites\n')  # DEBUG
 
                             elif int(tile) >= 9:  # TODO: simplify for now
+                                """ Decor (rocks, grass, boxes etc. """
                                 #self.decor[x][y] = int(tile)
                                 self.decor_sprite_group.add(sprite)
+                        
                         elif int(tile) < (self.data.ANIMATION_TYPES + self.data.TILE_TYPES):
-                            
+                            """ Animated tiles (fires, birds etc.) """    
                             # SIMPLIFIED FOR NOW
                             if int(tile) - self.data.TILE_TYPES == 0:  # fire
                                 animation = self.data.ANIMATIONS_DICT['fire']
@@ -133,6 +137,7 @@ class GameWorld():
                             self.anim_objects_sprite_list.append(sprite)
 
                         else:
+                            """ Monsters """
                             obj_type = int(tile) - (self.data.TILE_TYPES + self.data.ANIMATION_TYPES)
                             monster_type = monsters[obj_type]
                             x_pos = x * self.tile_size

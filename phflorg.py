@@ -103,12 +103,12 @@ p_sprite_sheet = SpriteSheet(pygame.image.load('assets/character-sprites2.png').
 p_sprite_sheet_oversize = SpriteSheet(pygame.image.load('assets/character-sprites2.png').convert_alpha(), 64*3, 64*3, BLACK, 2)
 player_anim_walk = Animation(p_sprite_sheet, row=11, frames=9, speed=75)
 player_anim_attack = Animation(p_sprite_sheet_oversize, row=10, frames=6, speed=30)
-player_anim_death = Animation(p_sprite_sheet, row=20, frames=6, speed=2000)
+player_anim_death = Animation(p_sprite_sheet, row=20, frames=6, speed=800)
 
 # Create monster animations
 minotaur_ss = SpriteSheet(pygame.image.load('assets/minotaur-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
 minotaur_anim_walk = Animation(minotaur_ss, row=11, frames=9, speed=50)
-minotaur_anim_attack = Animation(minotaur_ss, row=7, frames=8, speed=50)
+minotaur_anim_attack = Animation(minotaur_ss, row=7, frames=8, speed=75)
 ogre_archer_ss = SpriteSheet(pygame.image.load('assets/ogre-archer-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
 ogre_anim_walk = Animation(ogre_archer_ss, row=11, frames=9, speed=50)
 ogre_anim_attack = Animation(ogre_archer_ss, row=19, frames=13, speed=100)
@@ -277,13 +277,14 @@ while run:
                     pygame.draw.rect(screen, (255,0,0), mob.rect_attack, 2 )  # DEBUG: to see hitbox for detection (red)
                     
                 else:  # Mob not detecting player
-                    mob.attack_stop()  # if we move out of range, the mob will stop attacking
+                    if mob.attacking:
+                        mob.attack_stop()  # if we move out of range, the mob will stop attacking
                 
                 # Mob attack: trigger attack if a) collision with mob, b) mob is in attack mode and c) mob is not already dead
                 if pygame.Rect.colliderect(player.rect, mob.rect_attack) and mob.attacking and not mob.dead:
                     if mob.ai.attack_instadeath:  # typically melee
                         player.hit(5, mob.flip)
-                        mob.attacking = False
+                        
                     elif now - last_arrow > mob.ai.attack_delay:  # typically mob launching projectile
                         arrow = Projectile(mob.rect.centerx, mob.rect.centery, arrow_img)
 
@@ -325,7 +326,6 @@ while run:
 
     else:  # Game over 
         if wait_counter:
-            print(wait_counter)
             wait_counter -= 1
         elif fade_counter < phflorg_data.SCREEN_WIDTH / 2:
             fade_counter += 15

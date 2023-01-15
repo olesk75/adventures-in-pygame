@@ -183,7 +183,7 @@ class Player(pygame.sprite.Sprite):
             self._get_attack_rect()
             self.attack.active = True 
 
-        print(self.attack.anim_counter, self.attack.frames)
+        # print(self.attack.anim_counter, self.attack.frames)
         if self.attack.anim_counter == self.attack.frames -1:
             self.attacking = False
             self.attack.active = False

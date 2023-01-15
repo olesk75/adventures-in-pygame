@@ -48,8 +48,9 @@ class Monster(pygame.sprite.Sprite):
         # Create the detection and attack rect which we will use for collision detection
 
         # Creating a DETECTION rect where to mob will attack if the player rect collides
-        x = self.rect.center[0]
+        x = self.rect.centerx
         y = self.rect.top
+
         if self.flip:       
             self.rect_detect = pygame.Rect(x - self.ai.detection_range, y, self.ai.detection_range, self.height) 
         else:
@@ -57,12 +58,6 @@ class Monster(pygame.sprite.Sprite):
 
         # Creating an ATTACK rect 
         if self.attacking:
-            dx = self.ai.speed_attacking  # once we're attacking we speed up
-                    
-            # The attack rect is an offset from the mob rect
-            x = self.rect.center[0]
-            y = self.rect.top
-
             if self.flip:
                 self.rect_attack = pygame.Rect(x - self.ai.attack_range, y, self.ai.attack_range, self.height) 
             else:
@@ -112,6 +107,7 @@ class Monster(pygame.sprite.Sprite):
             self.attack_anim.active = True
             self.last_attack = pygame.time.get_ticks()
 
+
     def attack_stop(self): 
         self.attacking = False  # set the "is attacking" flag to true
         self.attack_anim.active = False
@@ -156,8 +152,13 @@ class Monster(pygame.sprite.Sprite):
     def draw(self, screen):
         # As collision detection is done with the rectangle, it's size and shape matters
         if self.attacking:
+            # If we have a diffent size attack sprites, we need to take scale into account
             self.image = self.attack_anim.image(self.ai.attack_delay).convert_alpha()
-            screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
+            x_correction = self.attack_anim.ss.x_dim - self.walk_anim.ss.x_dim
+            y_correction = self.attack_anim.ss.y_dim - self.walk_anim.ss.y_dim
+            x = (self.rect.x - self.X_CENTER) - x_correction
+            y = (self.rect.y - self.Y_CENTER) - y_correction
+            screen.blit(pygame.transform.flip( self.image, self.flip, False), (x, y))
         elif self.dead:
             # Spin sprite
             angle = 5
