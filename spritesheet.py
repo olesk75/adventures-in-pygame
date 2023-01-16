@@ -9,7 +9,7 @@ class SpriteSheet():
         self.scale = scale
         self.transp_color = transp_color
 
-    def get_image(self, row, frame):
+    def get_image(self, row, frame) -> pygame.Surface:
         x_start = frame * self.x_dim
         y_start = row * self.y_dim
 

@@ -1,5 +1,5 @@
 """
-WorldData (named tuple class)       : basic world information
+WorldData (dataclass)               : basic world information
 GameTile (Sprite class)             : the background tiles, including platforms
 GameTileAnimation (GameTile class)  : animated background tiles (flames, torches etc.)
 GameWorld (class)                   : contains sprite groups and lists of sprites loaded from the level file
@@ -9,13 +9,13 @@ GamePanel(class)                    : contans the player information for the scr
 
 import pygame
 import csv
-from typing import NamedTuple
 from game_data import MonsterData
 from game_data import monsters
+from dataclasses import dataclass
 
 
-# Game variables in a named tuple (new in Python 3.6)
-class WorldData(NamedTuple):
+@dataclass
+class WorldData:
     SCREEN_WIDTH: int
     SCREEN_HEIGHT: int
     LEVEL_WIDTH: int
@@ -39,7 +39,7 @@ class GameTile(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         
-    def update(self, scroll):
+    def update(self, scroll) -> None:
         # Moves the rectangle of this sprite 
         self.rect.x += scroll
 
@@ -55,12 +55,12 @@ class GameTileAnimation(GameTile):
         self.sprites = self.animation.sprites
         self.animation.active = True
         
-    def update(self, scroll):
+    def update(self, scroll) -> None:
         # Moves the rectangle of this sprite 
         self.rect.x += scroll
         #print(f'scrolling {self.dx}, new x_pos: {self.rect.left}')
     
-    def draw(self, screen):
+    def draw(self, screen) -> None:
         self.image = self.animation.image().convert_alpha()
         screen.blit(self.image, (self.rect.x, self.rect.y))
 
@@ -70,7 +70,7 @@ class GameWorld():
     All non-background tiles in the game (not player, not mobs)
     world_data: 2D matrix of all objects in game
 
-    We return sprite groups of all objects    
+    We build sprite groups of all objects    
 
     """
     def __init__(self, game_data):
@@ -90,7 +90,7 @@ class GameWorld():
 
         self.monster_import_list = []  # here we put all monsters from tile map, their type, x, y and AI properties
 
-    def load(self, level_file):
+    def load(self, level_file) -> None:
         self.level_file = level_file
         img_list = []
 
@@ -169,11 +169,11 @@ class GamePanel():
         self.last_health = 0
         
     # Function for text output
-    def _draw_text(self, text, font, text_col, x, y):
+    def _draw_text(self, text, font, text_col, x, y) -> None:
         img = font.render(text, True, text_col)
         self.screen.blit(img, (x, y))
 
-    def _blink_bar(self, bar_frame, duration):
+    def _blink_bar(self, bar_frame, duration) -> None:
         if self.blink == True:
             if self.blink_counter < duration:
                 self.blink_counter += 1
@@ -187,7 +187,7 @@ class GamePanel():
         
             
 
-    def draw(self):
+    def draw(self) -> None:
         WHITE = (255, 255, 255)
         self._draw_text(f'SCORE: {self.player.score}', self.font_small, WHITE, 20, 10)  # score
 

@@ -159,14 +159,9 @@ Authors: bluecarrot16, Johannes Sj?lund (wulax), Stephen Challener (Redshrike), 
     - https://opengameart.org/content/lpc-weapons-two-bows-a-spear-and-a-trident
 
 ALSO (jewl icoins)
-
 32x32 pixel icons using DawnBringer's 16 color palette.
-
 Made for Heroine Dusk.
-
 Includes a blue Sapphire, green Emerald, red Ruby, and white Diamond.
-
-Please contact me if you would like to use this work under a different license.
-
-Attribution Instructions: 
 Please include my name "Clint Bellanger" among your credits. Optionally, also include a link to this page or to http://clintbellanger.net or to http://heroinedusk.com
+
+Original wood and dungeon doors by Lanea Zimmerman (AKA Sharm).

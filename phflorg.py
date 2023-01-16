@@ -10,7 +10,7 @@ from monsters import Monster, Projectile
 
 
 # Flags for debug functionality
-DEBUG_BOXES = True
+DEBUG_BOXES = False
 
 
 # Game variables in a named tuple (new in Python 3.6) - we pass this to instances who need it
@@ -128,13 +128,14 @@ skeleton_boss_anim_death = Animation(skeleton_boss_ss, row=20, frames=6, speed=7
 # load projectiles (no animation variety)
 arrow_img = pygame.image.load('assets/arrow.png').convert_alpha()
 
+
 # Function for text output
-def draw_text(text, font, text_col, x, y):
+def draw_text(text, font, text_col, x, y)-> None:
     img = font.render(text, True, text_col)
     screen.blit(img, (x, y))
 
 # Function for drawing the background
-def draw_bg(bg_scroll):
+def draw_bg(bg_scroll) -> None:
     SKY_BLUE = (130, 181, 210)
     screen.fill(SKY_BLUE)
     width = sky_img.get_width()
@@ -147,7 +148,7 @@ def draw_bg(bg_scroll):
 
 
 # Function to load hish score from file
-def load_high_score():
+def load_high_score() -> int:
     with open('highscore.dat', 'rb') as high_score_file:
         try:
             high_score = pickle.load(high_score_file)
@@ -158,12 +159,12 @@ def load_high_score():
     return(high_score)
 
 # Function to save score to file
-def save_high_score(high_score):
+def save_high_score(high_score) -> None:
     with open('highscore.dat', 'wb') as save_file:
         pickle.dump(high_score, save_file)    
 
 
-def load_monsters(phflorg_worldmonster_import_list):
+def load_monsters(phflorg_worldmonster_import_list) -> list:
     monster_list= []
     for mob in phflorg_worldmonster_import_list:
         if mob['monster'] == 'minotaur':
@@ -279,10 +280,8 @@ while run:
                         player.hit(mob.data.attack_damage, mob.flip)
                         
                     elif now - last_arrow > mob.data.attack_delay:  # typically mob launching projectile
-                        arrow = Projectile(mob.rect.centerx, mob.rect.centery, arrow_img)
+                        arrow = Projectile(mob.rect.centerx, mob.rect.centery, arrow_img, flip = mob.flip, scale = 2)
 
-                        #arrow.direction = mob.direction
-                        arrow.flip = mob.flip
                         # WAIT UNTIL END OF ATTACK ANIMATION
                         if mob.attack_anim.anim_counter == 10:
                             projectile_group.add(arrow)
@@ -299,9 +298,7 @@ while run:
                     if pygame.Rect.colliderect(player.rect, projectile) and not player.dying:
                         player.hit(100, projectile.flip)
                         projectile.kill()
-                    # Collision with platform
-                    if pygame.sprite.spritecollideany(projectile, phflorg_world.platforms_sprite_group) and not player.dying:
-                        projectile.kill()
+
 
                 # If player is attacking
                 if player.attacking:

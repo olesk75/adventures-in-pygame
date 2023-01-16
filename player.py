@@ -70,7 +70,7 @@ class Player(pygame.sprite.Sprite):
         self.world_x_pos = x + self.X_CENTER # player x position across the whole world, not just screen
 
 
-    def _get_attack_rect(self):
+    def _get_attack_rect(self) -> None:
         # Returns a the attack rect for collision detection
         # The attack rect is an offset from the player rect
         if self.flip:
@@ -83,7 +83,7 @@ class Player(pygame.sprite.Sprite):
         
         # pygame.draw.rect(self.screen, (255,0,0), attack_rect, 2 )  # DEBUG: to see hitbox for weapon
 
-    def check_game_over(self):
+    def check_game_over(self) -> bool:
         # Manage the time from player is hit and dies until the death animation is complete and GAME OVER screen shows
         # print(f'self.death.anim_counter ({self.death.anim_counter})> self.death.frames ({self.death.frames})')  # DEBUG
         if  self.death.anim_counter == self.death.frames -1:
@@ -93,7 +93,7 @@ class Player(pygame.sprite.Sprite):
         else:
             return False
 
-    def hit(self, damage, flip):
+    def hit(self, damage, flip) -> None:
         self.fx_hit.play()
         # Adjust health and bars
         self.health_current -= damage
@@ -123,19 +123,19 @@ class Player(pygame.sprite.Sprite):
         # Update world position
         self.world_x_pos += x_bounce * direction
 
-    def heal(self, damage):
+    def heal(self, damage) -> None:
         self.health_current += damage
         if self.health_current > self.health_max:
             self.health_current = self.health_max
         self.health_bar_length = int(self.world_data.SCREEN_WIDTH / 6 * self.health_current / 1000)
 
 
-    def die(self):
+    def die(self) -> None:
         if not self.dying:
             self.dying = True  # we start the death sequence
             self.death.anim_counter = 0  # Animation counter the death animation
 
-    def move(self):
+    def move(self) -> list:
         distance = 5  # How far we move in one keypress
         dx = 0
         dy = 0
@@ -246,7 +246,7 @@ class Player(pygame.sprite.Sprite):
 
         return [scroll, self.score]
 
-    def draw(self, screen):
+    def draw(self, screen) -> None:
         self.screen = screen
         # First test if we're busy doing something 
         # Attacking?      
