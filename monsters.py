@@ -8,7 +8,7 @@ import random
 import pygame
 
 class Monster(pygame.sprite.Sprite):
-    def __init__(self,x, y, walk_anim, attack_anim, mob_data):
+    def __init__(self,x, y, walk_anim, attack_anim, mob_data, cast_anim = False):
         """
         The Player class constructor - note that x and y is only for initialization,
         the player position will be tracked by the rect
@@ -24,8 +24,10 @@ class Monster(pygame.sprite.Sprite):
         self.width = walk_anim.ss.x_dim * walk_anim.ss.scale
         self.height = walk_anim.ss.y_dim * walk_anim.ss.scale
 
-        # Setting up attack animation
+        # Setting up attack and castr animations
         self.attack_anim = attack_anim
+        self.cast_anim = cast_anim
+
 
         # Setting up death animation
         self.dead = False
@@ -42,13 +44,15 @@ class Monster(pygame.sprite.Sprite):
 
         self.rect.center = (x + self.X_CENTER, y + self.Y_CENTER)
         self.vel_y = 0
-        self.flip = False
+        self.turned = False
         self.at_bottom = False
         self.attacking = False
         self.last_attack = 0
         self.ready_to_attack = True  
         self.score_flag = False  # We can only add more score when this is True
         self.prev_y_lvl = self.rect.y  # Tracking vertical progress
+
+        self.busy_casting = None  # if the mob is busy casting, this is what it is casting
 
 
     def _create_rects(self) -> None:
@@ -61,7 +65,7 @@ class Monster(pygame.sprite.Sprite):
         width = self.data.detection_range
         height = self.height - 100 + (self.data.detection_range_high * 200)
 
-        if self.flip:       
+        if self.turned:       
             self.rect_detect = pygame.Rect(x - self.data.detection_range, y, width, height) 
         else:
             self.rect_detect = pygame.Rect(x, y,width, height) 
@@ -70,7 +74,7 @@ class Monster(pygame.sprite.Sprite):
         if self.attacking:
             y = y + (self.data.detection_range_high * 100)
             height = self.height / 2
-            if self.flip:
+            if self.turned:
                 self.rect_attack = pygame.Rect(x - self.data.attack_range, y, self.data.attack_range, height) 
             else:
                 self.rect_attack = pygame.Rect(x , y, self.data.attack_range, height) 
@@ -99,10 +103,10 @@ class Monster(pygame.sprite.Sprite):
                 right_fall_rect = pygame.Rect(self.rect.x + dx - 35, self.rect.y + 30 , self.width - self.X_ADJ, self.height - self.Y_ADJ)
                 if  left_fall_rect.collidelist(all_platforms) == -1 and not self.data.attack_jumper:
                     self.data.direction = -1
-                    self.flip = True
+                    self.turned = True
                 if right_fall_rect.collidelist(all_platforms) == -1 and not self.data.attack_jumper:
                     self.data.direction = 1
-                    self.flip = False
+                    self.turned = False
                 
                 # Turning around if hitting a solid tile  TODO: separate collision and non-collision tiles
                 tile_collider_rect = pygame.Rect(self.rect.x + dx, self.rect.y, self.width - self.X_ADJ, (self.height - self.Y_ADJ) - 10)
@@ -110,7 +114,7 @@ class Monster(pygame.sprite.Sprite):
                     #print(f'crash: {self.data.monster}')
                     self.data.direction *= -1
                     self.rect.x += dx * 2  * self.data.direction # far enough to avoid re-triggering in an endless loop
-                    self.flip = not self.flip
+                    self.turned = not self.turned
 
     def attack_start(self) -> None: 
         """ Called to set attack variables and keep track of attack timings for repeat attacks """                
@@ -126,35 +130,37 @@ class Monster(pygame.sprite.Sprite):
         self.rect_attack = pygame.Rect(0,0,0,0)
 
     def update(self, scroll, platforms_sprite_group, player) -> None:
-        
+        dx = 0
+        dy = self.vel_y  # Newton would be proud!
         # if we've fallen off the screen, kill sprite TODO: doesn't wor
-        #print(f'self.rect.top: {self.rect.top}, player.world_data.SCREEN_HEIGHT: {player.world_data.SCREEN_HEIGHT}')
-        # if int(self.rect.top) > int(player.world_data.SCREEN_HEIGHT):
-        #     self.kill()
-        #     print('die')
 
-        # we set start speeds for x and y
-        dy = 0
-        if self.attacking:
-            dx = self.data.speed_attacking
-
-            # Sometimes a jumping mob can jump if player is higher than the mob and mob is attacking
-            #print(f'player.rect.centery: {player.rect.centery}, self.rect.center: {self.rect.centery }')
-            max_dist_centery = -7
-            player_above_mob = player.rect.centery -  (self.rect.centery + max_dist_centery)
-            #print(f'player is this much above attacking mob: {player_above_mob}')
-
-            if self.data.attack_jumper and player_above_mob < 0 and self.vel_y == 0:  # player is higher up and we're not already jumping
-                if 0.001  > random.random():  
-                    self.vel_y = -10
+        # Boss battles have separate logic depending on each bosss
+        if self.data.boss:
+            (dx, dy) = self.data.boss_battle(self, player)  # manipualtes self.vel_y directly
         else:
-            dx = self.data.speed_walking  #  we start at walking speed
+        # Regular mobs simply walk around mostly
 
-            # We throw in random cahnges in direction, different by mod type
-            if self.data.random_turns / 100  > random.random():
-                dx *= -1
-                self.data.direction *= -1
-                self.flip = not self.flip
+            if self.attacking:
+                dx = self.data.speed_attacking
+            
+                # Sometimes a jumping mob can jump if player is higher than the mob and mob is attacking
+                #print(f'player.rect.centery: {player.rect.centery}, self.rect.center: {self.rect.centery }')
+                max_dist_centery = -7
+                player_above_mob = player.rect.centery -  (self.rect.centery + max_dist_centery)
+                #print(f'player is this much above attacking mob: {player_above_mob}')
+
+                if self.data.attack_jumper and player_above_mob < 0 and self.vel_y == 0:  # player is higher up and we're not already jumping
+                    if 0.01  > random.random():  # hardcoded jump probability
+                        self.vel_y = -10
+            else:
+                dx = self.data.speed_walking  #  we start at walking speed
+
+                # We throw in random cahnges in direction, different by mod type
+                if self.data.random_turns / 100  > random.random():
+                    dx *= -1
+                    self.data.direction *= -1
+                    self.turned = not self.turned
+
 
         # we compensate for scrolling
         self.scroll = scroll
@@ -185,14 +191,22 @@ class Monster(pygame.sprite.Sprite):
 
     def draw(self, screen) -> None:
         # As collision detection is done with the rectangle, it's size and shape matters
-        if self.attacking:
+        if self.busy_casting:
+            # If we have a diffent size attack sprites, we need to take scale into account
+            self.image = self.cast_anim.image(o).convert_alpha()
+            x_correction = self.attack_anim.ss.x_dim - self.walk_anim.ss.x_dim
+            y_correction = self.attack_anim.ss.y_dim - self.walk_anim.ss.y_dim
+            x = (self.rect.x - self.X_CENTER) - x_correction
+            y = (self.rect.y - self.Y_CENTER) - y_correction
+            screen.blit(pygame.transform.flip( self.image, self.turned, False), (x, y))
+        elif self.attacking:
             # If we have a diffent size attack sprites, we need to take scale into account
             self.image = self.attack_anim.image(self.data.attack_delay).convert_alpha()
             x_correction = self.attack_anim.ss.x_dim - self.walk_anim.ss.x_dim
             y_correction = self.attack_anim.ss.y_dim - self.walk_anim.ss.y_dim
             x = (self.rect.x - self.X_CENTER) - x_correction
             y = (self.rect.y - self.Y_CENTER) - y_correction
-            screen.blit(pygame.transform.flip( self.image, self.flip, False), (x, y))
+            screen.blit(pygame.transform.flip( self.image, self.turned, False), (x, y))
         elif self.dead:
             # Spin sprite
             angle = 5
@@ -201,10 +215,10 @@ class Monster(pygame.sprite.Sprite):
             rot_rect = orig_rect.copy()
             rot_rect.center = rot_image.get_rect().center
             self.image = rot_image.subsurface(rot_rect).copy()
-            screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
+            screen.blit(pygame.transform.flip( self.image, self.turned, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
         else:
             self.image = self.walk_anim.image().convert_alpha()
-            screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
+            screen.blit(pygame.transform.flip( self.image, self.turned, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
 
         #pygame.draw.rect(self.screen, (255,255,255), self.rect, 2 )  # Debug show rect on screen (white)
 
@@ -224,13 +238,13 @@ class Projectile(pygame.sprite.Sprite):
         self.width = image.get_width()
         self.height = image.get_height()
         self.rect = pygame.Rect(x, y, self.width, self.height)
-        self.flip = flip
+        self.turned = flip
         
     def update(self, scroll, platforms_sprite_group) -> None:
         
         # we set start speeds for x and y
         dx = self.speed
-        if self.flip:
+        if self.turned:
             dx = -self.speed
             
         dy = 0  # projectiles have no gravity
@@ -249,4 +263,4 @@ class Projectile(pygame.sprite.Sprite):
 
     def draw(self, screen) -> None:
         self.image = self.anim.image().convert_alpha()
-        screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x, self.rect.y))
+        screen.blit(pygame.transform.flip( self.image, self.turned, False), (self.rect.x, self.rect.y))

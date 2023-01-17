@@ -1,5 +1,4 @@
 import pygame
-import random
 import pickle
 
 from game_world import GameWorld, WorldData, GamePanel
@@ -124,6 +123,7 @@ skeleton_boss_oversize_ss = SpriteSheet(pygame.image.load('assets/skeleton-boss-
 skeleton_boss_anim_walk = Animation(skeleton_boss_ss, row=11, frames=9, speed=50)
 skeleton_boss_anim_attack = Animation(skeleton_boss_oversize_ss, row=10, frames=6, speed=75)
 skeleton_boss_anim_death = Animation(skeleton_boss_ss, row=20, frames=6, speed=75)
+skeleton_boss_anim_cast = Animation(skeleton_boss_ss, row=2, frames=7, speed=150)
 
 # load projectiles (no animation variety)
 arrow_img = pygame.image.load('assets/arrow.png').convert_alpha()
@@ -172,7 +172,7 @@ def load_monsters(phflorg_worldmonster_import_list) -> list:
         if mob['monster'] == 'ogre-archer':
             monster_list.append(Monster(mob['x'], mob['y'], ogre_anim_walk, ogre_anim_attack, mob['ai']))
         if mob['monster'] == 'skeleton-boss':
-            monster_list.append(Monster(mob['x'], mob['y'], skeleton_boss_anim_walk, skeleton_boss_anim_attack, mob['ai']))
+            monster_list.append(Monster(mob['x'], mob['y'], skeleton_boss_anim_walk, skeleton_boss_anim_attack, mob['ai'], cast_anim=skeleton_boss_anim_cast))
     return monster_list
 
 

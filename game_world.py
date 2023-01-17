@@ -9,8 +9,8 @@ GamePanel(class)                    : contans the player information for the scr
 
 import pygame
 import csv
-from game_data import MonsterData
-from game_data import monsters
+from monster_logic import MonsterData
+from monster_logic import monsters
 from dataclasses import dataclass
 
 
@@ -63,6 +63,7 @@ class GameTileAnimation(GameTile):
     def draw(self, screen) -> None:
         self.image = self.animation.image().convert_alpha()
         screen.blit(self.image, (self.rect.x, self.rect.y))
+
 
 
 class GameWorld():

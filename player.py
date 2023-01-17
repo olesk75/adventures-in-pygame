@@ -59,7 +59,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.center = (x + self.X_CENTER, y + self.Y_CENTER)
         self.attack_rect = pygame.Rect(0,0,0,0)
         
-        self.flip = False  # flip sprite/animations when moving left
+        self.turned = False  # flip sprite/animations when moving left
         self.on_ground = False  # standing on solid ground
         self.attacking = False
         self.bouncing = False  # hit by something --> small bounce in the opposite direction
@@ -73,7 +73,7 @@ class Player(pygame.sprite.Sprite):
     def _get_attack_rect(self) -> None:
         # Returns a the attack rect for collision detection
         # The attack rect is an offset from the player rect
-        if self.flip:
+        if self.turned:
             offset = -90
         else:
             offset = 30
@@ -152,14 +152,14 @@ class Player(pygame.sprite.Sprite):
             # Left
             if key[pygame.K_LEFT] or key[pygame.K_a]:
                     dx = -distance
-                    self.flip = True
+                    self.turned = True
                     self.attacking = False
                     if self.on_ground == True:
                         self.animation.active = True
             # Right
             if key[pygame.K_RIGHT] or key[pygame.K_d]:
                     dx = distance
-                    self.flip = False
+                    self.turned = False
                     self.attacking = False
                     if self.on_ground == True:
                         self.animation.active = True
@@ -256,16 +256,16 @@ class Player(pygame.sprite.Sprite):
             # The sprite is larger when we attack, so we need to adjust center
             ATTACK_X = -2 * 64
             ATTACK_Y = -2 * 64
-            self.screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x - self.X_CENTER + ATTACK_X, self.rect.y - self.Y_CENTER + ATTACK_Y))
+            self.screen.blit(pygame.transform.flip( self.image, self.turned, False), (self.rect.x - self.X_CENTER + ATTACK_X, self.rect.y - self.Y_CENTER + ATTACK_Y))
         # Dying?
         elif self.dying:
             self.image = self.death.image()
             self.image = self.image.convert_alpha()
-            self.screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
+            self.screen.blit(pygame.transform.flip( self.image, self.turned, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
         # Player walking, jumping or idle
         else:
             self.image = self.animation.image()
             self.image = self.image.convert_alpha()
-            self.screen.blit(pygame.transform.flip( self.image, self.flip, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
+            self.screen.blit(pygame.transform.flip( self.image, self.turned, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
 
         #pygame.draw.rect(self.screen, (255,255,255), self.rect, 2 )  # Just to show hitboxes
