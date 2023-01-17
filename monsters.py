@@ -224,7 +224,7 @@ class Monster(pygame.sprite.Sprite):
 
 
 class Projectile(pygame.sprite.Sprite):
-    def __init__(self,x, y, image, flip, scale = 1):
+    def __init__(self,x, y, image, turned, scale = 1):
         """
         The Player class constructor - note that x and y is only for initialization,
         the player position will be tracked by the rect
@@ -238,7 +238,7 @@ class Projectile(pygame.sprite.Sprite):
         self.width = image.get_width()
         self.height = image.get_height()
         self.rect = pygame.Rect(x, y, self.width, self.height)
-        self.turned = flip
+        self.turned = turned
         
     def update(self, scroll, platforms_sprite_group) -> None:
         

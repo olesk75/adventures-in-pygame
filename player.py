@@ -93,7 +93,7 @@ class Player(pygame.sprite.Sprite):
         else:
             return False
 
-    def hit(self, damage, flip) -> None:
+    def hit(self, damage, turned) -> None:
         self.fx_hit.play()
         # Adjust health and bars
         self.health_current -= damage
@@ -103,7 +103,7 @@ class Player(pygame.sprite.Sprite):
         self.health_bar_length = int(self.world_data.SCREEN_WIDTH / 6 * self.health_current / 1000)
 
         direction = 1
-        if flip:
+        if turned:
             direction = -1
 
         # Bounce back

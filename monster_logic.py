@@ -109,7 +109,7 @@ class MonsterData():
                         if self.random_turns / 100  > random.random():
                             dx *= -1
                             self.direction *= -1
-                            self.boss.flip = not self.boss.flip
+                            self.boss.turned = not self.boss.turned
 
         return (dx, dy)
 

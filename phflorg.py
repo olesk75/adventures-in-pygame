@@ -277,10 +277,10 @@ while run:
                 # Mob attack: trigger attack if a) collision with mob, b) mob is in attack mode and c) mob is not already dead
                 if pygame.Rect.colliderect(player.rect, mob.rect_attack) and mob.attacking and not mob.dead:
                     if mob.data.attack_instant_damage:  # typically melee
-                        player.hit(mob.data.attack_damage, mob.flip)
+                        player.hit(mob.data.attack_damage, mob.turned)
                         
                     elif now - last_arrow > mob.data.attack_delay:  # typically mob launching projectile
-                        arrow = Projectile(mob.rect.centerx, mob.rect.centery, arrow_img, flip = mob.flip, scale = 2)
+                        arrow = Projectile(mob.rect.centerx, mob.rect.centery, arrow_img, turned = mob.turned, scale = 2)
 
                         # WAIT UNTIL END OF ATTACK ANIMATION
                         if mob.attack_anim.anim_counter == 10:
@@ -290,13 +290,13 @@ while run:
 
                 # Mob collision: trigger player hit if a) collision with mob, b) mob is not already dead and c) player is not already dying
                 if pygame.Rect.colliderect(player.rect, mob.rect) and not mob.dead and not player.dying:
-                    player.hit(500, mob.flip)
+                    player.hit(500, mob.turned)
 
                 # Projectile collision: trigger player dying if a) collision with projectile and b) player is not already dying
                 for projectile in projectile_group:
                     # Collision with player
                     if pygame.Rect.colliderect(player.rect, projectile) and not player.dying:
-                        player.hit(100, projectile.flip)
+                        player.hit(100, projectile.turned)
                         projectile.kill()
 
 
@@ -305,7 +305,7 @@ while run:
                     # Check if mob hit
                     if pygame.Rect.colliderect(player.attack_rect, mob.rect): 
                         mob.vel_y = -5
-                        mob.data.direction = -player.flip
+                        mob.data.direction = -player.turned
                         score += 100
                         mob.dead = True  # we run through the death anim sequence
                     # Check if projectile hit
