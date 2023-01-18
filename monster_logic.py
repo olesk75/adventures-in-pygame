@@ -7,6 +7,11 @@ import random
 
 monsters = ['minotaur', 'ogre-archer', 'skeleton-boss']  # used to recognize tiles from level files
 
+# State constants
+WALKING = 1
+ATTACKING = 2
+CASTING = 3
+DYING = 4
 
 class MonsterData():
     """ Movement, detection and attack properties of monsters """
@@ -74,12 +79,6 @@ class MonsterData():
         """ Movement and attacks for specific bosess 
             returns: dx and dy for mob (replaces the normal walking/bumping dx/dy for regular mobs)
         """
-        # State constants
-        WALKING = 1
-        ATTACKING = 2
-        CASTING = 3
-        DYING = 4
-        
         self.boss = boss  # Monster instance
         self.player = player
 
@@ -131,7 +130,7 @@ class MonsterData():
                 else:
                         self.dx = self.speed_walking  #  we start at walking speed
 
-                        # We throw in random cahnges in direction, different by mod type
+                        # We throw in random changes in direction, different by mod type
                         if self.random_turns / 100  > random.random():
                             self.dx *= -1
                             self.direction *= -1
