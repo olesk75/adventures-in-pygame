@@ -14,8 +14,9 @@ from monster_logic import monsters
 from dataclasses import dataclass
 
 
+
 @dataclass
-class WorldData:
+class GameData:
     SCREEN_WIDTH: int
     SCREEN_HEIGHT: int
     LEVEL_WIDTH: int
@@ -30,7 +31,6 @@ class WorldData:
     TILE_TYPES: int
     ANIMATION_TYPES: int
     OBJECT_TYPES: int
-    ANIMATIONS_DICT: dict
 
 class GameTile(pygame.sprite.Sprite):
     """
@@ -88,6 +88,9 @@ class GameWorld():
         self.pickups_sprite_group = pygame.sprite.Group()
         self.decor_sprite_group = pygame.sprite.Group()
         self.anim_objects_sprite_list = []  # we need custom draw method due to the animations for the underlying sprites, so list, not sprite group (we could override the group draw method)
+        #self.anim_spells_sprite_list = []  # we need custom draw method due to the animations for the underlying sprites, so list, not sprite group (we could override the group draw method)
+        self.anim_spells_sprite_group = pygame.sprite.Group()
+
 
         self.monster_import_list = []  # here we put all monsters from tile map, their type, x, y and AI properties
 
@@ -106,9 +109,13 @@ class GameWorld():
             img = pygame.transform.scale(img, (self.data.TILE_SIZE, self.data.TILE_SIZE))
             img_list.append(img)
 
-        # Load world data
-    
+        
+        from animation_data import animations  # we do this late, as we need to have display() up first
+
         with open(self.level_file, newline='') as csvfile:
+            """
+            Start loading the world from level file, adding all objects 
+            """
             reader = csv.reader(csvfile, delimiter = ',')
             for y, row in enumerate(reader):
                 for x, tile in enumerate(row):
@@ -128,7 +135,7 @@ class GameWorld():
                                 self.platforms_sprite_group.add(sprite)
                                 #print(f'Added platform sprite to group with x: {x} and y: {y} and tile: {tile}, which now containts {len(self.platforms_sprite_group.sprites())} sprites\n')  # DEBUG
 
-                            elif int(tile) >= 9:  # TODO: simplify for now
+                            elif int(tile) >= 9:  # TODO simplify for now
                                 """ Decor (rocks, grass, boxes etc. """
                                 #self.decor[x][y] = int(tile)
                                 self.decor_sprite_group.add(sprite)
@@ -137,7 +144,7 @@ class GameWorld():
                             """ Animated tiles (fires, birds etc.) """    
                             # SIMPLIFIED FOR NOW
                             if int(tile) - self.data.TILE_TYPES == 0:  # fire
-                                animation = self.data.ANIMATIONS_DICT['fire']
+                                animation = animations['fire']['fire-once']
                             sprite = GameTileAnimation(animation)  # -> GameTile -> pygame.sprite.Sprite
                             sprite.image = pygame.Surface((self.tile_size, self.tile_size), pygame.SRCALPHA)  # Empty image with space for tiles
                             sprite.image.blit(img_list[int(tile)], (0, 0))  # we blit the right image onto the surface from top left

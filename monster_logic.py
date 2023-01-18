@@ -11,7 +11,8 @@ monsters = ['minotaur', 'ogre-archer', 'skeleton-boss']  # used to recognize til
 class MonsterData():
     """ Movement, detection and attack properties of monsters """
     def __init__(self, monster, movement_pattern=0) -> None:
-        # TODO: movement patterns
+        
+ 
 
         known_monsters = monsters
         if monster not in known_monsters:
@@ -63,38 +64,63 @@ class MonsterData():
             self.attack_damage = 1
             self.points_reward = 500
             self.random_turns = 0.3
+            
+            # Boss specific
             self.boss_attacks = [('firewalker', 0.01)]
+            self.cast_delay = 2000
+
 
     def boss_battle(self, boss, player) -> tuple:
+        """ Movement and attacks for specific bosess 
+            returns: dx and dy for mob (replaces the normal walking/bumping dx/dy for regular mobs)
+        """
+        # State constants
+        WALKING = 1
+        ATTACKING = 2
+        CASTING = 3
+        DYING = 4
+        
         self.boss = boss  # Monster instance
         self.player = player
 
-        self.casting_done = False
-
-        dx = 0  # these are absolute moves, not speed 
-        dy = 0  # speed equivalent
+        self.dx = 0  # these are absolute moves, not speed 
+        self.dy = 0  # speed equivalent
         
-        def _casting(self, attack_type) -> None:
-            attack = attack_type
-            print(f'{attack}')
+        def _casting(attack_type) -> None:
+            sprite_size = 32
+            if self.boss.cast_anim.anim_counter == self.boss.cast_anim.frames - 1:  # on last cast animation frame, trigger the spell
+                if attack_type == 'firewalker':
+                    self.boss.cast_anim_list.append(['fire', self.boss.rect.left - sprite_size * 3, self.boss.rect.bottom - sprite_size * 2])
+                    self.boss.cast_anim_list.append(['fire', self.boss.rect.left - sprite_size * 3.5, self.boss.rect.bottom - sprite_size * 2])
+                    self.boss.cast_anim_list.append(['fire', self.boss.rect.left - sprite_size * 4, self.boss.rect.bottom - sprite_size * 2])
+                    self.boss.cast_anim_list.append(['fire', self.boss.rect.left - sprite_size * 4.5, self.boss.rect.bottom - sprite_size * 2])
+                    self.boss.cast_anim_list.append(['fire', self.boss.rect.left - sprite_size * 5, self.boss.rect.bottom - sprite_size * 2])
 
-            if self.casting_done:
-                self.boss.busy_casting = None
+                    self.boss.cast_anim_list.append(['fire', self.boss.rect.right + sprite_size, self.boss.rect.bottom - sprite_size * 2])
+                    self.boss.cast_anim_list.append(['fire', self.boss.rect.right + sprite_size * 1.5, self.boss.rect.bottom - sprite_size * 2])
+                    self.boss.cast_anim_list.append(['fire', self.boss.rect.right + sprite_size * 2, self.boss.rect.bottom - sprite_size * 2])
+                    self.boss.cast_anim_list.append(['fire', self.boss.rect.right + sprite_size * 2.5, self.boss.rect.bottom - sprite_size * 2])
+                    self.boss.cast_anim_list.append(['fire', self.boss.rect.right + sprite_size * 3, self.boss.rect.bottom - sprite_size * 2])
+                    self.boss.state = WALKING
+                    self.boss.spells_list = []
+                    self.dx = self.speed_walking
 
         # Casting puts everything else on hold
-        if self.boss.busy_casting:
-            _casting(self.boss.busy_casting)
+        if self.boss.spells_list:
+            _casting(self.boss.spells_list)
 
         else:
             if self.monster ==  'skeleton-boss':
-                if self.boss.attacking:
+                if self.boss.state == ATTACKING:
                     for attack in self.boss_attacks:
                         if attack[1] > random.random():
-                            print(attack)
-                            self.boss.busy_casting = attack[0]
+                            self.boss.cast_anim.active = True  # we start the casting animation
+                            self.boss.spells_list = attack[0]
+                            self.boss.state = CASTING
                             _casting(attack[0])
-                    
-                    dx = self.speed_attacking
+                            self.dx = 0  # we stop to cast
+                        else:
+                            self.dx = self.speed_attacking
                 
                     # Sometimes a jumping mob can jump if player is higher than the mob and mob is attacking
                     max_dist_centery = -7
@@ -103,15 +129,15 @@ class MonsterData():
                         if 0.01  > random.random():  # hardcoded jump probability
                             self.boss.vel_y = -10
                 else:
-                        dx = self.speed_walking  #  we start at walking speed
+                        self.dx = self.speed_walking  #  we start at walking speed
 
                         # We throw in random cahnges in direction, different by mod type
                         if self.random_turns / 100  > random.random():
-                            dx *= -1
+                            self.dx *= -1
                             self.direction *= -1
                             self.boss.turned = not self.boss.turned
 
-        return (dx, dy)
+        return self.dx, self.dy
 
                 
 

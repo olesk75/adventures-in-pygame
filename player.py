@@ -2,6 +2,11 @@ import pygame
 
 WHITE = (255, 255, 255)
 
+# State constants
+WALKING = 1
+ATTACKING = 2
+CASTING = 3
+DYING = 4
 
 # Player class
 class Player(pygame.sprite.Sprite):
@@ -13,7 +18,6 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         self.world = game_world
         self.world_data = game_world_data
-
 
         # Basic state information
         self.health_max = 1000
@@ -61,7 +65,7 @@ class Player(pygame.sprite.Sprite):
         
         self.turned = False  # flip sprite/animations when moving left
         self.on_ground = False  # standing on solid ground
-        self.attacking = False
+        self.state = WALKING  # we start walking always
         self.bouncing = False  # hit by something --> small bounce in the opposite direction
 
         self.dying = False  # Playing death animations
@@ -153,14 +157,14 @@ class Player(pygame.sprite.Sprite):
             if key[pygame.K_LEFT] or key[pygame.K_a]:
                     dx = -distance
                     self.turned = True
-                    self.attacking = False
+                    self.state = WALKING
                     if self.on_ground == True:
                         self.animation.active = True
             # Right
             if key[pygame.K_RIGHT] or key[pygame.K_d]:
                     dx = distance
                     self.turned = False
-                    self.attacking = False
+                    self.state = WALKING
                     if self.on_ground == True:
                         self.animation.active = True
             # Jump
@@ -168,7 +172,7 @@ class Player(pygame.sprite.Sprite):
                     if self.vel_y == 0 and self.on_ground == True:
                         self.vel_y = - self.world_data.JUMP_HEIGHT
                         self.animation.active = False
-                        self.attacking = False
+                        self.state = WALKING
                         self.on_ground = False
                         self.fx_jump.play()
 
@@ -178,17 +182,17 @@ class Player(pygame.sprite.Sprite):
 
             # Attack
             if key[pygame.K_SPACE]:
-                self.attacking = True
+                self.state = ATTACKING
                 if not self.fx_attack_channel.get_busy():
                     self.fx_attack_channel.play(self.fx_attack)
 
-        if self.attacking == True:
+        if self.state == ATTACKING:
             self._get_attack_rect()
             self.attack.active = True 
 
         # print(self.attack.anim_counter, self.attack.frames)
         if self.attack.anim_counter == self.attack.frames -1:
-            self.attacking = False
+            self.state = WALKING
             self.attack.active = False
             self.attack.anim_counter = 0
 
@@ -250,7 +254,7 @@ class Player(pygame.sprite.Sprite):
         self.screen = screen
         # First test if we're busy doing something 
         # Attacking?      
-        if self.attacking == True:
+        if self.state == ATTACKING:
             self.image = self.attack.image()
             self.image = self.image.convert_alpha()
             # The sprite is larger when we attack, so we need to adjust center
@@ -258,14 +262,17 @@ class Player(pygame.sprite.Sprite):
             ATTACK_Y = -2 * 64
             self.screen.blit(pygame.transform.flip( self.image, self.turned, False), (self.rect.x - self.X_CENTER + ATTACK_X, self.rect.y - self.Y_CENTER + ATTACK_Y))
         # Dying?
-        elif self.dying:
+        elif self.state == DYING:
             self.image = self.death.image()
             self.image = self.image.convert_alpha()
             self.screen.blit(pygame.transform.flip( self.image, self.turned, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
         # Player walking, jumping or idle
-        else:
+        elif self.state == WALKING:
             self.image = self.animation.image()
             self.image = self.image.convert_alpha()
             self.screen.blit(pygame.transform.flip( self.image, self.turned, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
+        else:
+            print(f'ERROR: illegal player state {self.state}')
+            exit(1)
 
         #pygame.draw.rect(self.screen, (255,255,255), self.rect, 2 )  # Just to show hitboxes

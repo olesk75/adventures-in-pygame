@@ -10,12 +10,13 @@ class Animation():
         self.sprites = []
         self.speed = speed   # Effecticely the ms we wait for next animation frame - bigger means slower
         self.active = False  # We begin in the stopped state
-        for frame in range(frames):
-            self.sprites.append(sprite_sheet.get_image(row, frame))
+
+        [self.sprites.append(sprite_sheet.get_image(row, frame)) for frame in range(frames)]
         
         self.anim_counter = 0
         self.last_run = 0
         self.repeat_start = 0  # ticks when we're done with one animation frame cycle
+        self.first_done = False  # True when done one cycle of frames
         
     def image(self, repeat_delay=0):
         now = pygame.time.get_ticks()
@@ -26,6 +27,7 @@ class Animation():
                 self.anim_counter += 1
                 if self.anim_counter == len(self.sprites):    
                     self.anim_counter = 0
+                    self.first_done = True
                     self.repeat_start = now
 
                 self.last_run = now
@@ -36,7 +38,7 @@ class Animation():
 
     # Scale override is non-funtional
     def _show_anim(self, screen, scale_override=False):
-        # This function is only to display every frame of an animation in a grid for testing
+        """This function is only to display every frame of an animation in a grid on screen for testing """
         self.screen = screen
         if scale_override:
             scale = scale_override
