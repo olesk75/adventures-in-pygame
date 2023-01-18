@@ -2,6 +2,12 @@ Heavily based on the tutorials by https://github.com/russs123 and some of the pl
 
 Music and sound by Kevin MacLeod (licensed CC-BY): https://filmmusic.io/u/kmac
 
+Specifically:
+Hidden Agenda by Kevin MacLeod | https://incompetech.com/
+Music promoted by https://www.chosic.com/free-music/all/
+Creative Commons CC BY 3.0
+https://creativecommons.org/licenses/by/3.0/
+
 
 
 
@@ -158,6 +164,51 @@ Authors: bluecarrot16, Johannes Sj?lund (wulax), Stephen Challener (Redshrike), 
 - weapon/thrust_oversize_attack_only/male/24.png: by Daniel Eddeland (daneeklu), gr3yh47, Johannes Sjölund (wulax). License(s): CC-BY-SA 3.0. dragon spear
     - https://opengameart.org/content/lpc-weapons-two-bows-a-spear-and-a-trident
 
+
+Authors: Benjamin K. Smith (BenCreating), bluecarrot16, TheraHedwig, Evert, MuffinElZangano, Durrani, Pierre Vigier (pvigier), ElizaWy, Matthew Krohn (makrohn), Johannes Sjölund (wulax), Stephen Challener (Redshrike), Thane Brimhall (pennomi), David Conway Jr. (JaidynReiman), thecilekli, Nila122, Lanea Zimmerman (Sharm), Dr. Jamgo
+
+- body/bodies/female/universal/light.png: by Benjamin K. Smith (BenCreating), bluecarrot16, TheraHedwig, Evert, MuffinElZangano, Durrani, Pierre Vigier (pvigier), ElizaWy, Matthew Krohn (makrohn), Johannes Sjölund (wulax), Stephen Challener (Redshrike). License(s): OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0. 
+    - https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles
+    - https://opengameart.org/content/lpc-medieval-fantasy-character-sprites
+    - https://opengameart.org/content/lpc-ladies
+    - https://opengameart.org/content/lpc-7-womens-shirts
+    - https://opengameart.org/content/lpc-jump-expanded
+
+- head/heads/human_female/universal/light.png: by bluecarrot16, Benjamin K. Smith (BenCreating), Stephen Challener (Redshrike). License(s): OGA-BY 3.0, CC-BY-SA 3.0, GPL 3.0. 
+    - https://opengameart.org/content/
+    - https://opengameart.org/content/lpc-character-bases
+
+- head/ears/elven/light.png: by bluecarrot16, Thane Brimhall (pennomi), Matthew Krohn (makrohn), David Conway Jr. (JaidynReiman). License(s): GPL 3.0, CC-BY-SA 3.0. 
+    - https://opengameart.org/content/lpc-base-character-expressions
+    - http://opengameart.org/content/lpc-clothing-updates
+
+- eyes/male/blue.png: by Matthew Krohn (makrohn), Stephen Challener (Redshrike). License(s): CC-BY-SA 3.0, GPL 3.0. 
+    - https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles
+
+- hair/long_center_part/female/blonde.png: by thecilekli, bluecarrot16. License(s): CC0. 
+    - https://opengameart.org/content/lpc-long-straight-hair-with-12-colors
+    - https://opengameart.org/content/lpc-hair
+
+- hat/head_band_tied/female/bluegray.png: by Nila122. License(s): CC-BY-SA 3.0, GPL 3.0. 
+    - https://opengameart.org/content/lpc-lizard-headgear
+
+- dress/bodice/female/white.png: by bluecarrot16, Matthew Krohn (makrohn), Lanea Zimmerman (Sharm). License(s): CC-BY-SA 3.0, GPL 3.0. 
+    - https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles
+    - https://opengameart.org/content/lpc-dress-in-combat-poses
+    - http://opengameart.org/content/lpc-clothing-updates
+
+- legs/skirts/plain/female/white.png: by bluecarrot16, Pierre Vigier (pvigier), Johannes Sjölund (wulax). License(s): CC-BY-SA 3.0, GPL 3.0. 
+    - https://opengameart.org/content/lpc-medieval-fantasy-character-sprites
+
+- feet/sandals/female/gray.png: by Nila122, David Conway Jr. (JaidynReiman), Matthew Krohn (makrohn), Johannes Sjölund (wulax). License(s): CC-BY-SA 3.0, GPL 2.0, GPL 3.0. 
+    - https://opengameart.org/content/lpc-roman-armor
+    - http://opengameart.org/content/lpc-clothing-updates
+
+- weapon/thrust/female/simple_staff.png: by Dr. Jamgo. License(s): CC0. 
+    - https://opengameart.org/content/lpc-simple-staff
+
+
+
 ALSO (jewl icoins)
 32x32 pixel icons using DawnBringer's 16 color palette.
 Made for Heroine Dusk.
@@ -165,3 +216,13 @@ Includes a blue Sapphire, green Emerald, red Ruby, and white Diamond.
 Please include my name "Clint Bellanger" among your credits. Optionally, also include a link to this page or to http://clintbellanger.net or to http://heroinedusk.com
 
 Original wood and dungeon doors by Lanea Zimmerman (AKA Sharm).
+
+
+Potion sprites by https://opengameart.org/users/magdum
+
+Credit goes to Zabin and Jetrel from OGA for the campfire animation
+
+Animated torch: https://opengameart.org/content/lpc-animated-torch
+
+Artwork created by Luis Zuno (@ansimuz) - background mountains
+

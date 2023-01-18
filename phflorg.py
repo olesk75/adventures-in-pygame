@@ -83,10 +83,10 @@ player_sound_effects = [attack_fx, jump_fx, death_fx, hit_fx]
 item_pickup_fx = pygame.mixer.Sound('assets/sound/Power-up/OGG/Powerup 7 - Sound effects Pack 2.ogg')
 
 # load background images
-pine1_img = pygame.image.load('assets/pine1.png').convert_alpha()
-pine2_img = pygame.image.load('assets/pine2.png').convert_alpha()
-mountain_img = pygame.image.load('assets/mountain.png').convert_alpha()
-sky_img = pygame.image.load('assets/sky_cloud.png').convert_alpha()
+pine1_img = pygame.image.load('assets/backgrounds/day1_pine1.png').convert_alpha()
+pine2_img = pygame.image.load('assets/backgrounds/day1_pine2.png').convert_alpha()
+mountain_img = pygame.image.load('assets/backgrounds/day1_mountain.png').convert_alpha()
+sky_img = pygame.image.load('assets/backgrounds/day1_sky_cloud.png').convert_alpha()
 
 
 level = 0  # TODO: placeholder
@@ -134,7 +134,7 @@ def save_high_score(high_score) -> None:
     with open('highscore.dat', 'wb') as save_file:
         pickle.dump(high_score, save_file)    
 
-
+# TODO: move this over to standard sprite group
 def load_monsters(phflorg_worldmonster_import_list) -> list:
     monster_list= []
     for mob in phflorg_worldmonster_import_list:
@@ -145,10 +145,6 @@ def load_monsters(phflorg_worldmonster_import_list) -> list:
         if mob['monster'] == 'skeleton-boss':
             monster_list.append(Monster(mob['x'], mob['y'], animations['skeleton-boss']['walk'], animations['skeleton-boss']['attack'], mob['ai'], cast_anim=animations['skeleton-boss']['cast']))
     return monster_list
-
-
-def add_spells() -> list:
-    spell_list = []
 
     
 
@@ -191,6 +187,7 @@ while run:
         projectile_group.update(scroll, p_w.platforms_sprite_group)
         #[sprite.update(scroll, p_w.platforms_sprite_group) for sprite in p_w.anim_spells_sprite_list]
         p_w.anim_spells_sprite_group.update(scroll, p_w.platforms_sprite_group)
+        player.update()
 
 
         # draw background
