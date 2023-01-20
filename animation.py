@@ -18,7 +18,7 @@ class Animation():
         self.repeat_start = 0  # ticks when we're done with one animation frame cycle
         self.first_done = False  # True when done one cycle of frames
         
-    def image(self, repeat_delay=0):
+    def get_image(self, repeat_delay=0):
         now = pygame.time.get_ticks()
         time_since_last = now - self.last_run  # ticks since last run
         if now > self.repeat_start + repeat_delay:
@@ -32,12 +32,12 @@ class Animation():
 
                 self.last_run = now
         
-        sprite = self.sprites[self.anim_counter]
-        return sprite
+        image = self.sprites[self.anim_counter].convert_alpha()
+        return image
 
 
     # Scale override is non-funtional
-    def _show_anim(self, screen, scale_override=False):
+    def _show_anim(self, scale_override=False):
         """This function is only to display every frame of an animation in a grid on screen for testing """
         self.screen = pygame.display.get_surface()
         if scale_override:

@@ -50,8 +50,8 @@ class GameTileAnimation(GameTile):
     def __init__(self, animation):
         super().__init__()
         self.animation = animation
-        self.X_CENTER = self.animation.image().get_width() // 2
-        self.Y_CENTER = self.animation.image().get_height() // 2
+        self.X_CENTER = self.animation.get_image().get_width() // 2
+        self.Y_CENTER = self.animation.get_image().get_height() // 2
         self.sprites = self.animation.sprites
         self.animation.active = True
         
@@ -61,7 +61,7 @@ class GameTileAnimation(GameTile):
         #print(f'scrolling {self.dx}, new x_pos: {self.rect.left}')
     
     def draw(self, screen) -> None:
-        self.image = self.animation.image().convert_alpha()
+        self.image = self.animation.get_image().convert_alpha()
         screen.blit(self.image, (self.rect.x, self.rect.y))
 
 

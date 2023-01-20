@@ -33,7 +33,7 @@ class Player(pygame.sprite.Sprite):
 
         # Setting up walk animation
         self.animation = walk_anim
-        self.image = walk_anim.image()
+        self.image = walk_anim.get_image()
         self.width = walk_anim.ss.x_dim * walk_anim.ss.scale
         self.height = walk_anim.ss.y_dim * walk_anim.ss.scale
 
@@ -58,13 +58,13 @@ class Player(pygame.sprite.Sprite):
         self.fx_attack_channel = pygame.mixer.Channel(0)  # we sue separate channel to avoid overlapping sounds with repeat attacks
         
 
-        # Manual adjustments of hitbox for player rect
+        # Manual adjustmentsplayer rect
         self.X_ADJ = walk_anim.ss.scale * 44
         self.Y_ADJ = walk_anim.ss.scale * 18
         self.X_CENTER = 40
         self.Y_CENTER = 28
-        self.rect = pygame.Rect(0,0, self.width - self.X_ADJ, self.height - self.Y_ADJ)
-        self.rect.center = (x + self.X_CENTER, y + self.Y_CENTER)
+        self.rect = pygame.Rect(x,y, self.width - self.X_ADJ, self.height - self.Y_ADJ)
+        
         self.attack_rect = pygame.Rect(0,0,0,0)
         
         self.turned = False  # flip sprite/animations when moving left
@@ -228,7 +228,7 @@ class Player(pygame.sprite.Sprite):
         # First test if we're busy doing something 
         # Attacking?      
         if self.state == ATTACKING:
-            self.image = self.attack_anim.image()
+            self.image = self.attack_anim.get_image()
             self.image = self.image.convert_alpha()
             # The sprite is larger when we attack, so we need to adjust center
             ATTACK_X = -2 * 64
@@ -236,12 +236,12 @@ class Player(pygame.sprite.Sprite):
             self.screen.blit(pygame.transform.flip( self.image, self.turned, False), (self.rect.x - self.X_CENTER + ATTACK_X, self.rect.y - self.Y_CENTER + ATTACK_Y))
         # Dying?
         elif self.state == DYING:
-            self.image = self.death.image()
+            self.image = self.death.get_image()
             self.image = self.image.convert_alpha()
             self.screen.blit(pygame.transform.flip( self.image, self.turned, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
         # Player walking, jumping or idle
         elif self.state == WALKING:
-            self.image = self.animation.image()
+            self.image = self.animation.get_image()
             self.image = self.image.convert_alpha()
             self.screen.blit(pygame.transform.flip( self.image, self.turned, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
         else:

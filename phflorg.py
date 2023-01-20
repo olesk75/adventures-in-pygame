@@ -43,7 +43,7 @@ from animation_data import animations  # late import as we need display to be ac
 
 # Set frame rate
 clock = pygame.time.Clock() 
-FPS = 60
+FPS = 20
 
 # Player state
 score = 0
@@ -89,8 +89,7 @@ pine2_img = pygame.image.load('assets/backgrounds/day1_pine2.png').convert_alpha
 mountain_img = pygame.image.load('assets/backgrounds/day1_mountain.png').convert_alpha()
 sky_img = pygame.image.load('assets/backgrounds/day1_sky_cloud.png').convert_alpha()
 
-
-level = 0  # TODO: placeholder
+level = 1  # TODO: placeholder
 
 p_w = GameWorld(phflorg_data)  # Loading all tiles in the world, less background and player (phflorg_world = p_w)
 p_w.load(f'level{level}_data.csv')
@@ -137,6 +136,7 @@ def save_high_score(high_score) -> None:
 
 # TODO: move this over to standard sprite group
 def load_monsters(phflorg_worldmonster_import_list) -> list:
+    print(phflorg_worldmonster_import_list)
     monsters_sprite_group = pygame.sprite.Group()
     for mob in phflorg_worldmonster_import_list:
         if mob['monster'] == 'minotaur':
@@ -146,13 +146,12 @@ def load_monsters(phflorg_worldmonster_import_list) -> list:
         if mob['monster'] == 'skeleton-boss':
             monsters_sprite_group.add(Monster(mob['x'], mob['y'], animations['skeleton-boss']['walk'], animations['skeleton-boss']['attack'], mob['ai'], cast_anim=animations['skeleton-boss']['cast']))
     return monsters_sprite_group
-    
 
 """
 Defining instances
 """
 # Player instance
-player = Player(phflorg_data.SCREEN_WIDTH // 2, phflorg_data.SCREEN_HEIGHT -150 , phflorg_data, p_w, \
+player = Player(phflorg_data.SCREEN_WIDTH // 2, phflorg_data.SCREEN_HEIGHT -170 , phflorg_data, p_w, \
     animations['player']['walk'], animations['player']['attack'], animations['player']['death'], player_sound_effects)
 
 # Monsters
@@ -262,7 +261,7 @@ while run:
                         player.hit(mob.data.attack_damage, mob.turned)
                         
                     elif now - last_arrow > mob.data.attack_delay:  # typically mob launching projectile
-                        arrow = Projectile(mob.rect.centerx, mob.rect.centery, arrow_img, turned = mob.turned, scale = 2)
+                        arrow = Projectile(mob.hitbox.centerx, mob.hitbox.centery, arrow_img, turned = mob.turned, scale = 2)
 
                         # WAIT UNTIL END OF ATTACK ANIMATION
                         if mob.attack_anim.anim_counter == 10:
@@ -270,7 +269,7 @@ while run:
                             last_arrow = now
 
                 # Mob collision: trigger player hit if a) collision with mob, b) mob is not already dead and c) player is not already dying
-                if pygame.Rect.colliderect(player.rect, mob.rect) and not mob.dead and player.state != DYING:
+                if pygame.Rect.colliderect(player.rect, mob.hitbox) and not mob.dead and player.state != DYING:
                     player.hit(500, mob.turned)
 
                 # Projectile collision: trigger player dying if a) collision with projectile and b) player is not already dying
@@ -283,7 +282,7 @@ while run:
                 # If player is attacking
                 if player.state == ATTACKING:
                     # Check if mob hit
-                    if pygame.Rect.colliderect(player.attack_rect, mob.rect): 
+                    if pygame.Rect.colliderect(player.attack_rect, mob.hitbox): 
                         mob.vel_y = -5
                         mob.data.direction = -player.turned
                         score += 100
@@ -365,7 +364,7 @@ while run:
 
                 # Reset all variables
                 game_over = False
-                player = Player(phflorg_data.SCREEN_WIDTH // 2, phflorg_data.SCREEN_HEIGHT -150 , phflorg_data, phflorg_world, \
+                player = Player(phflorg_data.SCREEN_WIDTH // 2, phflorg_data.SCREEN_HEIGHT -170 , phflorg_data, phflorg_world, \
                      animations['player']['walk'], animations['player']['attack'], animations['player']['death'], player_sound_effects)
 
                 score = 0
