@@ -148,7 +148,7 @@ class Player(pygame.sprite.Sprite):
         dy = 0
         scroll = 0
         
-        if self.state == WALKING:
+        if self.state in (WALKING, ATTACKING):
             if self.walking == 1:  # right
                 dx += distance
                 self.turned = False
@@ -159,7 +159,9 @@ class Player(pygame.sprite.Sprite):
                 self.turned = True
                 if self.on_ground:
                     self.animation.active = True
-        elif self.state == ATTACKING:
+            else:
+                self.animation.active = False
+        if self.state == ATTACKING:
             self._get_attack_rect()
             self.attack_anim.active = True 
             if self.attack_anim.anim_counter == self.attack_anim.frames -1:  # reset after attack animation is complete
