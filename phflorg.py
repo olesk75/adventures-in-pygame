@@ -43,7 +43,7 @@ from animation_data import animations  # late import as we need display to be ac
 
 # Set frame rate
 clock = pygame.time.Clock() 
-FPS = 20
+FPS = 30
 
 # Player state
 score = 0
@@ -217,7 +217,7 @@ while run:
             game_over = True
             player.dead = True
             print('!!!GAME OVER!!!')  # DEBUG
-
+ 
 
         # If player has been hit and is dying, we skip checking for more hits
         if player.state == DYING:
@@ -332,8 +332,8 @@ while run:
                         if event.key == pygame.K_RIGHT and player.walking == 1:
                             player.walking = False
                             
-
         monsters_sprite_group.draw(screen)  # draw them all
+        
         
         
     else:

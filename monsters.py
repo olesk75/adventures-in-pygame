@@ -14,6 +14,8 @@ CASTING = 3
 DYING = 4
 DEAD = 5
 
+DEBUG_BOXES = True
+
 class Monster(pygame.sprite.Sprite):
     def __init__(self,x, y, walk_anim, attack_anim, mob_data, cast_anim = False):
         """
@@ -23,7 +25,6 @@ class Monster(pygame.sprite.Sprite):
         super().__init__()
         self.gravity = 0.5 
         self.data = mob_data  # a MonsterData() instance
-
 
         # Setting up walk animation
         self.walk_anim = walk_anim
@@ -35,7 +36,6 @@ class Monster(pygame.sprite.Sprite):
         self.attack_anim = attack_anim
         self.cast_anim = cast_anim
 
-
         # Setting up death animation
         self.dead = False
 
@@ -45,9 +45,7 @@ class Monster(pygame.sprite.Sprite):
         self.X_CENTER = 40
         self.Y_CENTER = 28
         self.rect = self.image.get_rect()
-        #self.rect.center = (x + self.X_ADJ, y + self.Y_ADJ)
         self.rect.center = (x ,y)
-
 
         self.hitbox = pygame.Rect(0,0,0,0)
         self.rect_detect = pygame.Rect(0,0,0,0)
@@ -67,10 +65,13 @@ class Monster(pygame.sprite.Sprite):
 
 
     def _create_rects(self) -> None:
+        # Updating the HITBOX collision rectangle
+        self.hitbox = pygame.Rect(self.rect.left + 30, self.rect.top + 28, self.width - 60, self.rect.height - 30)
 
         # Creating a DETECTION rect where to mob will attack if the player rect collides
         x = self.hitbox.centerx
         y = self.hitbox.top + 30 + (self.data.detection_range_high * -100)
+        
 
         width = self.data.detection_range
         height = self.height - 100 + (self.data.detection_range_high * 200)
@@ -96,37 +97,51 @@ class Monster(pygame.sprite.Sprite):
         #
         all_platforms = platforms_sprite_group.sprites()
         for platform in all_platforms:
-            # pygame.draw.rect(pygame.display.get_surface(), (0,255,255), platform.rect, 2 )  # Debug show hitbox on screen (GREEN)
-            # pygame.draw.rect(pygame.display.get_surface(), (255,255,255), self.rect, 4 )  # Debug show rect on screen (WHITE)
-            # pygame.draw.rect(pygame.display.get_surface(), (0,255,0), self.hitbox, 2 )  # Debug show hitbox on screen (GREEN)
-            # pygame.draw.line(pygame.display.get_surface(), (255,255,255), (0,686), (1900,686))
+            if DEBUG_BOXES:
+                pygame.draw.rect(pygame.display.get_surface(), (0,255,255), platform.rect, 2 )  # Debug show hitbox on screen (GREEN)
+                pygame.draw.rect(pygame.display.get_surface(), (255,255,255), self.rect, 4 )  # Debug show rect on screen (WHITE)
+                pygame.draw.rect(pygame.display.get_surface(), (0,255,0), self.hitbox, 2 )  # Debug show hitbox on screen (GREEN)
+
             # collision in the y direction only, using a collision rect indicating _next_ position (y + dy)
-            moved_hitbox = self.hitbox.move(0, dy)  # move in place
-             
+            moved_hitbox = self.hitbox.move(0, dy - 2)  # move in place - remove 2 to anchor the sprites on the ground properly
+            if DEBUG_BOXES:
+                pygame.draw.rect(pygame.display.get_surface(), (0,128,0), moved_hitbox, 2 )  # Debug show hitbox on screen (GREEN)
             if platform.rect.colliderect(moved_hitbox):  # we are standing on a platform essentially
                 # Preventing falling through platforms
-                if self.hitbox.bottom > platform.rect.top:  # Is player above platform?
+                if moved_hitbox.bottom > platform.rect.top:  # Is player above platform?
                     if self.vel_y > 0 and not self.dead:  # Is monster falling and not dead?
                         dy = 0
                         self.at_bottom = True                     
                         self.vel_y = 0
+
                 
+
                 # Preventing falling off left/right edge of platforms if there is NO collision (-1) to the side and down (and it's not a jumping mob
-                moved_hitbox = self.hitbox.move(-self.hitbox.width, 40)
+                moved_hitbox = self.hitbox.move(-self.hitbox.width, 40)  # checking left 
                 if  moved_hitbox.collidelist(all_platforms) == -1 and not self.data.attack_jumper:
-                    self.data.direction = -1
-                    self.turned = True
-                moved_hitbox = self.hitbox.move(self.hitbox.width, 40)
-                if moved_hitbox.collidelist(all_platforms) == -1 and not self.data.attack_jumper:
                     self.data.direction = 1
                     self.turned = False
+                    if DEBUG_BOXES:
+                        pygame.draw.rect(pygame.display.get_surface(), (0,128,0), moved_hitbox, 2 )  # Debug show hitbox on screen (GREEN)pygame.draw.rect(pygame.display.get_surface(), (255,192,200), moved_hitbox, 2 )  # Debug show hitbox on screen (PINK)
+                moved_hitbox = self.hitbox.move(self.hitbox.width, 40)  #checking right
+                if moved_hitbox.collidelist(all_platforms) == -1 and not self.data.attack_jumper:
+                    self.data.direction = -1
+                    self.turned = True
+                    if DEBUG_BOXES:
+                        pygame.draw.rect(pygame.display.get_surface(), (128,128,0), moved_hitbox, 2 )  # Debug show hitbox on screen (YELLOW)
                 
-                # Turning around if hitting a solid tile  TODO: separate collision and non-collision tiles
-                if platform.rect.colliderect(self.hitbox):
-                    #print(f'crash: {self.data.monster}')
+                
+                # Turning around if hitting a solid tile  
+                moved_hitbox = self.hitbox.move(dx * 5 * self.data.direction, 20).inflate(0,-60)
+            
+                if DEBUG_BOXES:
+                    pygame.draw.rect(pygame.display.get_surface(), (255,255,0), moved_hitbox, 1 )  # Debug show hitbox on screen
+
+                if platform.rect.colliderect(moved_hitbox):
                     self.data.direction *= -1
-                    self.rect.x += dx * 2  * self.data.direction # far enough to avoid re-triggering in an endless loop
+                    self.rect.x += dx * 20  * self.data.direction # far enough to avoid re-triggering in an endless loop
                     self.turned = not self.turned
+
 
     def attack_start(self) -> None: 
         """ Called to set attack variables and keep track of attack timings for repeat attacks """                
@@ -134,20 +149,23 @@ class Monster(pygame.sprite.Sprite):
             self.state = ATTACKING
             self.attack_anim.active = True
             self.last_attack = pygame.time.get_ticks()
+            new_rect = self.attack_anim.get_image().get_rect()  # we need to scale the rect for different size attack images
+            new_rect.center = self.rect.center
+            self.rect = new_rect
+
 
     def attack_stop(self) -> None: 
         self.state = WALKING 
         self.attack_anim.active = False
         self.rect_attack = pygame.Rect(0,0,0,0)
+        self.rect = self.walk_anim.get_image()  # we need to scale back to walking image size after an attack
+        
 
     def update(self, scroll, platforms_sprite_group, player) -> None:
         dx = 0
         dy = self.vel_y  # Newton would be proud!
 
-        # Updating the collision rectangle
         
-        self.hitbox = pygame.Rect(self.rect.left + 30, self.rect.top + 28, self.width - 60, self.rect.height - 28)
-
 
         """ Boss battles have separate logic depending on each boss - if they cast anything, we get a list of animations back as well
             the boss_battle function updates self.vel_y directly and adds self.
@@ -191,7 +209,7 @@ class Monster(pygame.sprite.Sprite):
         self.rect.x += dx * self.data.direction
         self.rect.y += dy 
 
-        # Checking detection and attack rects as well as platform rects for collision
+        # Checking detection, hitbox and attack rects as well as platform rects for collision
         if not self.dead:
             self._create_rects()
             self._check_platform_collision(dx, dy, platforms_sprite_group)
@@ -212,6 +230,7 @@ class Monster(pygame.sprite.Sprite):
         elif self.state == ATTACKING:
             # If we have a diffent size attack sprites, we need to take scale into account
             self.image = self.attack_anim.get_image(repeat_delay = self.data.attack_delay).convert_alpha()
+            
 
         elif self.state == DYING:
             # Spin sprite
