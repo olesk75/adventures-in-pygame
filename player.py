@@ -7,6 +7,7 @@ WALKING = 1
 ATTACKING = 2
 CASTING = 3
 DYING = 4
+DEAD = 5
 
 # Player class
 class Player(pygame.sprite.Sprite):
@@ -24,6 +25,7 @@ class Player(pygame.sprite.Sprite):
         self.health_current = self.health_max - 200 # TODO: FOR TESTING ONLY
         self.powers_max = 1
         self.powers_current = self.powers_max
+        self.score = 0  # score from each move, added up outside of class
 
         # Setting up halth bar and powers list
         self.health_bar_length = int(self.world_data.SCREEN_WIDTH / 6 * self.health_current / 1000)  # grows when max health grows
@@ -35,10 +37,12 @@ class Player(pygame.sprite.Sprite):
         self.width = walk_anim.ss.x_dim * walk_anim.ss.scale
         self.height = walk_anim.ss.y_dim * walk_anim.ss.scale
 
+        self.vel_x = 0  # we add and substract to this value based on keypresses
         self.vel_y = 0  # jumping or falling
+        self.walking = False
 
         # Setting up animations
-        self.attack = attack_anim
+        self.attack_anim = attack_anim
         self.death = death_anim
 
         # Setting up sound effects
@@ -68,7 +72,6 @@ class Player(pygame.sprite.Sprite):
         self.state = WALKING  # we start walking always
         self.bouncing = False  # hit by something --> small bounce in the opposite direction
 
-        self.dying = False  # Playing death animations
         self.dead = False  # Death animation complete
 
         self.world_x_pos = x + self.X_CENTER # player x position across the whole world, not just screen
@@ -103,7 +106,7 @@ class Player(pygame.sprite.Sprite):
         self.health_current -= damage
         if self.health_current <= 0:
             self.health_current = 0
-            self.dying = True
+            self.state = DYING
         self.health_bar_length = int(self.world_data.SCREEN_WIDTH / 6 * self.health_current / 1000)
 
         direction = 1
@@ -135,8 +138,8 @@ class Player(pygame.sprite.Sprite):
 
 
     def die(self) -> None:
-        if not self.dying:
-            self.dying = True  # we start the death sequence
+        if self.state != DYING:
+            self.state = DYING  # we start the death sequence
             self.death.anim_counter = 0  # Animation counter the death animation
 
     def move(self) -> list:
@@ -144,60 +147,28 @@ class Player(pygame.sprite.Sprite):
         dx = 0
         dy = 0
         scroll = 0
-        self.score = 0  # score from each move, added up outside of class
-
-        self.animation.active = False  # Only animate on keypress
-
-        #(self.attack.anim_counter)  # DEBUG
-        # Process keypresses
-        if not self.dead and not self.dying:  # We ignore keypresses after death or deatn anim start
-            key = pygame.key.get_pressed()
         
-            # Left
-            if key[pygame.K_LEFT] or key[pygame.K_a]:
-                    dx = -distance
-                    self.turned = True
-                    self.state = WALKING
-                    if self.on_ground == True:
-                        self.animation.active = True
-            # Right
-            if key[pygame.K_RIGHT] or key[pygame.K_d]:
-                    dx = distance
-                    self.turned = False
-                    self.state = WALKING
-                    if self.on_ground == True:
-                        self.animation.active = True
-            # Jump
-            if key[pygame.K_UP] or key[pygame.K_w]:
-                    if self.vel_y == 0 and self.on_ground == True:
-                        self.vel_y = - self.world_data.JUMP_HEIGHT
-                        self.animation.active = False
-                        self.state = WALKING
-                        self.on_ground = False
-                        self.fx_jump.play()
-
-            # Exit
-            if key[pygame.K_q]:
-                exit(0)
-
-            # Attack
-            if key[pygame.K_SPACE]:
-                self.state = ATTACKING
-                if not self.fx_attack_channel.get_busy():
-                    self.fx_attack_channel.play(self.fx_attack)
-
-        if self.state == ATTACKING:
+        if self.state == WALKING:
+            if self.walking == 1:  # right
+                dx += distance
+                self.turned = False
+                if self.on_ground:
+                    self.animation.active = True
+            elif self.walking == -1:  # left
+                dx -= distance
+                self.turned = True
+                if self.on_ground:
+                    self.animation.active = True
+        elif self.state == ATTACKING:
             self._get_attack_rect()
-            self.attack.active = True 
-
-        # print(self.attack.anim_counter, self.attack.frames)
-        if self.attack.anim_counter == self.attack.frames -1:
-            self.state = WALKING
-            self.attack.active = False
-            self.attack.anim_counter = 0
+            self.attack_anim.active = True 
+            if self.attack_anim.anim_counter == self.attack_anim.frames -1:  # reset after attack animation is complete
+                self.state = WALKING
+                self.attack_anim.active = False
+                self.attack_anim.anim_counter = 0
 
         # Die
-        if self.dying:
+        elif self.state == DYING:
             self.death.anim_counter += 1
 
         # Gravity
@@ -250,12 +221,12 @@ class Player(pygame.sprite.Sprite):
 
         return [scroll, self.score]
 
-    def draw(self, screen) -> None:
-        self.screen = screen
+    def draw(self) -> None:
+        self.screen = pygame.display.get_surface()
         # First test if we're busy doing something 
         # Attacking?      
         if self.state == ATTACKING:
-            self.image = self.attack.image()
+            self.image = self.attack_anim.image()
             self.image = self.image.convert_alpha()
             # The sprite is larger when we attack, so we need to adjust center
             ATTACK_X = -2 * 64

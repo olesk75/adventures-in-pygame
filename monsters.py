@@ -12,6 +12,7 @@ WALKING = 1
 ATTACKING = 2
 CASTING = 3
 DYING = 4
+DEAD = 5
 
 class Monster(pygame.sprite.Sprite):
     def __init__(self,x, y, walk_anim, attack_anim, mob_data, cast_anim = False):
@@ -40,14 +41,11 @@ class Monster(pygame.sprite.Sprite):
         # Manual adjustments of hitbox
         self.X_ADJ = walk_anim.ss.scale * 44
         self.Y_ADJ = walk_anim.ss.scale * 18
-        self.X_CENTER = 40
-        self.Y_CENTER = 28
 
         self.rect = pygame.Rect(0,0, self.width - self.X_ADJ, self.height - self.Y_ADJ)
         self.rect_detect = pygame.Rect(0,0,0,0)
         self.rect_attack = pygame.Rect(0,0,0,0)
 
-        self.rect.center = (x + self.X_CENTER, y + self.Y_CENTER)
         self.vel_y = 0
         self.turned = False
         self.at_bottom = False
@@ -62,9 +60,8 @@ class Monster(pygame.sprite.Sprite):
 
 
     def _create_rects(self) -> None:
-        # Create the detection and attack rect which we will use for collision detection
-        # Creating a DETECTION rect where to mob will attack if the player rect collides
 
+        # Creating a DETECTION rect where to mob will attack if the player rect collides
         x = self.rect.centerx
         y = self.rect.top + 30 + (self.data.detection_range_high * -100)
 
@@ -72,7 +69,7 @@ class Monster(pygame.sprite.Sprite):
         height = self.height - 100 + (self.data.detection_range_high * 200)
 
         if self.turned:       
-            self.rect_detect = pygame.Rect(x - self.data.detection_range, y, width, height) 
+            self.rect_detect = pygame.Rect(x - width, y, width, height) 
         else:
             self.rect_detect = pygame.Rect(x, y,width, height) 
 
@@ -192,20 +189,14 @@ class Monster(pygame.sprite.Sprite):
         else:
             self.ready_to_attack = False
 
-    def draw(self, screen) -> None:
-        # As collision detection is done with the rectangle, it's size and shape matters
         if self.state == CASTING:
-            # If we have a diffent size vast sprites, we need to take scale into account
-            self.image = self.cast_anim.image(self.data.cast_delay).convert_alpha()
-            screen.blit(pygame.transform.flip( self.image, self.turned, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
+            self.image = self.cast_anim.image().convert_alpha()
+            self.image = self.cast_anim.image(repeat_delay = self.data.cast_delay)
         elif self.state == ATTACKING:
             # If we have a diffent size attack sprites, we need to take scale into account
-            self.image = self.attack_anim.image(self.data.attack_delay).convert_alpha()
-            x_correction = self.attack_anim.ss.x_dim - self.walk_anim.ss.x_dim
-            y_correction = self.attack_anim.ss.y_dim - self.walk_anim.ss.y_dim
-            x = (self.rect.x - self.X_CENTER) - x_correction
-            y = (self.rect.y - self.Y_CENTER) - y_correction
-            screen.blit(pygame.transform.flip( self.image, self.turned, False), (x, y))
+            self.image = self.attack_anim.image(repeat_delay = self.data.attack_delay).convert_alpha()
+            #self.rect.x -= self.walk_anim.ss.x_dim
+            #self.rect.y -= self.walk_anim.ss.y_dim
         elif self.state == DYING:
             # Spin sprite
             angle = 5
@@ -214,15 +205,16 @@ class Monster(pygame.sprite.Sprite):
             rot_rect = orig_rect.copy()
             rot_rect.center = rot_image.get_rect().center
             self.image = rot_image.subsurface(rot_rect).copy()
-            screen.blit(pygame.transform.flip( self.image, self.turned, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
+            self.image = pygame.transform.flip(self.image, self.turned, False)
         elif self.state == WALKING:
             self.image = self.walk_anim.image().convert_alpha()
-            screen.blit(pygame.transform.flip( self.image, self.turned, False), (self.rect.x - self.X_CENTER, self.rect.y - self.Y_CENTER))
+            
             #pygame.draw.rect(self.screen, (255,255,255), self.rect, 2 )  # Debug show rect on screen (white)
         else:
             print(f'ERROR: illegal monster state "{self.state}"')
             exit(1)
-        
+
+        self.image = pygame.transform.flip(self.image, self.turned, False)        
 
 
 class Projectile(pygame.sprite.Sprite):

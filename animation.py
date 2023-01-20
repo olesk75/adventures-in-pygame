@@ -39,7 +39,7 @@ class Animation():
     # Scale override is non-funtional
     def _show_anim(self, screen, scale_override=False):
         """This function is only to display every frame of an animation in a grid on screen for testing """
-        self.screen = screen
+        self.screen = pygame.display.get_surface()
         if scale_override:
             scale = scale_override
         else:

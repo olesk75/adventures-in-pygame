@@ -29,7 +29,7 @@ phflorg_data = GameData(
 )
 
 # Initializing
-pygame.mixer.pre_init(44100, -16, 1, 512)
+pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.init()
 pygame.mixer.init()
 pygame.init()
@@ -61,6 +61,7 @@ WALKING = 1
 ATTACKING = 2
 CASTING = 3
 DYING = 4
+DEAD = 5
 
 # Define colors
 WHITE    = (255, 255, 255)
@@ -136,16 +137,15 @@ def save_high_score(high_score) -> None:
 
 # TODO: move this over to standard sprite group
 def load_monsters(phflorg_worldmonster_import_list) -> list:
-    monster_list= []
+    monsters_sprite_group = pygame.sprite.Group()
     for mob in phflorg_worldmonster_import_list:
         if mob['monster'] == 'minotaur':
-            monster_list.append(Monster(mob['x'], mob['y'], animations['minotaur']['walk'], animations['minotaur']['attack'], mob['ai']))
+            monsters_sprite_group.add(Monster(mob['x'], mob['y'], animations['minotaur']['walk'], animations['minotaur']['attack'], mob['ai']))
         if mob['monster'] == 'ogre-archer':
-            monster_list.append(Monster(mob['x'], mob['y'], animations['ogre-archer']['walk'], animations['ogre-archer']['attack'], mob['ai']))
+            monsters_sprite_group.add(Monster(mob['x'], mob['y'], animations['ogre-archer']['walk'], animations['ogre-archer']['attack'], mob['ai']))
         if mob['monster'] == 'skeleton-boss':
-            monster_list.append(Monster(mob['x'], mob['y'], animations['skeleton-boss']['walk'], animations['skeleton-boss']['attack'], mob['ai'], cast_anim=animations['skeleton-boss']['cast']))
-    return monster_list
-
+            monsters_sprite_group.add(Monster(mob['x'], mob['y'], animations['skeleton-boss']['walk'], animations['skeleton-boss']['attack'], mob['ai'], cast_anim=animations['skeleton-boss']['cast']))
+    return monsters_sprite_group
     
 
 """
@@ -156,7 +156,7 @@ player = Player(phflorg_data.SCREEN_WIDTH // 2, phflorg_data.SCREEN_HEIGHT -150 
     animations['player']['walk'], animations['player']['attack'], animations['player']['death'], player_sound_effects)
 
 # Monsters
-monster_list = load_monsters(p_w.monster_import_list)
+monsters_sprite_group = load_monsters(p_w.monster_import_list)
 
 # Projectiles 
 projectile_group =  pygame.sprite.Group()
@@ -186,7 +186,7 @@ while run:
         p_w.decor_sprite_group.update(scroll)
         projectile_group.update(scroll, p_w.platforms_sprite_group)
         #[sprite.update(scroll, p_w.platforms_sprite_group) for sprite in p_w.anim_spells_sprite_list]
-        p_w.anim_spells_sprite_group.update(scroll, p_w.platforms_sprite_group)
+        p_w.anim_spells_sprite_group.update(scroll)
         player.update()
 
 
@@ -204,7 +204,7 @@ while run:
         #[sprite.draw(screen) for sprite in p_w.anim_spells_sprite_list]
         p_w.anim_spells_sprite_group.draw(screen)
 
-        player.draw(screen)
+        player.draw()
 
         # Draw panel
         panel.draw()
@@ -221,13 +221,13 @@ while run:
 
 
         # If player has been hit and is dying, we skip checking for more hits
-        if player.dying:
+        if player.state == DYING:
             game_over = player.check_game_over()  # if we're done dying, we're dead
 
-        for mob in monster_list:
+
+        for mob in monsters_sprite_group:
             mob.walk_anim.active = True
             mob.update(scroll, p_w.platforms_sprite_group, player)
-            mob.draw(screen)
 
             if not mob.dead:
                 if DEBUG_BOXES:  pygame.draw.rect(screen, (0,0,255), mob.rect_detect, 2 )  # DEBUG: to see hitbox for detection (blue)
@@ -243,10 +243,7 @@ while run:
                             p_w.anim_spells_sprite_group.add(Spell(x,y, animation, False, scale=1))
                             # TODO: fix! Fails while our custom methods for drawing fails?
 
-
-
                     mob.cast_anim_list = []
-
 
                 # Mob detecting player and starting attack...
                 if pygame.Rect.colliderect(player.rect, mob.rect_detect):
@@ -272,7 +269,6 @@ while run:
                             projectile_group.add(arrow)
                             last_arrow = now
 
-
                 # Mob collision: trigger player hit if a) collision with mob, b) mob is not already dead and c) player is not already dying
                 if pygame.Rect.colliderect(player.rect, mob.rect) and not mob.dead and player.state != DYING:
                     player.hit(500, mob.turned)
@@ -283,7 +279,6 @@ while run:
                     if pygame.Rect.colliderect(player.rect, projectile) and player.state != DYING:
                         player.hit(100, projectile.turned)
                         projectile.kill()
-
 
                 # If player is attacking
                 if player.state == ATTACKING:
@@ -297,9 +292,53 @@ while run:
                     for projectile in projectile_group:
                         if pygame.Rect.colliderect(player.attack_rect, projectile) and player.state != DYING:
                             projectile.kill()
- 
 
-    else:  # Game over 
+
+            """ EVENTS PROCESSING ------------------------------------------------------------------------------------------- """
+            if player.state not in (DYING, DEAD):
+                for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            pygame.quit()
+                            exit(0)
+                        if event.key == pygame.K_LEFT:
+                            player.walking = -1  # left
+                            player.state = WALKING
+                            if player.on_ground == True:
+                                player.animation.active = True
+                            
+                        if event.key == pygame.K_RIGHT: 
+                            player.walking = 1  # right
+                            player.state = WALKING
+                            if player.on_ground == True:
+                                player.animation.active = True
+
+                        if event.key == pygame.K_UP:  # jump!
+                            if player.on_ground:
+                                player.vel_y = - player.world_data.JUMP_HEIGHT
+                                player.animation.active = False
+                                player.state = WALKING
+                                player.on_ground = False
+                                player.fx_jump.play()
+
+                        if event.key == pygame.K_SPACE:  # attack!        
+                            player.state = ATTACKING
+                            if not player.fx_attack_channel.get_busy():  # playing sound if not all channels busy
+                                player.fx_attack_channel.play(player.fx_attack)
+
+                    if event.type == pygame.KEYUP:  # mostly to handle repetition of left and right
+                        if event.key == pygame.K_LEFT and player.walking == -1:
+                            player.walking = False
+                        
+                        if event.key == pygame.K_RIGHT and player.walking == 1:
+                            player.walking = False
+                            
+
+        monsters_sprite_group.draw(screen)  # draw them all
+        
+        
+    else:
+        """ --- GAME OVER ----"""
         if wait_counter:
             wait_counter -= 1
         elif fade_counter < phflorg_data.SCREEN_WIDTH / 2:
@@ -342,9 +381,11 @@ while run:
 
 
     # The main even handler
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
+    # for event in pygame.event.get():
+    #     scroll, score_add = player.move()
+    #     score += score_add
+    #     if event.type == pygame.QUIT:
+    #         run = False
 
     # Update display window
     pygame.display.update()
