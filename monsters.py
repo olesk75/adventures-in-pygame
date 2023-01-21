@@ -14,7 +14,7 @@ CASTING = 3
 DYING = 4
 DEAD = 5
 
-DEBUG_BOXES = True
+DEBUG_BOXES = False
 
 class Monster(pygame.sprite.Sprite):
     def __init__(self,x, y, walk_anim, attack_anim, mob_data, cast_anim = False):
@@ -35,6 +35,7 @@ class Monster(pygame.sprite.Sprite):
         # Setting up attack and castr animations
         self.attack_anim = attack_anim
         self.cast_anim = cast_anim
+        self.cast_player_pos = ()
 
         # Setting up death animation
         self.dead = False
@@ -161,17 +162,13 @@ class Monster(pygame.sprite.Sprite):
             sprite_size = 32
             if self.cast_anim.anim_counter == self.cast_anim.frames - 1:  # on last cast animation frame, trigger the spell
                 if self.currently_casting == 'firewalker':
-                    self.cast_anim_list.append(['fire', self.rect.left - sprite_size * 3, self.rect.bottom - sprite_size * 2])
-                    self.cast_anim_list.append(['fire', self.rect.left - sprite_size * 3.5, self.rect.bottom - sprite_size * 2])
-                    self.cast_anim_list.append(['fire', self.rect.left - sprite_size * 4, self.rect.bottom - sprite_size * 2])
-                    self.cast_anim_list.append(['fire', self.rect.left - sprite_size * 4.5, self.rect.bottom - sprite_size * 2])
-                    self.cast_anim_list.append(['fire', self.rect.left - sprite_size * 5, self.rect.bottom - sprite_size * 2])
+                    attack_width = 12
+                    for a in range(attack_width):
+                        player_center_x = self.cast_player_pos[0]
+                        player_bottom_y = self.cast_player_pos[1]
+                        self.cast_anim_list.append(['fire', player_center_x - sprite_size * a/2, player_bottom_y - sprite_size * 2])    
+                        self.cast_anim_list.append(['fire', player_center_x + sprite_size * a/2, player_bottom_y - sprite_size * 2])
 
-                    self.cast_anim_list.append(['fire', self.rect.right + sprite_size, self.rect.bottom - sprite_size * 2])
-                    self.cast_anim_list.append(['fire', self.rect.right + sprite_size * 1.5, self.rect.bottom - sprite_size * 2])
-                    self.cast_anim_list.append(['fire', self.rect.right + sprite_size * 2, self.rect.bottom - sprite_size * 2])
-                    self.cast_anim_list.append(['fire', self.rect.right + sprite_size * 2.5, self.rect.bottom - sprite_size * 2])
-                    self.cast_anim_list.append(['fire', self.rect.right + sprite_size * 3, self.rect.bottom - sprite_size * 2])
                     self.state_change(WALKING)
                     self.currently_casting = ''
 
@@ -181,9 +178,8 @@ class Monster(pygame.sprite.Sprite):
                 for attack in self.data.boss_attacks:
                     attack_type = attack[0]
                     attack_prob = attack[1]
-                    if attack_prob > random.random():
-                        print('we start casting')
-                        self.state_change(CASTING, attack_type=attack_type)
+                    if attack_prob > random.random() and not player.vel_y and not self.vel_y:  # Random roll, if neither player nor mob is not in the air
+                        self.state_change(CASTING, attack_type=attack_type, player_pos=(player.rect.centerx, player.rect.bottom))
                         dx = 0  # we stop to cast
                     else:
                         dx = self.data.speed_attacking  # if not, we just keep the attack speed
@@ -210,10 +206,11 @@ class Monster(pygame.sprite.Sprite):
         return dx, dy
 
 
-    def state_change(self, new_state:int, attack_type:str=None) -> None:
+    def state_change(self, new_state:int, attack_type:str=None, player_pos:tuple=None) -> None:
         """
         Manages all state changes for mobs, betweeh ATTACKING, WALKING and CASTING
-        Can take attack type if we're switching into CASTING
+        Can take attack type and player position if we're switching into CASTING
+        (we need player pos to fire a spell at where the player was once we started casting)
         """
         if new_state != self.state:  # only do something if we have a _change_ in state
             self.state = new_state
@@ -221,7 +218,8 @@ class Monster(pygame.sprite.Sprite):
                 if self.ready_to_attack:  # if previous attack is done
                     self.walk_anim.active = False
                     self.attack_anim.active = True
-                    self.cast_anim.active = False
+                    if self.data.caster:
+                        self.cast_anim.active = False
 
                     self.last_attack = pygame.time.get_ticks()
 
@@ -232,7 +230,8 @@ class Monster(pygame.sprite.Sprite):
             elif new_state == WALKING:
                     self.walk_anim.active = True
                     self.attack_anim.active = False
-                    self.cast_anim.active = False
+                    if self.data.caster:
+                        self.cast_anim.active = False
 
                     new_rect = self.walk_anim.get_image().get_rect()  # we need to scale back to walking image size after an attack
                     new_rect.center = self.rect.center
@@ -248,6 +247,7 @@ class Monster(pygame.sprite.Sprite):
                     self.rect = new_rect
 
                     self.currently_casting = attack_type
+                    self.cast_player_pos = player_pos
 
 
     def update(self, scroll, platforms_sprite_group, player) -> None:
@@ -342,6 +342,7 @@ class Projectile(pygame.sprite.Sprite):
         """
         The Projector class constructor - note that x and y is only for initialization,
         the projectile position will be tracked by the rect
+        NOTE: no animation - one image only!
         """
         super().__init__()
         self.image = pygame.transform.scale(image, (image.get_width() * scale, image.get_height() * scale))
@@ -383,35 +384,35 @@ class Spell(pygame.sprite.Sprite):
         """
         The Spell class constructor - note that x and y is only for initialization,
         the spell position will be tracked by the rect
+        NOTE: Animation, but only _one_ animation cycle
         """
         super().__init__()
         self.anim = anim
+        self.anim.counter = 0
         image = anim.get_image()
-        self.gravity = 1
 
         self.image = pygame.transform.scale(image, (image.get_width() * scale, image.get_height() * scale))
 
-        self.dead = False  
-        self.speed = 10
         self.width = image.get_width()
         self.height = image.get_height()
         self.rect = pygame.Rect(x, y, self.width, self.height)
         self.turned = turned
 
         self.anim.active = True
+        self.anim.first_done = False
         
     def update(self, scroll) -> None:
         # we compensate for scrolling
         self.rect.x += scroll
 
         # Done with one cycle, as spell do not repeat (yet!)
-        print (f'{self.anim.anim_counter=}')
-        print(f'{self.anim.first_done=}')
+        #print (f'{self.anim.anim_counter=}')
+        #print(f'{self.anim.first_done=}')
         if self.anim.first_done:
             self.currently_casting = False
             self.kill()
 
         # Ready for super.draw()
-        self.image = pygame.transform.flip( self.image.convert_alpha(), self.turned, False)
+        self.image = pygame.transform.flip( self.anim.get_image().convert_alpha(), self.turned, False)
 
 

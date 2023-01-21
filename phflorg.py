@@ -7,7 +7,7 @@ from monsters import Monster, Projectile, Spell
 
 
 # Flags for debug functionality
-DEBUG_BOXES = True
+DEBUG_BOXES = False
 
 
 # Game variables in a named tuple (new in Python 3.6) - we pass this to instances who need it
@@ -89,7 +89,7 @@ pine2_img = pygame.image.load('assets/backgrounds/day1_pine2.png').convert_alpha
 mountain_img = pygame.image.load('assets/backgrounds/day1_mountain.png').convert_alpha()
 sky_img = pygame.image.load('assets/backgrounds/day1_sky_cloud.png').convert_alpha()
 
-level = 0  # TODO: placeholder
+level = 1  # TODO: placeholder
 
 p_w = GameWorld(phflorg_data)  # Loading all tiles in the world, less background and player (phflorg_world = p_w)
 p_w.load(f'level{level}_data.csv')
@@ -236,11 +236,9 @@ while run:
                 if mob.cast_anim_list:
                     for spell in mob.cast_anim_list:
                        if spell[0] == 'fire':
-                            print('FIRE!')
                             x, y = spell[1:3]
                             animation = animations['fire']['fire-once']
                             p_w.anim_spells_sprite_group.add(Spell(x,y, animation, False, scale=1))
-                            # TODO: fix! Fails while our custom methods for drawing fails?
 
                     mob.cast_anim_list = []
 
@@ -271,12 +269,18 @@ while run:
                 if pygame.Rect.colliderect(player.rect, mob.hitbox) and not mob.dead and player.state != DYING:
                     player.hit(500, mob.turned)
 
-                # Projectile collision: trigger player dying if a) collision with projectile and b) player is not already dying
+                # Projectile collision
                 for projectile in projectile_group:
                     # Collision with player
                     if pygame.Rect.colliderect(player.rect, projectile) and player.state != DYING:
                         player.hit(100, projectile.turned)
                         projectile.kill()
+                
+                # Spell collision - special case, we don't treat it as a hit (at least not fire ;))
+                for spell in p_w.anim_spells_sprite_group:
+                    # Collision with player
+                    if pygame.Rect.colliderect(player.rect, spell) and player.state != DYING:
+                        player.take_damage(100, hits_per_second=2)
 
                 # If player is attacking
                 if player.state == ATTACKING:

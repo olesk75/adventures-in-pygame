@@ -71,7 +71,7 @@ class Player(pygame.sprite.Sprite):
         self.on_ground = False  # standing on solid ground
         self.state = WALKING  # we start walking always
         self.bouncing = False  # hit by something --> small bounce in the opposite direction
-
+        self.last_env_damage = 0  # to manage frequency of damage
         self.dead = False  # Death animation complete
 
         self.world_x_pos = x + self.X_CENTER # player x position across the whole world, not just screen
@@ -100,7 +100,8 @@ class Player(pygame.sprite.Sprite):
         else:
             return False
 
-    def hit(self, damage, turned) -> None:
+    def hit(self, damage: int, turned: int) -> None:
+        """ Player has been hit by mob or projectile, gets damage and bounces backs"""
         self.fx_hit.play()
         # Adjust health and bars
         self.health_current -= damage
@@ -129,6 +130,21 @@ class Player(pygame.sprite.Sprite):
         self.rect.x += x_bounce * direction
         # Update world position
         self.world_x_pos += x_bounce * direction
+
+    def take_damage(self, damage: int, hits_per_second:int=0) -> None:
+        """ Player has been in contact with enviromnmental damage, gets damage once or frequency per second """
+
+        now = pygame.time.get_ticks()
+        if now > self.last_env_damage + 1000 / hits_per_second:
+            self.fx_hit.play()
+            # Adjust health and bars
+            self.health_current -= damage
+            if self.health_current <= 0:
+                self.health_current = 0
+                self.state = DYING
+            self.health_bar_length = int(self.world_data.SCREEN_WIDTH / 6 * self.health_current / 1000)
+            self.last_env_damage = now
+
 
     def heal(self, damage) -> None:
         self.health_current += damage

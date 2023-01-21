@@ -24,6 +24,7 @@ class MonsterData():
 
         if monster == 'minotaur':
             self.boss = False  # bosses have unique behaviour, not just wondering around
+            self.caster = False
             self.direction = 1  # right
             self.speed_walking = 3
             self.speed_attacking = 3
@@ -41,6 +42,7 @@ class MonsterData():
 
         if monster == 'ogre-archer':
             self.boss = False
+            self.caster = False
             self.direction = 1  # right
             self.speed_walking = 1
             self.speed_attacking = 0
@@ -58,6 +60,7 @@ class MonsterData():
 
         if monster == 'skeleton-boss':
             self.boss = True
+            self.caster = True
             self.direction = 1  # right
             self.speed_walking = 4
             self.speed_attacking = 5
@@ -67,14 +70,14 @@ class MonsterData():
             self.attack_range = 150
             self.attack_instant_damage = True
             self.attack_delay = 0  # delay between attacks (ms)
-            self.attack_damage = 1
+            self.attack_damage = 100
             self.points_reward = 500
             self.random_turns = 0.3
             self.hitbox_width = 65
             self.hitbox_height = 110
  
             # Boss specific
-            self.boss_attacks = [('firewalker', 0.1)]  # DEBUG: use 0.01 when not debugging
+            self.boss_attacks = [('firewalker', 0.01)] 
             self.cast_delay = 2000
 
 
