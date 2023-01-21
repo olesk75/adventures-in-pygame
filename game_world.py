@@ -9,6 +9,7 @@ GamePanel(class)                    : contans the player information for the scr
 
 import pygame
 import csv
+import random
 from monster_data import MonsterData
 from monster_data import monsters
 from dataclasses import dataclass
@@ -58,12 +59,7 @@ class GameTileAnimation(GameTile):
     def update(self, scroll) -> None:
         # Moves the rectangle of this sprite 
         self.rect.x += scroll
-        #print(f'scrolling {self.dx}, new x_pos: {self.rect.left}')
-    
-    def draw(self, screen) -> None:
         self.image = self.animation.get_image().convert_alpha()
-        screen.blit(self.image, (self.rect.x, self.rect.y))
-
 
 
 class GameWorld():
@@ -75,6 +71,15 @@ class GameWorld():
 
     """
     def __init__(self, game_data):
+
+        self.tile_types = {
+            'platforms': [0,1,2,3,4,5,6,7,8],
+            'objects': [9,10,11,12,13,14,15],
+            'animated objects': [16,17],
+            'hazards': [18,19,20],
+            'monsters': [21,22,23,24,25,26,27],
+            'triggered animations': [28,29,30]
+        }
         
         self.data = game_data
         self.rows = self.data.MAX_COLS
@@ -87,9 +92,11 @@ class GameWorld():
         self.platforms_sprite_group = pygame.sprite.Group()
         self.pickups_sprite_group = pygame.sprite.Group()
         self.decor_sprite_group = pygame.sprite.Group()
-        self.anim_objects_sprite_list = []  # we need custom draw method due to the animations for the underlying sprites, so list, not sprite group (we could override the group draw method)
-        #self.anim_spells_sprite_list = []  # we need custom draw method due to the animations for the underlying sprites, so list, not sprite group (we could override the group draw method)
+        self.anim_objects_sprite_group = pygame.sprite.Group()
+        self.hazards_sprite_group = pygame.sprite.Group()
         self.anim_spells_sprite_group = pygame.sprite.Group()
+        self.trigger_anim_sprite_group = pygame.sprite.Group()
+        self.triggered_anim_list = []  # we trigger these when touched
 
 
         self.monster_import_list = []  # here we put all monsters from tile map, their type, x, y and AI properties
@@ -104,7 +111,7 @@ class GameWorld():
         self.pickups_sprite_group.empty()
         self.decor_sprite_group.empty()
 
-        for x in range(self.data.TILE_TYPES + self.data.ANIMATION_TYPES):
+        for x in range(31):
             img = pygame.image.load(f'assets/tile/{x}.png').convert_alpha()
             img = pygame.transform.scale(img, (self.data.TILE_SIZE, self.data.TILE_SIZE))
             img_list.append(img)
@@ -119,10 +126,10 @@ class GameWorld():
             reader = csv.reader(csvfile, delimiter = ',')
             for y, row in enumerate(reader):
                 for x, tile in enumerate(row):
-                    # For each tile we create a sprite and add to the relevant group
+                    # We sort the various tiles into the corresponding groups
                     if int(tile) != -1:
-                        if int(tile) < self.data.TILE_TYPES:  # -1 means empty
-                            """ Background tiles """
+                        if int(tile) in self.tile_types['platforms'] or int(tile) in self.tile_types['objects']:
+                            """ Platform and object tiles both """
                             sprite = GameTile()  # we must initialize every time, or we're only updating the same sprite over and over
                             sprite.image = pygame.Surface((self.tile_size, self.tile_size), pygame.SRCALPHA)  # Empty image with space for tiles
                             sprite.image.blit(img_list[int(tile)], (0, 0))  # we blit the right image onto the surface from top left
@@ -130,37 +137,71 @@ class GameWorld():
                             sprite.rect.x = x * self.tile_size # we correct the x pos
                             sprite.rect.y = y * self.tile_size # we correct the y pos
 
-                            if int(tile) <= 8:
+                            if int(tile) in self.tile_types['platforms']:
                                 """ Platforms """
                                 self.platforms_sprite_group.add(sprite)
-                                #print(f'Added platform sprite to group with x: {x} and y: {y} and tile: {tile}, which now containts {len(self.platforms_sprite_group.sprites())} sprites\n')  # DEBUG
-
-                            elif int(tile) >= 9:  # TODO simplify for now
+                            elif int(tile) in self.tile_types['objects']:
                                 """ Decor (rocks, grass, boxes etc. """
-                                #self.decor[x][y] = int(tile)
                                 self.decor_sprite_group.add(sprite)
+
+
                         
-                        elif int(tile) < (self.data.ANIMATION_TYPES + self.data.TILE_TYPES):
-                            """ Animated tiles (fires, birds etc.) """    
-                            # SIMPLIFIED FOR NOW
-                            if int(tile) - self.data.TILE_TYPES == 0:  # fire
-                                animation = animations['fire']['fire-once']
+                        if int(tile) in self.tile_types['animated objects'] or int(tile) in self.tile_types['hazards']:
+                            """ Animated hazards """
+                            if int(tile) == self.tile_types['hazards'][0]:  # fire
+                                animation = animations['fire']['fire-hazard']
+                                hazard = True    
+                            elif int(tile) == self.tile_types['hazards'][1]:  # spikes
+                                animation = animations['spikes']['spike-trap'] 
+                                hazard = True
+                            
+                            else:
+                                """ Animated tiles (fires, birds etc.) """    
+                                pass
+
                             sprite = GameTileAnimation(animation)  # -> GameTile -> pygame.sprite.Sprite
+                            sprite.animation.anim_counter = random.randint(0, sprite.animation.frames -1)
+                            image_height = sprite.sprites[0].get_height()  # height of the images in the animation
+                            image_width = sprite.sprites[0].get_width()  # height of the images in the animation
                             sprite.image = pygame.Surface((self.tile_size, self.tile_size), pygame.SRCALPHA)  # Empty image with space for tiles
                             sprite.image.blit(img_list[int(tile)], (0, 0))  # we blit the right image onto the surface from top left
                             sprite.rect = sprite.image.get_rect()  # we get the rect for the sprite
-                            sprite.rect.x = x * self.tile_size # we correct the x pos
-                            sprite.rect.y = y * self.tile_size # we correct the y pos
-                            self.anim_objects_sprite_list.append(sprite)
+                            sprite.rect.x = x * self.tile_size - (image_width - self.tile_size) / 2 # we correct the x pos by removeing the part of the image that's larger than the tile
+                            sprite.rect.y = ((y + 1)  * self.tile_size) - image_height # we correct the y pos
+                            if hazard:
+                                self.hazards_sprite_group.add(sprite)
+                            else:
+                                self.anim_objects_sprite_group.add(sprite)
 
-                        else:
+                        if int(tile) in self.tile_types['monsters']:
                             """ Monsters """
-                            obj_type = int(tile) - (self.data.TILE_TYPES + self.data.ANIMATION_TYPES)
+                            obj_type = self.tile_types['monsters'][int(tile)-21]-21
                             monster_type = monsters[obj_type]
                             x_pos = x * self.tile_size
                             y_pos = y * self.tile_size
                             
                             self.monster_import_list.append({'monster': monster_type, 'x': x_pos, 'y': y_pos, 'ai': MonsterData(monster_type)})
+
+                        if int(tile) in self.tile_types['triggered animations']:
+                            if int(tile) == self.tile_types['triggered animations'][2]: 
+                                animation = animations['doors']['end-of-level'] 
+
+                            sprite = GameTileAnimation(animation)  # -> GameTile -> pygame.sprite.Sprite
+                            sprite.animation.anim_counter = random.randint(0, sprite.animation.frames -1)
+                            image_height = sprite.sprites[0].get_height()  # height of the images in the animation
+                            image_width = sprite.sprites[0].get_width()  # height of the images in the animation
+                            sprite.image = pygame.Surface((self.tile_size, self.tile_size), pygame.SRCALPHA)  # Empty image with space for tiles
+                            sprite.image.blit(img_list[int(tile)], (0, 0))  # we blit the right image onto the surface from top left
+                            sprite.rect = sprite.image.get_rect()  # we get the rect for the sprite
+                            sprite.rect.x = x * self.tile_size - (image_width - self.tile_size) / 2 # we correct the x pos by removeing the part of the image that's larger than the tile
+                            sprite.rect.y = ((y + 1)  * self.tile_size) - image_height # we correct the y pos
+
+                            if sprite.animation == animations['doors']['end-of-level']:   # the last triggered animation is a door 
+                                self.triggered_anim_list.append(['doors', sprite])
+                                sprite.animation.active = False  # we trigger this in the main loop
+
+                            self.trigger_anim_sprite_group.add(sprite)
+
 
 
 class GamePanel():
@@ -181,7 +222,7 @@ class GamePanel():
         img = font.render(text, True, text_col)
         self.screen.blit(img, (x, y))
 
-    def _blink_bar(self, bar_frame, duration) -> None:
+    def _blink_bar(self, duration) -> None:
         if self.blink == True:
             if self.blink_counter < duration:
                 self.blink_counter += 1
@@ -204,7 +245,7 @@ class GamePanel():
         bar_frame.fill((255,255,255,128))                         # notice the alpha value in the color
         self.screen.blit(bar_frame, (20,40))
 
-        self._blink_bar(bar_frame, 10)  # blink if we should
+        self._blink_bar(10)  # blink if we should
 
         ratio = self.player.health_bar_length / self.player.health_bar_max_length
         GREEN = 255 * ratio

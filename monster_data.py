@@ -5,7 +5,7 @@ MonsterAI(class)    : contains monster data
 
 import random
 
-monsters = ['minotaur', 'ogre-archer', 'skeleton-boss']  # used to recognize tiles from level files
+monsters = ['minotaur', 'ogre-archer', 'skeleton-boss', 'elven-caster']  # used to recognize tiles from level files
 
 # State constants
 WALKING = 1

@@ -1,5 +1,0 @@
-digraph "Player" {
-rankdir=BT
-charset="utf-8"
-"player.Player" [color="black", fontcolor="black", label="{player.Player|X_ADJ\lX_CENTER : int\lY_ADJ\lY_CENTER : int\lanimation\lattack\lattack_rect\lattacking : bool\lbouncing : bool\ldead : bool\ldeath\ldying : bool\lfx_attack\lfx_attack_channel\lfx_die\lfx_hit\lfx_jump\lhealth_bar_length : int\lhealth_bar_max_length : int\lhealth_current : int\lhealth_max : int\lheight\limage\lon_ground : bool\lpowers_current : int\lpowers_max : int\lrect\lscore : int\lscreen\lturned : bool\lvel_y : int\lwidth\lworld\lworld_data\lworld_x_pos\l|check_game_over(): bool\ldie(): \ldraw(screen): \lheal(damage): \lhit(damage, turned): \lmove(): list\l}", shape="record", style="solid"];
-}

@@ -89,12 +89,10 @@ pine2_img = pygame.image.load('assets/backgrounds/day1_pine2.png').convert_alpha
 mountain_img = pygame.image.load('assets/backgrounds/day1_mountain.png').convert_alpha()
 sky_img = pygame.image.load('assets/backgrounds/day1_sky_cloud.png').convert_alpha()
 
-level = 1  # TODO: placeholder
+level = 1
 
 p_w = GameWorld(phflorg_data)  # Loading all tiles in the world, less background and player (phflorg_world = p_w)
-p_w.load(f'level{level}_data.csv')
-
-
+p_w.load(f'lvl/level{level}_data.csv')
 
 # load projectiles (no animation variety)
 arrow_img = pygame.image.load('assets/arrow.png').convert_alpha()
@@ -125,8 +123,6 @@ def load_high_score() -> int:
             high_score = pickle.load(high_score_file)
         except EOFError:  # In case file does not exist with valid high score already
             return(0)
-    
-    #print(f'Read high score from file: {high_score}')
     return(high_score)
 
 # Function to save score to file
@@ -134,9 +130,7 @@ def save_high_score(high_score) -> None:
     with open('highscore.dat', 'wb') as save_file:
         pickle.dump(high_score, save_file)    
 
-# TODO: move this over to standard sprite group
-def load_monsters(phflorg_worldmonster_import_list) -> list:
-    #print(phflorg_worldmonster_import_list)
+def load_monsters(phflorg_worldmonster_import_list) -> pygame.sprite.Group():
     monsters_sprite_group = pygame.sprite.Group()
     for mob in phflorg_worldmonster_import_list:
         if mob['monster'] == 'minotaur':
@@ -179,10 +173,12 @@ while run:
         score += score_add
 
         # Update tiles and projectiles
-        [sprite.update(scroll) for sprite in p_w.anim_objects_sprite_list]
+        p_w.anim_objects_sprite_group.update(scroll)
         p_w.platforms_sprite_group.update(scroll)
         p_w.pickups_sprite_group.update(scroll)
+        p_w.trigger_anim_sprite_group.update(scroll)
         p_w.decor_sprite_group.update(scroll)
+        p_w.hazards_sprite_group.update(scroll)
         projectile_group.update(scroll, p_w.platforms_sprite_group)
         #[sprite.update(scroll, p_w.platforms_sprite_group) for sprite in p_w.anim_spells_sprite_list]
         p_w.anim_spells_sprite_group.update(scroll)
@@ -195,10 +191,13 @@ while run:
 
         # Draw all sprites, monsters and player
 
-        [sprite.draw(screen) for sprite in p_w.anim_objects_sprite_list]
+        
         p_w.platforms_sprite_group.draw(screen)
         p_w.pickups_sprite_group.draw(screen)
+        p_w.trigger_anim_sprite_group.update(scroll)
         p_w.decor_sprite_group.draw(screen)
+        p_w.anim_objects_sprite_group.draw(screen)
+        p_w.hazards_sprite_group.draw(screen)
         projectile_group.draw(screen)
         #[sprite.draw(screen) for sprite in p_w.anim_spells_sprite_list]
         p_w.anim_spells_sprite_group.draw(screen)
@@ -237,7 +236,7 @@ while run:
                     for spell in mob.cast_anim_list:
                        if spell[0] == 'fire':
                             x, y = spell[1:3]
-                            animation = animations['fire']['fire-once']
+                            animation = animations['fire']['fire-spell']
                             p_w.anim_spells_sprite_group.add(Spell(x,y, animation, False, scale=1))
 
                     mob.cast_anim_list = []
@@ -276,13 +275,19 @@ while run:
                         player.hit(100, projectile.turned)
                         projectile.kill()
                 
-                # Spell collision - special case, we don't treat it as a hit (at least not fire ;))
+                # Spell collision
                 for spell in p_w.anim_spells_sprite_group:
                     # Collision with player
                     if pygame.Rect.colliderect(player.rect, spell) and player.state != DYING:
                         player.take_damage(100, hits_per_second=2)
 
-                # If player is attacking
+                # Hazards collision
+                for hazard in p_w.hazards_sprite_group:
+                    # Collision with player
+                    if pygame.Rect.colliderect(player.rect, hazard) and player.state != DYING:
+                        player.take_damage(100, hits_per_second=10)
+
+                # PLAYER ATTACK
                 if player.state == ATTACKING:
                     # Check if mob hit
                     if pygame.Rect.colliderect(player.attack_rect, mob.hitbox): 
@@ -290,50 +295,55 @@ while run:
                         mob.data.direction = -player.turned
                         score += 100
                         mob.dead = True  # we run through the death anim sequence
+
                     # Check if projectile hit
                     for projectile in projectile_group:
                         if pygame.Rect.colliderect(player.attack_rect, projectile) and player.state != DYING:
                             projectile.kill()
 
+                # PLAYER END OF LEVEL (WIN!)
+                if player.world_x_pos > (phflorg_data.TILE_SIZE * phflorg_data.MAX_COLS) - player.width:
+                    print('win!')
 
-            """ EVENTS PROCESSING ------------------------------------------------------------------------------------------- """
-            if player.state not in (DYING, DEAD):
-                for event in pygame.event.get():
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_ESCAPE:
-                            pygame.quit()
-                            exit(0)
-                        if event.key == pygame.K_LEFT:
-                            player.walking = -1  # left
-                            player.state = WALKING
-                            if player.on_ground == True:
-                                player.animation.active = True
-                            
-                        if event.key == pygame.K_RIGHT: 
-                            player.walking = 1  # right
-                            player.state = WALKING
-                            if player.on_ground == True:
-                                player.animation.active = True
 
-                        if event.key == pygame.K_UP:  # jump!
-                            if player.on_ground:
-                                player.vel_y = - player.world_data.JUMP_HEIGHT
-                                player.animation.active = False
-                                player.state = WALKING
-                                player.on_ground = False
-                                player.fx_jump.play()
-
-                        if event.key == pygame.K_SPACE:  # attack!        
-                            player.state = ATTACKING
-                            if not player.fx_attack_channel.get_busy():  # playing sound if not all channels busy
-                                player.fx_attack_channel.play(player.fx_attack)
-
-                    if event.type == pygame.KEYUP:  # mostly to handle repetition of left and right
-                        if event.key == pygame.K_LEFT and player.walking == -1:
-                            player.walking = False
+        """ EVENTS PROCESSING ------------------------------------------------------------------------------------------- """
+        if player.state not in (DYING, DEAD):
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        exit(0)
+                    if event.key == pygame.K_LEFT:
+                        player.walking = -1  # left
+                        player.state = WALKING
+                        if player.on_ground == True:
+                            player.animation.active = True
                         
-                        if event.key == pygame.K_RIGHT and player.walking == 1:
-                            player.walking = False
+                    if event.key == pygame.K_RIGHT: 
+                        player.walking = 1  # right
+                        player.state = WALKING
+                        if player.on_ground == True:
+                            player.animation.active = True
+
+                    if event.key == pygame.K_UP:  # jump!
+                        if player.on_ground:
+                            player.vel_y = - player.world_data.JUMP_HEIGHT
+                            player.animation.active = False
+                            player.state = WALKING
+                            player.on_ground = False
+                            player.fx_jump.play()
+
+                    if event.key == pygame.K_SPACE:  # attack!        
+                        player.state = ATTACKING
+                        if not player.fx_attack_channel.get_busy():  # playing sound if not all channels busy
+                            player.fx_attack_channel.play(player.fx_attack)
+
+                if event.type == pygame.KEYUP:  # mostly to handle repetition of left and right
+                    if event.key == pygame.K_LEFT and player.walking == -1:
+                        player.walking = False
+                    
+                    if event.key == pygame.K_RIGHT and player.walking == 1:
+                        player.walking = False
         try:                    
             monsters_sprite_group.draw(screen)  # draw them all
         except:
@@ -377,7 +387,7 @@ while run:
                 scroll = 0
                 bg_scroll = 0
 
-                p_w.load(f'level{level}_data.csv')
+                p_w.load(f'lvl/level{level}_data.csv')
 
                 fade_counter = 0
                 wait_counter = 0
@@ -385,14 +395,6 @@ while run:
                 monster_list = load_monsters(p_w.monster_import_list)
 
 
-    # The main even handler
-    # for event in pygame.event.get():
-    #     scroll, score_add = player.move()
-    #     score += score_add
-    #     if event.type == pygame.QUIT:
-    #         run = False
-
-    # Update display window
     pygame.display.update()
 
 pygame.quit()

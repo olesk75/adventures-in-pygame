@@ -31,14 +31,26 @@ skeleton_boss_anim_cast = Animation(skeleton_boss_ss, row=2, frames=7, speed=100
 fire_start = pygame.image.load('assets/objects/fire/burning_start_1.png').convert_alpha()
 fire_loop = pygame.image.load('assets/objects/fire/burning_loop_1.png').convert_alpha()
 fire_end = pygame.image.load('assets/objects/fire/burning_end_1.png').convert_alpha()
-fire = pygame.Surface((fire_start.get_width() + fire_loop.get_width() + fire_end.get_width(),fire_start.get_height())).convert_alpha()
+fire_spell = pygame.Surface((fire_start.get_width() + fire_loop.get_width() + fire_end.get_width(),fire_start.get_height())).convert_alpha()
 
 # Adding the three fire sheets together into one sprite sheet
-fire.blit(fire_start, (0, 0))
-fire.blit(fire_loop, (fire_start.get_width(), 0))
-fire.blit(fire_end, (fire_loop.get_width() + fire_start.get_width(), 0))
-fire_ss = SpriteSheet(fire.convert_alpha(), 24,32, BLACK, 2)
-fire_anim = Animation(fire_ss, row=0, frames=17, speed=100)
+fire_spell.blit(fire_start, (0, 0))
+fire_spell.blit(fire_loop, (fire_start.get_width(), 0))
+fire_spell.blit(fire_end, (fire_loop.get_width() + fire_start.get_width(), 0))
+fire_spell_ss = SpriteSheet(fire_spell.convert_alpha(), 24,32, BLACK, 2)
+fire_spell_anim = Animation(fire_spell_ss, row=0, frames=17, speed=100)
+
+# Creating fire hazard animation
+fire_ss = SpriteSheet(fire_loop.convert_alpha(), 24,32, BLACK, 4)
+fire_anim = Animation(fire_ss, row=0, frames=8, speed=50)
+
+# Creating spike hazard animation
+spike_ss = SpriteSheet(pygame.image.load('assets/spikes.png').convert_alpha(), 32, 32, BLACK, 2)
+spike_anim = Animation(spike_ss, row=0, frames=2, speed=100)
+
+# Creating door animation
+door_ss = SpriteSheet(pygame.image.load('assets/door-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
+door_anim = Animation(spike_ss, row=0, frames=4, speed=100)
 
 
 """ Create main animation dict """
@@ -63,6 +75,13 @@ animations = {
         'cast': skeleton_boss_anim_cast
     },
     'fire': {
-        'fire-once': fire_anim
+        'fire-spell': fire_spell_anim,
+        'fire-hazard': fire_anim
+    },
+    'spikes': {
+        'spike-trap': spike_anim
+    },
+    'doors': {
+        'end-of-level': door_anim,
     }
 }

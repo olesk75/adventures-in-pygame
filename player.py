@@ -221,8 +221,7 @@ class Player(pygame.sprite.Sprite):
         x_pos = self.rect.center[0]
 
         # Check if player has reached scroll threshold to the LEFT (and we're not on the far left) + we're walking left
-        #print(f'world_x_pos: {self.world_x_pos}')
-        if dx < 0 and x_pos <= self.world_data.SCROLL_THRESHOLD and self.world_x_pos > self.world_data.SCROLL_THRESHOLD:
+        if dx < 0 and x_pos <= self.world_data.SCROLL_THRESHOLD and self.world_x_pos > self.world_data.SCROLL_THRESHOLD + self.width:
             scroll = -dx  # We scroll left by the opposite of the player's x speed
         
          # Check if player has reached scroll threshold to the right (and we're not on the far right) + we're walking right
