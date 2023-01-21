@@ -9,8 +9,8 @@ GamePanel(class)                    : contans the player information for the scr
 
 import pygame
 import csv
-from monster_logic import MonsterData
-from monster_logic import monsters
+from monster_data import MonsterData
+from monster_data import monsters
 from dataclasses import dataclass
 
 

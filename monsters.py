@@ -60,21 +60,28 @@ class Monster(pygame.sprite.Sprite):
         self.score_flag = False  # We can only add more score when this is True
         self.prev_y_lvl = self.rect.y  # Tracking vertical progress
 
-        self.spells_list = None  # if the mob is busy casting, this is what it is casting
+        self.currently_casting = None  # if the mob is busy casting, this is what it is casting
         self.cast_anim_list = []  # if the mob casts a spell, we creat animations here
 
 
     def _create_rects(self) -> None:
+        """
+        Creating rects for monster hitbox, detection range and attack damage range
+        To cater for monster sprites of various sizes (including walk/attack/cast being different), 
+        we always draw from sprite centerx and centery as reference.
+        """
         # Updating the HITBOX collision rectangle
-        self.hitbox = pygame.Rect(self.rect.left + 30, self.rect.top + 28, self.width - 60, self.rect.height - 30)
+        self.hitbox = pygame.Rect(self.rect.centerx - self.data.hitbox_width / 2, self.rect.centery - self.data.hitbox_height / 2, \
+            self.data.hitbox_width, self.data.hitbox_height)
 
         # Creating a DETECTION rect where to mob will attack if the player rect collides
-        x = self.hitbox.centerx
-        y = self.hitbox.top + 30 + (self.data.detection_range_high * -100)
-        
+        x = self.rect.centerx
+        y = self.rect.centery - (self.data.detection_range_high * self.rect.height / 2)  # top of rect depends if we have high detection range True or not
 
         width = self.data.detection_range
-        height = self.height - 100 + (self.data.detection_range_high * 200)
+        height = self.rect.height / 2
+        if self.data.detection_range_high:
+            height = self.rect.height
 
         if self.turned:       
             self.rect_detect = pygame.Rect(x - width, y, width, height) 
@@ -83,7 +90,8 @@ class Monster(pygame.sprite.Sprite):
 
         # Creating an ATTACK rect 
         if self.state == ATTACKING:
-            y = y + (self.data.detection_range_high * 100)
+            x = self.rect.centerx
+            y = self.rect.centery
             height = self.height / 2
             if self.turned:
                 self.rect_attack = pygame.Rect(x - self.data.attack_range, y, self.data.attack_range, height) 
@@ -142,36 +150,115 @@ class Monster(pygame.sprite.Sprite):
                     self.rect.x += dx * 20  * self.data.direction # far enough to avoid re-triggering in an endless loop
                     self.turned = not self.turned
 
-
-    def attack_start(self) -> None: 
-        """ Called to set attack variables and keep track of attack timings for repeat attacks """                
-        if self.ready_to_attack:
-            self.state = ATTACKING
-            self.attack_anim.active = True
-            self.last_attack = pygame.time.get_ticks()
-            new_rect = self.attack_anim.get_image().get_rect()  # we need to scale the rect for different size attack images
-            new_rect.center = self.rect.center
-            self.rect = new_rect
-
-
-    def attack_stop(self) -> None: 
-        self.state = WALKING 
-        self.attack_anim.active = False
-        self.rect_attack = pygame.Rect(0,0,0,0)
-        self.rect = self.walk_anim.get_image()  # we need to scale back to walking image size after an attack
+    def _boss_battle(self, player) -> tuple:
+        """ Movement and attacks for specific bosess 
+            returns: dx and dy for mob (replaces the normal walking/bumping dx/dy for regular mobs)
+        """
+        dx = 0  # these are absolute moves, not speed 
+        dy = 0  # speed equivalent
         
+        def _casting() -> None:
+            sprite_size = 32
+            if self.cast_anim.anim_counter == self.cast_anim.frames - 1:  # on last cast animation frame, trigger the spell
+                if self.currently_casting == 'firewalker':
+                    self.cast_anim_list.append(['fire', self.rect.left - sprite_size * 3, self.rect.bottom - sprite_size * 2])
+                    self.cast_anim_list.append(['fire', self.rect.left - sprite_size * 3.5, self.rect.bottom - sprite_size * 2])
+                    self.cast_anim_list.append(['fire', self.rect.left - sprite_size * 4, self.rect.bottom - sprite_size * 2])
+                    self.cast_anim_list.append(['fire', self.rect.left - sprite_size * 4.5, self.rect.bottom - sprite_size * 2])
+                    self.cast_anim_list.append(['fire', self.rect.left - sprite_size * 5, self.rect.bottom - sprite_size * 2])
+
+                    self.cast_anim_list.append(['fire', self.rect.right + sprite_size, self.rect.bottom - sprite_size * 2])
+                    self.cast_anim_list.append(['fire', self.rect.right + sprite_size * 1.5, self.rect.bottom - sprite_size * 2])
+                    self.cast_anim_list.append(['fire', self.rect.right + sprite_size * 2, self.rect.bottom - sprite_size * 2])
+                    self.cast_anim_list.append(['fire', self.rect.right + sprite_size * 2.5, self.rect.bottom - sprite_size * 2])
+                    self.cast_anim_list.append(['fire', self.rect.right + sprite_size * 3, self.rect.bottom - sprite_size * 2])
+                    self.state_change(WALKING)
+                    self.currently_casting = ''
+
+        if self.data.monster ==  'skeleton-boss':
+            if self.state == ATTACKING:
+                # Random transitions from ATTACKING to CASTING
+                for attack in self.data.boss_attacks:
+                    attack_type = attack[0]
+                    attack_prob = attack[1]
+                    if attack_prob > random.random():
+                        print('we start casting')
+                        self.state_change(CASTING, attack_type=attack_type)
+                        dx = 0  # we stop to cast
+                    else:
+                        dx = self.data.speed_attacking  # if not, we just keep the attack speed
+            
+                        # Sometimes a jumping mob can jump if player is higher than the mob and mob is attacking
+                        max_dist_centery = -7
+                        player_above_mob = player.rect.centery -  (self.rect.centery + max_dist_centery)
+                        if self.data.attack_jumper and player_above_mob < 0 and self.vel_y == 0:  # player is higher up and we're not already jumping
+                            if 0.01  > random.random():  # hardcoded jump probability
+                                self.vel_y = -10
+
+            elif self.state == CASTING:
+                _casting()
+
+            elif self.state == WALKING:
+                    dx = self.data.speed_walking  #  we start at walking speed
+
+                    # We throw in random changes in direction, different by mod type
+                    if self.data.random_turns / 100  > random.random():
+                        dx *= -1
+                        self.data.direction *= -1
+                        self.turned = not self.turned
+
+        return dx, dy
+
+
+    def state_change(self, new_state:int, attack_type:str=None) -> None:
+        """
+        Manages all state changes for mobs, betweeh ATTACKING, WALKING and CASTING
+        Can take attack type if we're switching into CASTING
+        """
+        if new_state != self.state:  # only do something if we have a _change_ in state
+            self.state = new_state
+            if new_state == ATTACKING:
+                if self.ready_to_attack:  # if previous attack is done
+                    self.walk_anim.active = False
+                    self.attack_anim.active = True
+                    self.cast_anim.active = False
+
+                    self.last_attack = pygame.time.get_ticks()
+
+                    new_rect = self.attack_anim.get_image().get_rect()  # we need to scale the rect for different size attack images
+                    new_rect.center = self.rect.center
+                    self.rect = new_rect
+
+            elif new_state == WALKING:
+                    self.walk_anim.active = True
+                    self.attack_anim.active = False
+                    self.cast_anim.active = False
+
+                    new_rect = self.walk_anim.get_image().get_rect()  # we need to scale back to walking image size after an attack
+                    new_rect.center = self.rect.center
+                    self.rect = new_rect
+
+            elif new_state == CASTING:
+                    self.attack_anim.active = False
+                    self.walk_anim.active = False
+                    self.cast_anim.active = True
+
+                    new_rect = self.cast_anim.get_image().get_rect()  # we need to scale back to walking image size after an attack
+                    new_rect.center = self.rect.center
+                    self.rect = new_rect
+
+                    self.currently_casting = attack_type
+
 
     def update(self, scroll, platforms_sprite_group, player) -> None:
         dx = 0
         dy = self.vel_y  # Newton would be proud!
 
-        
-
         """ Boss battles have separate logic depending on each boss - if they cast anything, we get a list of animations back as well
             the boss_battle function updates self.vel_y directly and adds self.
         """
         if self.data.boss:
-            dx, dy = self.data.boss_battle(self, player)
+            dx, dy = self._boss_battle(player)
         else:
         # Regular mobs simply walk around mostly
 
@@ -198,7 +285,6 @@ class Monster(pygame.sprite.Sprite):
 
 
         # we compensate for scrolling
-        self.scroll = scroll
         self.rect.x += scroll
 
         # we compensate for graivty
@@ -210,7 +296,7 @@ class Monster(pygame.sprite.Sprite):
         self.rect.y += dy 
 
         # Checking detection, hitbox and attack rects as well as platform rects for collision
-        if not self.dead:
+        if self.state != DYING:
             self._create_rects()
             self._check_platform_collision(dx, dy, platforms_sprite_group)
         else:
@@ -277,7 +363,6 @@ class Projectile(pygame.sprite.Sprite):
         dy = 0  # projectiles have no gravity
 
         # we compensate for scrolling
-        self.scroll = scroll
         self.rect.x += scroll
 
         # Update rectangle position
@@ -317,15 +402,16 @@ class Spell(pygame.sprite.Sprite):
         
     def update(self, scroll) -> None:
         # we compensate for scrolling
-        self.scroll = scroll
         self.rect.x += scroll
 
         # Done with one cycle, as spell do not repeat (yet!)
         print (f'{self.anim.anim_counter=}')
         print(f'{self.anim.first_done=}')
         if self.anim.first_done:
-            self.spells_list = False
+            self.currently_casting = False
             self.kill()
 
         # Ready for super.draw()
         self.image = pygame.transform.flip( self.image.convert_alpha(), self.turned, False)
+
+

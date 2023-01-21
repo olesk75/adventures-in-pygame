@@ -43,7 +43,7 @@ from animation_data import animations  # late import as we need display to be ac
 
 # Set frame rate
 clock = pygame.time.Clock() 
-FPS = 30
+FPS = 60
 
 # Player state
 score = 0
@@ -89,7 +89,7 @@ pine2_img = pygame.image.load('assets/backgrounds/day1_pine2.png').convert_alpha
 mountain_img = pygame.image.load('assets/backgrounds/day1_mountain.png').convert_alpha()
 sky_img = pygame.image.load('assets/backgrounds/day1_sky_cloud.png').convert_alpha()
 
-level = 1  # TODO: placeholder
+level = 0  # TODO: placeholder
 
 p_w = GameWorld(phflorg_data)  # Loading all tiles in the world, less background and player (phflorg_world = p_w)
 p_w.load(f'level{level}_data.csv')
@@ -136,7 +136,7 @@ def save_high_score(high_score) -> None:
 
 # TODO: move this over to standard sprite group
 def load_monsters(phflorg_worldmonster_import_list) -> list:
-    print(phflorg_worldmonster_import_list)
+    #print(phflorg_worldmonster_import_list)
     monsters_sprite_group = pygame.sprite.Group()
     for mob in phflorg_worldmonster_import_list:
         if mob['monster'] == 'minotaur':
@@ -244,16 +244,15 @@ while run:
 
                     mob.cast_anim_list = []
 
-                # Mob detecting player and starting attack...
+                # Mob detecting player and starting attack unless we're already in the process of casting (only bosses)
                 if pygame.Rect.colliderect(player.rect, mob.rect_detect):
-                    # attack_start_time = mob.last_attack + mob.data.attack_delay
-                    # if now > attack_start_time:  # ...if enough time has passed
-                    mob.attack_start()
+                    if mob.state == WALKING:
+                        mob.state_change(ATTACKING)
                     if DEBUG_BOXES: pygame.draw.rect(screen, (255,0,0), mob.rect_attack, 2 )  # DEBUG: to see hitbox for detection (red)
                     
                 else:  # Mob not detecting player
                     if mob.state == ATTACKING:
-                        mob.attack_stop()  # if we move out of range, the mob will stop attacking
+                        mob.state_change(WALKING)  # if we move out of range, the mob will stop attacking
                 
                 # Mob attack: trigger attack if a) collision with mob, b) mob is in attack mode and c) mob is not already dead
                 if pygame.Rect.colliderect(player.rect, mob.rect_attack) and mob.state == ATTACKING and not mob.dead:
@@ -331,8 +330,11 @@ while run:
                         
                         if event.key == pygame.K_RIGHT and player.walking == 1:
                             player.walking = False
-                            
-        monsters_sprite_group.draw(screen)  # draw them all
+        try:                    
+            monsters_sprite_group.draw(screen)  # draw them all
+        except:
+            print('ooops')
+
         
         
         
