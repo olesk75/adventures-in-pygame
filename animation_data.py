@@ -49,8 +49,8 @@ spike_ss = SpriteSheet(pygame.image.load('assets/spikes.png').convert_alpha(), 3
 spike_anim = Animation(spike_ss, row=0, frames=2, speed=100)
 
 # Creating door animation
-door_ss = SpriteSheet(pygame.image.load('assets/door-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
-door_anim = Animation(spike_ss, row=0, frames=4, speed=100)
+door_ss = SpriteSheet(pygame.image.load('assets/door-sprites - large.png'), 64, 61, BLACK, 2)
+door_anim = Animation(door_ss, row=0, frames=4, speed=100, repeat=False)
 
 
 """ Create main animation dict """

@@ -5,7 +5,6 @@ from game_world import GameWorld, GameData, GamePanel
 from player import Player
 from monsters import Monster, Projectile, Spell
 
-
 # Flags for debug functionality
 DEBUG_BOXES = False
 
@@ -180,7 +179,6 @@ while run:
         p_w.decor_sprite_group.update(scroll)
         p_w.hazards_sprite_group.update(scroll)
         projectile_group.update(scroll, p_w.platforms_sprite_group)
-        #[sprite.update(scroll, p_w.platforms_sprite_group) for sprite in p_w.anim_spells_sprite_list]
         p_w.anim_spells_sprite_group.update(scroll)
         player.update()
 
@@ -189,17 +187,14 @@ while run:
         bg_scroll += scroll
         draw_bg(bg_scroll)
 
-        # Draw all sprites, monsters and player
-
-        
+        # Draw all sprite groups
         p_w.platforms_sprite_group.draw(screen)
         p_w.pickups_sprite_group.draw(screen)
-        p_w.trigger_anim_sprite_group.update(scroll)
+        p_w.trigger_anim_sprite_group.draw(screen)
         p_w.decor_sprite_group.draw(screen)
         p_w.anim_objects_sprite_group.draw(screen)
         p_w.hazards_sprite_group.draw(screen)
         projectile_group.draw(screen)
-        #[sprite.draw(screen) for sprite in p_w.anim_spells_sprite_list]
         p_w.anim_spells_sprite_group.draw(screen)
 
         player.draw()
@@ -209,7 +204,6 @@ while run:
 
         # Check animation imports
         # skeleton_boss_anim_attack._show_anim(screen)
-        #skeleton_boss_anim_death._show_anim(screen) 
 
         # check game over from falling
         if player.rect.top > phflorg_data.SCREEN_HEIGHT:
@@ -222,7 +216,15 @@ while run:
         if player.state == DYING:
             game_over = player.check_game_over()  # if we're done dying, we're dead
 
+        """ We check if the player has touched any animated triggers """
+        for t_anim_sprite in p_w.trigger_anim_sprite_group.sprites():
+            if pygame.Rect.colliderect(player.rect, t_anim_sprite) and player.state != DYING:
+                t_anim_sprite.animation.active = True
+                # print(t_anim_sprite.image)
+                # print(t_anim_sprite.animation.anim_counter )
 
+                
+        """ We step through every single mob in the level """
         for mob in monsters_sprite_group:
             mob.walk_anim.active = True
             mob.update(scroll, p_w.platforms_sprite_group, player)
@@ -281,7 +283,7 @@ while run:
                     if pygame.Rect.colliderect(player.rect, spell) and player.state != DYING:
                         player.take_damage(100, hits_per_second=2)
 
-                # Hazards collision
+                # Hazards collision  TODO: change to group collision check
                 for hazard in p_w.hazards_sprite_group:
                     # Collision with player
                     if pygame.Rect.colliderect(player.rect, hazard) and player.state != DYING:
@@ -304,6 +306,7 @@ while run:
                 # PLAYER END OF LEVEL (WIN!)
                 if player.world_x_pos > (phflorg_data.TILE_SIZE * phflorg_data.MAX_COLS) - player.width:
                     print('win!')
+
 
 
         """ EVENTS PROCESSING ------------------------------------------------------------------------------------------- """
@@ -380,8 +383,8 @@ while run:
 
                 # Reset all variables
                 game_over = False
-                player = Player(phflorg_data.SCREEN_WIDTH // 2, phflorg_data.SCREEN_HEIGHT -170 , phflorg_data, phflorg_world, \
-                     animations['player']['walk'], animations['player']['attack'], animations['player']['death'], player_sound_effects)
+                player = Player(phflorg_data.SCREEN_WIDTH // 2, phflorg_data.SCREEN_HEIGHT -170 , phflorg_data, p_w, \
+                    animations['player']['walk'], animations['player']['attack'], animations['player']['death'], player_sound_effects)
 
                 score = 0
                 scroll = 0

@@ -15,7 +15,6 @@ from monster_data import monsters
 from dataclasses import dataclass
 
 
-
 @dataclass
 class GameData:
     SCREEN_WIDTH: int
@@ -70,7 +69,7 @@ class GameWorld():
     We build sprite groups of all objects    
 
     """
-    def __init__(self, game_data):
+    def __init__(self, game_data) -> None:
 
         self.tile_types = {
             'platforms': [0,1,2,3,4,5,6,7,8],
@@ -78,7 +77,7 @@ class GameWorld():
             'animated objects': [16,17],
             'hazards': [18,19,20],
             'monsters': [21,22,23,24,25,26,27],
-            'triggered animations': [28,29,30]
+            'trigg_anims': [28,29,30]
         }
         
         self.data = game_data
@@ -111,7 +110,7 @@ class GameWorld():
         self.pickups_sprite_group.empty()
         self.decor_sprite_group.empty()
 
-        for x in range(31):
+        for x in range(sum([len(self.tile_types[x]) for x in self.tile_types if isinstance(self.tile_types[x], list)])):
             img = pygame.image.load(f'assets/tile/{x}.png').convert_alpha()
             img = pygame.transform.scale(img, (self.data.TILE_SIZE, self.data.TILE_SIZE))
             img_list.append(img)
@@ -182,12 +181,11 @@ class GameWorld():
                             
                             self.monster_import_list.append({'monster': monster_type, 'x': x_pos, 'y': y_pos, 'ai': MonsterData(monster_type)})
 
-                        if int(tile) in self.tile_types['triggered animations']:
-                            if int(tile) == self.tile_types['triggered animations'][2]: 
+                        if int(tile) in self.tile_types['trigg_anims']:
+                            if int(tile) == self.tile_types['trigg_anims'][2]: 
                                 animation = animations['doors']['end-of-level'] 
 
                             sprite = GameTileAnimation(animation)  # -> GameTile -> pygame.sprite.Sprite
-                            sprite.animation.anim_counter = random.randint(0, sprite.animation.frames -1)
                             image_height = sprite.sprites[0].get_height()  # height of the images in the animation
                             image_width = sprite.sprites[0].get_width()  # height of the images in the animation
                             sprite.image = pygame.Surface((self.tile_size, self.tile_size), pygame.SRCALPHA)  # Empty image with space for tiles
@@ -205,7 +203,7 @@ class GameWorld():
 
 
 class GamePanel():
-    def __init__(self, screen, player):
+    def __init__(self, screen: pygame.display, player):
         self.screen = screen
         self.player = player
 

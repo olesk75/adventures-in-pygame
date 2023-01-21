@@ -3,19 +3,20 @@ import pygame
 # Animation class
 class Animation():
     # Getting a sprite sheet
-    def __init__(self, sprite_sheet, row, frames, speed):
+    def __init__(self, sprite_sheet: pygame.Surface, row:int, frames:int, speed:int, repeat:bool=True):
         self.ss = sprite_sheet
         self.row = row
         self.frames = frames
         self.sprites = []
         self.speed = speed   # Effecticely the ms we wait for next animation frame - bigger means slower
         self.active = False  # We begin in the stopped state
+        self.repeat = repeat  # should we run forever or just once
 
-        [self.sprites.append(sprite_sheet.get_image(row, frame)) for frame in range(frames)]
+        [self.sprites.append(self.ss.get_image(row, frame)) for frame in range(frames)]
         
         self.anim_counter = 0
         self.last_run = 0
-        self.repeat_start = 0  # ticks when we're done with one animation frame cycle
+        self.repeat_start = 0  # ticks of time when we're done with one animation frame cycle
         self.first_done = False  # True when done one cycle of frames
         
     def get_image(self, repeat_delay=0):
@@ -25,11 +26,15 @@ class Animation():
 
             if self.active == True and time_since_last > self.speed:  # time for a new frame
                 self.anim_counter += 1
-                if self.anim_counter == len(self.sprites):    
-                    self.anim_counter = 0
-                    self.first_done = True
-                    self.repeat_start = now
-
+                if self.anim_counter == len(self.sprites):
+                    if not self.repeat:  # we disable if we're no repeating after first iteration
+                        self.active = False 
+                        self.anim_counter -= 1  # we show the last frame forever
+                    else:
+                        self.anim_counter = 0
+                        self.first_done = True
+                        self.repeat_start = now
+                    
                 self.last_run = now
         
         image = self.sprites[self.anim_counter].convert_alpha()
