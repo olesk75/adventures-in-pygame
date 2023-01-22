@@ -41,6 +41,7 @@ class MonsterData():
             self.hitbox_width = 65 
             self.hitbox_height = 110
             self.sound_attack = False
+            self.sound_death = pygame.mixer.Sound('assets/sound/monster/minotaur/death.ogg')
 
         if monster == 'ogre-archer':
             self.boss = False
@@ -60,6 +61,7 @@ class MonsterData():
             self.hitbox_width = 65 
             self.hitbox_height = 110
             self.sound_attack = False
+            self.sound_death = False
 
         if monster == 'skeleton-boss':
             self.boss = True

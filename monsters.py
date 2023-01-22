@@ -258,6 +258,15 @@ class Monster(pygame.sprite.Sprite):
                     if self.data.caster:
                         self.data.sound_cast.play()
 
+            elif new_state == DYING:
+                    self.attack_anim.active = False
+                    self.walk_anim.active = False
+                    self.cast_anim.active = False
+                    self.vel_y = -5
+                    self.dead = True  # we run through the death anim sequence
+
+                    if self.data.sound_death:
+                        self.data.sound_death.play()
 
     def update(self, scroll, platforms_sprite_group, player) -> None:
         dx = 0

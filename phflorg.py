@@ -295,10 +295,9 @@ while run:
                 if player.state == ATTACKING:
                     # Check if mob hit
                     if pygame.Rect.colliderect(player.attack_rect, mob.hitbox): 
-                        mob.vel_y = -5
+                        mob.state_change(DYING)
                         mob.data.direction = -player.turned
                         player.score += 100
-                        mob.dead = True  # we run through the death anim sequence
                         """ Adding drops from player death """
                         # skeleton-boss is a key carrier
                         if mob.data.monster == 'skeleton-boss':
