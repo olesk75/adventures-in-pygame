@@ -21,9 +21,9 @@ ogre_anim_attack = Animation(ogre_archer_ss, row=19, frames=13, speed=100)
 
 # Create boss animations
 skeleton_boss_ss = SpriteSheet(pygame.image.load('assets/skeleton-boss-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
-skeleton_boss_oversize_ss = SpriteSheet(pygame.image.load('assets/skeleton-boss-sprites.png').convert_alpha(), 64*3, 64*3, BLACK, 2)
+skeleton_boss_attack_ss = SpriteSheet(pygame.image.load('assets/skeleton-boss-sprites-attack.png').convert_alpha(), 64*3, 64*3, BLACK, 2)
 skeleton_boss_anim_walk = Animation(skeleton_boss_ss, row=11, frames=9, speed=50)
-skeleton_boss_anim_attack = Animation(skeleton_boss_oversize_ss, row=10, frames=6, speed=75)
+skeleton_boss_anim_attack = Animation(skeleton_boss_attack_ss, row=3, frames=8, speed=75)
 skeleton_boss_anim_death = Animation(skeleton_boss_ss, row=20, frames=6, speed=75)
 skeleton_boss_anim_cast = Animation(skeleton_boss_ss, row=2, frames=7, speed=100)
 
