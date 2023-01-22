@@ -46,6 +46,8 @@ class GamePanel():
 
         # Panel background image
         self.panel_bg = pygame.image.load('assets/game-panel.png').convert_alpha()
+        self.panel_highlight_fx = pygame.mixer.Sound('assets/sound/panel_highlight.wav')
+
 
     def _blink_bar(self, duration) -> None:
         if self.blink == True:
@@ -60,11 +62,11 @@ class GamePanel():
                 self.blink = True
 
     def _flash_show(self, img, x,y):
+        self.panel_highlight_fx.play()
         opacity = 128
         img2 = img
         img2.fill((100, 100, 100, 0), special_flags=pygame.BLEND_RGBA_ADD)
         
-    
         surf = pygame.Surface(pygame.display.get_window_size())
         surf.set_alpha(opacity)  
         surf.fill((0,0,0)) # fill the entire surface

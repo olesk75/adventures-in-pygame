@@ -230,6 +230,9 @@ class Monster(pygame.sprite.Sprite):
                     new_rect.center = self.rect.center
                     self.rect = new_rect
 
+                    if self.data.sound_attack:
+                        self.data.sound_attack.play()
+
             elif new_state == WALKING:
                     self.walk_anim.active = True
                     self.attack_anim.active = False
@@ -251,6 +254,9 @@ class Monster(pygame.sprite.Sprite):
 
                     self.currently_casting = attack_type
                     self.cast_player_pos = player_pos
+
+                    if self.data.caster:
+                        self.data.sound_cast.play()
 
 
     def update(self, scroll, platforms_sprite_group, player) -> None:

@@ -4,6 +4,7 @@ MonsterAI(class)    : contains monster data
 """
 
 import random
+import pygame
 
 monsters = ['minotaur', 'ogre-archer', 'skeleton-boss', 'elven-caster']  # used to recognize tiles from level files - order must match tile numbering 
 
@@ -39,6 +40,7 @@ class MonsterData():
             self.random_turns = 0.0
             self.hitbox_width = 65 
             self.hitbox_height = 110
+            self.sound_attack = False
 
         if monster == 'ogre-archer':
             self.boss = False
@@ -57,6 +59,7 @@ class MonsterData():
             self.random_turns = 0.15
             self.hitbox_width = 65 
             self.hitbox_height = 110
+            self.sound_attack = False
 
         if monster == 'skeleton-boss':
             self.boss = True
@@ -75,11 +78,14 @@ class MonsterData():
             self.random_turns = 0.3
             self.hitbox_width = 65
             self.hitbox_height = 110
+            self.sound_attack = pygame.mixer.Sound('assets/sound/monster/skeleton-boss/roar.mp3')
  
             # Boss specific
             self.boss_attacks = [('firewalker', 0.01)] 
             self.cast_delay = 2000
             self.item_drop = ['key', 'health']
+            self.sound_cast = pygame.mixer.Sound('assets/sound/spell/fire-spell.aif')
+
 
 
     

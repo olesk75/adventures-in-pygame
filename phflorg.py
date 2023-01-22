@@ -80,8 +80,8 @@ hit_fx = pygame.mixer.Sound('assets/sound/Laser-weapon/OGG/Laser-weapon 8 - Soun
 player_sound_effects = [attack_fx, jump_fx, death_fx, hit_fx]
 
 # Load audio for world
-item_pickup_fx = pygame.mixer.Sound('assets/sound/Power-up/OGG/Powerup 7 - Sound effects Pack 2.ogg')
-health_pickup_fx = pygame.mixer.Sound('assets/sound/Power-up/OGG/Powerup 7 - Sound effects Pack 2.ogg')
+key_pickup_fx = pygame.mixer.Sound('assets/sound/key_pickup.wav')
+health_pickup_fx = pygame.mixer.Sound('assets/sound/health_pickup.wav')
 
 # load background images
 pine1_img = pygame.image.load('assets/backgrounds/day1_pine1.png').convert_alpha()
@@ -282,7 +282,7 @@ while run:
                     if pygame.Rect.colliderect(player.rect, drop_item) and player.state != DYING:
                         if drop_item.drop_type == 'key':
                             player.inventory.append(('key', key_img))  # inventory of items and their animations
-                            item_pickup_fx.play()
+                            key_pickup_fx.play()            
                             drop_item.kill()
                         if drop_item.drop_type == 'health potion':
                             health_pickup_fx.play()()
