@@ -120,42 +120,40 @@ class GameWorld():
 
         with open(self.level_file, newline='') as csvfile:
             """
-            Start loading the world from level file, adding all objects 
+            Start loading the world from level file, creating sprites for each tile if value is not -1
+            All sprites are then added to a SpriteGroup, which the main game loop calls .update() and .draw() on
             """
             reader = csv.reader(csvfile, delimiter = ',')
             for y, row in enumerate(reader):
                 for x, tile in enumerate(row):
-                    # We sort the various tiles into the corresponding groups
-                    if int(tile) != -1:
+                    if int(tile) != -1:  # -1 is empty
                         if int(tile) in self.tile_types['platforms'] or int(tile) in self.tile_types['objects']:
-                            """ Platform and object tiles both """
-                            sprite = GameTile()  # we must initialize every time, or we're only updating the same sprite over and over
-                            sprite.image = pygame.Surface((self.tile_size, self.tile_size), pygame.SRCALPHA)  # Empty image with space for tiles
-                            sprite.image.blit(img_list[int(tile)], (0, 0))  # we blit the right image onto the surface from top left
-                            sprite.rect = sprite.image.get_rect()  # we get the rect for the sprite
-                            sprite.rect.x = x * self.tile_size # we correct the x pos
-                            sprite.rect.y = y * self.tile_size # we correct the y pos
+                            """ Platform and object tiles both - must be 32x32 as we do no scaling here """
+                            sprite = GameTile()
+                            sprite.image = pygame.Surface((self.tile_size, self.tile_size), pygame.SRCALPHA)  # empty surface
+                            sprite.image.blit(img_list[int(tile)], (0, 0)) 
+                            sprite.rect = sprite.image.get_rect() 
+                            sprite.rect.x = x * self.tile_size 
+                            sprite.rect.y = y * self.tile_size
 
                             if int(tile) in self.tile_types['platforms']:
-                                """ Platforms """
+                                # ---> Platforms 
                                 self.platforms_sprite_group.add(sprite)
                             elif int(tile) in self.tile_types['objects']:
-                                """ Decor (rocks, grass, boxes etc. """
+                                # ---> Decor (rocks, grass, boxes etc.
                                 self.decor_sprite_group.add(sprite)
 
-
-                        
                         if int(tile) in self.tile_types['animated objects'] or int(tile) in self.tile_types['hazards']:
-                            """ Animated hazards """
+                            """ Animated objects - can be arbitrary size as we scale the sprites """
+                            # --->  Animated hazards
                             if int(tile) == self.tile_types['hazards'][0]:  # fire
                                 animation = animations['fire']['fire-hazard']
                                 hazard = True    
                             elif int(tile) == self.tile_types['hazards'][1]:  # spikes
                                 animation = animations['spikes']['spike-trap'] 
-                                hazard = True
-                            
+                                hazard = True                            
                             else:
-                                """ Animated tiles (fires, birds etc.) """    
+                                # --->  Animated tiles (fires, birds etc.) 
                                 pass
 
                             sprite = GameTileAnimation(animation)  # -> GameTile -> pygame.sprite.Sprite
@@ -182,6 +180,7 @@ class GameWorld():
                             self.monster_import_list.append({'monster': monster_type, 'x': x_pos, 'y': y_pos, 'ai': MonsterData(monster_type)})
 
                         if int(tile) in self.tile_types['trigg_anims']:
+                            """ Triggered animations """
                             if int(tile) == self.tile_types['trigg_anims'][2]: 
                                 animation = animations['doors']['end-of-level'] 
 
@@ -201,8 +200,8 @@ class GameWorld():
                             self.trigger_anim_sprite_group.add(sprite)
 
 
-
 class GamePanel():
+    """ Class to show a panel on top left corner of the screen """
     def __init__(self, screen: pygame.display, player):
         self.screen = screen
         self.player = player
@@ -232,8 +231,6 @@ class GamePanel():
             if self.player.health_current < self.last_health: 
                 self.blink = True
         
-            
-
     def draw(self) -> None:
         WHITE = (255, 255, 255)
         self._draw_text(f'SCORE: {self.player.score}', self.font_small, WHITE, 20, 10)  # score

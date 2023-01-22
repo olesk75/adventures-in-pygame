@@ -5,7 +5,7 @@ MonsterAI(class)    : contains monster data
 
 import random
 
-monsters = ['minotaur', 'ogre-archer', 'skeleton-boss', 'elven-caster']  # used to recognize tiles from level files
+monsters = ['minotaur', 'ogre-archer', 'skeleton-boss', 'elven-caster']  # used to recognize tiles from level files - order must match tile numbering 
 
 # State constants
 WALKING = 1
@@ -79,6 +79,7 @@ class MonsterData():
             # Boss specific
             self.boss_attacks = [('firewalker', 0.01)] 
             self.cast_delay = 2000
+            self.item_drop = ['key', 'health']
 
 
     

@@ -36,8 +36,11 @@ class Animation():
                         self.repeat_start = now
                     
                 self.last_run = now
-        
-        image = self.sprites[self.anim_counter].convert_alpha()
+        try:
+            image = self.sprites[self.anim_counter].convert_alpha()
+        except IndexError:
+            print(f'INDEX ERROR: unable to get frame (anim_counter) {self.anim_counter} from sprite sheet {self.ss}')
+            exit(1)
         return image
 
 

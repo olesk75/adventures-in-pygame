@@ -96,6 +96,7 @@ class Player(pygame.sprite.Sprite):
         if  self.death.anim_counter == self.death.frames -1:
             self.dead = True
             self.fx_die.play()
+            self.death.anim_counter = 0
             return True
         else:
             return False

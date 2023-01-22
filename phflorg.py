@@ -1,9 +1,10 @@
 import pygame
-import pickle
 
 from game_world import GameWorld, GameData, GamePanel
 from player import Player
 from monsters import Monster, Projectile, Spell
+
+from engine import draw_text, load_high_score, save_high_score
 
 # Flags for debug functionality
 DEBUG_BOXES = False
@@ -97,10 +98,7 @@ p_w.load(f'lvl/level{level}_data.csv')
 arrow_img = pygame.image.load('assets/arrow.png').convert_alpha()
 
 
-# Function for text output
-def draw_text(text, font, text_col, x, y)-> None:
-    img = font.render(text, True, text_col)
-    screen.blit(img, (x, y))
+
 
 # Function for drawing the background
 def draw_bg(bg_scroll) -> None:
@@ -115,19 +113,6 @@ def draw_bg(bg_scroll) -> None:
         screen.blit(pine2_img, ((x * width) + bg_scroll * 0.8, phflorg_data.SCREEN_HEIGHT - pine2_img.get_height()))
 
 
-# Function to load hish score from file
-def load_high_score() -> int:
-    with open('highscore.dat', 'rb') as high_score_file:
-        try:
-            high_score = pickle.load(high_score_file)
-        except EOFError:  # In case file does not exist with valid high score already
-            return(0)
-    return(high_score)
-
-# Function to save score to file
-def save_high_score(high_score) -> None:
-    with open('highscore.dat', 'wb') as save_file:
-        pickle.dump(high_score, save_file)    
 
 def load_monsters(phflorg_worldmonster_import_list) -> pygame.sprite.Group():
     monsters_sprite_group = pygame.sprite.Group()
@@ -182,8 +167,7 @@ while run:
         p_w.anim_spells_sprite_group.update(scroll)
         player.update()
 
-
-        # draw background
+        # Draw background
         bg_scroll += scroll
         draw_bg(bg_scroll)
 
@@ -197,6 +181,7 @@ while run:
         projectile_group.draw(screen)
         p_w.anim_spells_sprite_group.draw(screen)
 
+        # Draw player
         player.draw()
 
         # Draw panel
@@ -347,12 +332,8 @@ while run:
                     
                     if event.key == pygame.K_RIGHT and player.walking == 1:
                         player.walking = False
-        try:                    
-            monsters_sprite_group.draw(screen)  # draw them all
-        except:
-            print('ooops')
-
         
+        monsters_sprite_group.draw(screen)  # draw them all
         
         
     else:
@@ -370,32 +351,32 @@ while run:
             if score > high_score:
                     high_score = score
                     draw_text('NEW HIGH SCORE: ' + str(high_score), font_big, WHITE, (phflorg_data.SCREEN_WIDTH/2)-180, 500)
+                    save_high_score(high_score)
             else:
                 draw_text('HIGH SCORE: ' + str(high_score), font_big, WHITE, (phflorg_data.SCREEN_WIDTH/2)-150, 500)
             draw_text('Press space to play again', font_big, WHITE, (phflorg_data.SCREEN_WIDTH/2)-250, 600)
             key = pygame.key.get_pressed()
-            if key[pygame.K_q]:
-                exit(0)
-            if key[pygame.K_SPACE]:
-                # Save high score
-                save_high_score(high_score)
-                #print(f'wrote {score}')  # DEBUG
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE or event.key == pygame.K_q:
+                        pygame.quit()
+                        exit(0)
+                    if event.key == pygame.K_SPACE:
+                        # Reset all variables
+                        game_over = False
+                        player = Player(phflorg_data.SCREEN_WIDTH // 2, phflorg_data.SCREEN_HEIGHT -170 , phflorg_data, p_w, \
+                            animations['player']['walk'], animations['player']['attack'], animations['player']['death'], player_sound_effects)
 
-                # Reset all variables
-                game_over = False
-                player = Player(phflorg_data.SCREEN_WIDTH // 2, phflorg_data.SCREEN_HEIGHT -170 , phflorg_data, p_w, \
-                    animations['player']['walk'], animations['player']['attack'], animations['player']['death'], player_sound_effects)
+                        score = 0
+                        scroll = 0
+                        bg_scroll = 0
 
-                score = 0
-                scroll = 0
-                bg_scroll = 0
+                        p_w.load(f'lvl/level{level}_data.csv')
 
-                p_w.load(f'lvl/level{level}_data.csv')
-
-                fade_counter = 0
-                wait_counter = 0
-                # Add monsters
-                monster_list = load_monsters(p_w.monster_import_list)
+                        fade_counter = 0
+                        wait_counter = 0
+                        # Add monsters
+                        monster_list = load_monsters(p_w.monster_import_list)
 
 
     pygame.display.update()
