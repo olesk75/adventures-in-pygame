@@ -235,6 +235,7 @@ class Monster(pygame.sprite.Sprite):
                     self.rect = new_rect
 
                     if self.data.sound_attack:
+                        self.data.sound_attack.set_volume(self.data.sound_attack_volume)
                         self.data.sound_attack.play()
 
             elif new_state == WALKING:

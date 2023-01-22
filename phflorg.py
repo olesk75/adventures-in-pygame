@@ -271,7 +271,7 @@ while run:
 
                 # Mob collision: trigger player hit if a) collision with mob, b) mob is not already dead and c) player is not already dying
                 if pygame.Rect.colliderect(player.rect, mob.hitbox) and not mob.dead and player.state != DYING:
-                    player.hit(500, mob.turned)
+                    player.hit(100, mob.turned)
 
                 # Projectile collision
                 for projectile in projectile_sprite_group:

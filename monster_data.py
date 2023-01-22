@@ -61,7 +61,9 @@ class MonsterData():
             self.hitbox_width = 65 
             self.hitbox_height = 110
             self.sound_attack = pygame.mixer.Sound('assets/sound/monster/ogre-archer/attack.ogg')
-            self.sound_death = pygame.mixer.Sound('assets/sound/monster/ogre-archer/death.ogg')
+            self.sound_attack_volume = 0.5
+            self.sound_death = pygame.mixer.Sound('assets/sound/monster/ogre-archer/death.wav') 
+            self.sound_death_volume = 1
  
         if monster == 'skeleton-boss':
             self.boss = True
@@ -81,13 +83,16 @@ class MonsterData():
             self.hitbox_width = 65
             self.hitbox_height = 110
             self.sound_attack = pygame.mixer.Sound('assets/sound/monster/skeleton-boss/roar.mp3')
-            self.sound_death = False
+            self.sound_attack_volume = 0.1
+            self.sound_death = pygame.mixer.Sound('assets/sound/monster/skeleton-boss/death.wav')
+            self.sound_death_volume = 1
  
             # Boss specific
             self.boss_attacks = [('firewalker', 0.01)] 
             self.cast_delay = 2000
             self.item_drop = ['key', 'health']
             self.sound_cast = pygame.mixer.Sound('assets/sound/spell/fire-spell.aif')
+            self.sound_cast_volume = 0.5
 
         
         if monster == 'elven-caster':
@@ -108,8 +113,11 @@ class MonsterData():
             self.hitbox_width = 65 
             self.hitbox_height = 110
             self.sound_attack = pygame.mixer.Sound('assets/sound/monster/elven-caster/attack.mp3')
+            self.sound_attack_volume = 0.5
             self.sound_death = pygame.mixer.Sound('assets/sound/monster/elven-caster/death.mp3')
+            self.sound_death_volume = 0.5
             self.sound_cast = pygame.mixer.Sound('assets/sound/monster/elven-caster/cast.mp3')
+            self.sound_cast_volume = 0.5
 
 
     
