@@ -83,6 +83,11 @@ player_sound_effects = [attack_fx, jump_fx, death_fx, hit_fx]
 key_pickup_fx = pygame.mixer.Sound('assets/sound/objects/key_pickup.wav')
 health_pickup_fx = pygame.mixer.Sound('assets/sound/objects/health_pickup.wav')
 
+# Game music
+pygame.mixer.music.load("assets/music/Hidden-Agenda.mp3") 
+pygame.mixer.music.play(-1,0.0)
+pygame.mixer.music.set_volume(0.3)
+
 # load background images
 pine1_img = pygame.image.load('assets/backgrounds/day1_pine1.png').convert_alpha()
 pine2_img = pygame.image.load('assets/backgrounds/day1_pine2.png').convert_alpha()
