@@ -38,7 +38,8 @@ class BubbleMessage():
         self.y = y
         self.last_time = 0
         self.min_delay = 1000*10  # 10 seconds
-    
+        self.font = pygame.font.Font("assets/fonts/m5x7.ttf", 16)  # 16, 32, 48
+
     def show(self):
         now = pygame.time.get_ticks()
         if now > self.last_time + self.min_delay:

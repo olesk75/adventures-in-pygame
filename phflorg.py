@@ -174,7 +174,6 @@ while run:
         # Update tiles and projectiles
         p_w.anim_objects_sprite_group.update(scroll)
         p_w.platforms_sprite_group.update(scroll)
-        p_w.pickups_sprite_group.update(scroll)
         p_w.trigger_anim_sprite_group.update(scroll)
         p_w.decor_sprite_group.update(scroll)
         p_w.hazards_sprite_group.update(scroll)
@@ -189,7 +188,6 @@ while run:
 
         # Draw all sprite groups
         p_w.platforms_sprite_group.draw(screen)
-        p_w.pickups_sprite_group.draw(screen)
         p_w.trigger_anim_sprite_group.draw(screen)
         p_w.decor_sprite_group.draw(screen)
         p_w.anim_objects_sprite_group.draw(screen)
@@ -299,12 +297,17 @@ while run:
                             player.inventory.append(('key', key_img))  # inventory of items and their animations
                             key_pickup_fx.play()            
                             drop_item.kill()
-                        if drop_item.drop_type == 'health potion':
-                            health_pickup_fx.play()()
-                            player.health_current += 500
-                            if player.health_current > player.health_max:
-                                player.health_current = player.health_max
+                        if drop_item.drop_type == 'health-potion':
+                            health_pickup_fx.play()
+                            player.heal(500)
 
+                # Animated objects pickup / collision
+                for anim_item in p_w.anim_objects_sprite_group.sprites():
+                    if pygame.Rect.colliderect(player.rect, anim_item) and player.state != DYING:
+                        #if anim_item == 'health-potion':  # TODO: only item is healt-potions, so assuming that for now
+                        health_pickup_fx.play()
+                        player.heal(500)
+                        anim_item.kill()
 
                 # PLAYER ATTACK
                 if player.state == ATTACKING:

@@ -74,7 +74,7 @@ class GameWorld():
         self.tile_types = {
             'platforms': [0,1,2,3,4,5,6,7,8],
             'objects': [9,10,11,12,13,14,15],
-            'animated objects': [16,17],
+            'animated_objects': [16,17],
             'hazards': [18,19,20],
             'monsters': [21,22,23,24,25,26,27],
             'trigg_anims': [28,29,30]
@@ -89,7 +89,6 @@ class GameWorld():
         self.pickups = [[-1]*self.columns]*self.rows
         self.decor = [[-1]*self.columns]*self.rows
         self.platforms_sprite_group = pygame.sprite.Group()
-        self.pickups_sprite_group = pygame.sprite.Group()
         self.decor_sprite_group = pygame.sprite.Group()
         self.anim_objects_sprite_group = pygame.sprite.Group()
         self.hazards_sprite_group = pygame.sprite.Group()
@@ -107,7 +106,6 @@ class GameWorld():
         # We null the list and sprite groups to avoid dupes when starting a new game without quitting
         self.monster_import_list = []
         self.platforms_sprite_group.empty()
-        self.pickups_sprite_group.empty()
         self.decor_sprite_group.empty()
 
         for x in range(sum([len(self.tile_types[x]) for x in self.tile_types if isinstance(self.tile_types[x], list)])):
@@ -143,8 +141,13 @@ class GameWorld():
                                 # ---> Decor (rocks, grass, boxes etc.
                                 self.decor_sprite_group.add(sprite)
 
-                        if int(tile) in self.tile_types['animated objects'] or int(tile) in self.tile_types['hazards']:
+                        if int(tile) in self.tile_types['animated_objects'] or int(tile) in self.tile_types['hazards']:
                             """ Animated objects - can be arbitrary size as we scale the sprites """
+                            # ---> Animated objects
+                            if int(tile) == self.tile_types['animated_objects'][0]:  # health potion
+                                animation = animations['objects']['health-potion']
+                                hazard = False
+                            
                             # --->  Animated hazards
                             if int(tile) == self.tile_types['hazards'][0]:  # fire
                                 animation = animations['fire']['fire-hazard']

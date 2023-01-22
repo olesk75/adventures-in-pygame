@@ -33,6 +33,9 @@ fire_loop = pygame.image.load('assets/objects/fire/burning_loop_1.png').convert_
 fire_end = pygame.image.load('assets/objects/fire/burning_end_1.png').convert_alpha()
 fire_spell = pygame.Surface((fire_start.get_width() + fire_loop.get_width() + fire_end.get_width(),fire_start.get_height())).convert_alpha()
 
+health_potion_ss =  SpriteSheet(pygame.image.load('assets/objects/lifepotion.png').convert_alpha(), 16, 16, BLACK, 2)
+health_potion_anim = Animation(health_potion_ss, row=0, frames=4, speed=100, repeat=True)
+
 # Adding the three fire sheets together into one sprite sheet
 fire_spell.blit(fire_start, (0, 0))
 fire_spell.blit(fire_loop, (fire_start.get_width(), 0))
@@ -90,5 +93,8 @@ animations = {
     },
     'drops': {
         'key': key_anim,
+    },
+    'objects': {
+        'health-potion': health_potion_anim,
     }
 }

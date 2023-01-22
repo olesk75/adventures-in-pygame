@@ -94,7 +94,6 @@ class MonsterData():
             self.sound_cast = pygame.mixer.Sound('assets/sound/spell/fire-spell.aif')
             self.sound_cast_volume = 0.5
 
-        
         if monster == 'elven-caster':
             self.boss = False
             self.caster = True
