@@ -301,8 +301,8 @@ while run:
                         mob.dead = True  # we run through the death anim sequence
                         """ Adding drops from player death """
                         # skeleton-boss is a key carrier
-                        #if mob.data.monster == 'skeleton-boss':
-                        if mob.data.monster == 'ogre-archer':
+                        if mob.data.monster == 'skeleton-boss':
+                        # if mob.data.monster == 'ogre-archer':
                             drop_key = Drop( mob.hitbox.centerx, mob.hitbox.centery - 25 , animations['drops']['key'], turned = False, scale = 2, drop_type='key',)
                             drops_sprite_group.add(drop_key)
 

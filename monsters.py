@@ -202,6 +202,9 @@ class Monster(pygame.sprite.Sprite):
                         dx *= -1
                         self.data.direction *= -1
                         self.turned = not self.turned
+            else:
+                print(f'ERROR, wrong state {self.state}')
+                exit(1)
 
         return dx, dy
 

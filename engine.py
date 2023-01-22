@@ -77,11 +77,11 @@ class GamePanel():
         for _ in range(10):
             self.screen.blit(img2, (x,y))
             pygame.display.update()
-            pygame.time.wait(100)
+            pygame.time.wait(75)
 
             self.screen.blit(screen_cpy, (0,0))  # starting over
             pygame.display.update()
-            pygame.time.wait(100)
+            pygame.time.wait(75)
 
         
     def draw(self) -> None:
