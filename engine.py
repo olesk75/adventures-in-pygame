@@ -27,6 +27,29 @@ def save_high_score(high_score: int) -> None:
         pickle.dump(high_score, save_file)    
 
 
+class BubbleMessage():
+    """ Show floating info bubbles
+        Meant to linger - 10 seconds between each message 
+    """
+    def __init__(self, screen: pygame.display, msg: str, x:int, y:int) -> None:
+        self.screen = screen
+        self.msg = msg
+        self.x = x
+        self.y = y
+        self.last_time = 0
+        self.min_delay = 1000*10  # 10 seconds
+    
+    def show(self):
+        now = pygame.time.get_ticks()
+        if now > self.last_time + self.min_delay:
+            print(f'Bubble message: "{self.msg}"')
+            self.last_time = now
+        # DO STUFF
+
+        
+
+
+
 
 class GamePanel():
     """ Class to show a panel on top left corner of the screen """

@@ -4,7 +4,7 @@ from game_world import GameWorld, GameData
 from player import Player
 from monsters import Monster, Projectile, Spell, Drop
 
-from engine import draw_text, load_high_score, save_high_score, GamePanel
+from engine import draw_text, load_high_score, save_high_score, BubbleMessage, GamePanel
 
 
 # Flags for debug functionality
@@ -98,6 +98,8 @@ arrow_img = pygame.image.load('assets/arrow.png').convert_alpha()
 # load panel images 
 key_img = pygame.image.load('assets/panel/key.png').convert_alpha()
 
+
+
 # Function for drawing a parallax background
 def draw_bg(bg_scroll) -> None:
     SKY_BLUE = (130, 181, 210)
@@ -147,10 +149,11 @@ drops_sprite_group = pygame.sprite.Group()
 
 
 """
-High score and status panel
+High score, bubble messages and status panel
 """
 high_score = load_high_score()
 panel = GamePanel(screen, player)
+bubble_list = []
 
 """
 Main game loop
@@ -209,8 +212,15 @@ while run:
         """ We check if the player has touched any animated triggers """
         for t_anim_sprite in p_w.trigger_anim_sprite_group.sprites():
             if pygame.Rect.colliderect(player.rect, t_anim_sprite) and player.state != DYING:
-                t_anim_sprite.animation.active = True
-                # print(t_anim_sprite.image)
+                if any('key' in sublist for sublist in player.inventory):  # do we have key?
+                    t_anim_sprite.animation.active = True
+                    bubble_list.append(BubbleMessage(screen, 'Level complete! Congratualations!', player.rect.top, player.rect.left))
+                    
+
+                else:
+                    player.hit(0, -1)
+                    bubble_list.append(BubbleMessage(screen, 'Come back when you have a key!', player.rect.top, player.rect.left))
+    
 
                 
         """ We step through every single mob in the level """
@@ -313,6 +323,11 @@ while run:
                 # PLAYER END OF LEVEL (WIN!)
                 if player.world_x_pos > (phflorg_data.TILE_SIZE * phflorg_data.MAX_COLS) - player.width:
                     print('win!')
+                    player.score += 1000
+
+                
+                for bubble in bubble_list:
+                    bubble.show()
 
 
 
