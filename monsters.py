@@ -388,6 +388,7 @@ class Spell(pygame.sprite.Sprite):
         """
         super().__init__()
         self.anim = anim
+        self.anim.active = True
         self.anim.counter = 0
         image = anim.get_image()
 
@@ -398,21 +399,39 @@ class Spell(pygame.sprite.Sprite):
         self.rect = pygame.Rect(x, y, self.width, self.height)
         self.turned = turned
 
-        self.anim.active = True
         self.anim.first_done = False
         
     def update(self, scroll) -> None:
-        # we compensate for scrolling
-        self.rect.x += scroll
+        self.rect.x += scroll  # we compensate for scrolling
 
         # Done with one cycle, as spell do not repeat (yet!)
-        #print (f'{self.anim.anim_counter=}')
-        #print(f'{self.anim.first_done=}')
         if self.anim.first_done:
             self.currently_casting = False
             self.kill()
 
-        # Ready for super.draw()
         self.image = pygame.transform.flip( self.anim.get_image().convert_alpha(), self.turned, False)
 
 
+class Drop(pygame.sprite.Sprite):
+    def __init__(self, x, y, anim, turned= False, scale = 1, drop_type=None):
+        """
+        The Drop class constructor - object animates in place until kill()
+        NOTE: continious animation
+        """
+        super().__init__()
+        self.drop_type = drop_type  # key, health potion etc.
+        self.anim = anim
+        self.anim.active = True
+        self.anim.counter = 0
+        image = anim.get_image()
+
+        self.image = pygame.transform.scale(image, (image.get_width() * scale, image.get_height() * scale))
+
+        self.width = image.get_width()
+        self.height = image.get_height()
+        self.rect = pygame.Rect(x, y, self.width, self.height)
+        self.turned = turned
+        
+    def update(self, scroll) -> None:
+        self.rect.x += scroll # we compensate for scrolling
+        self.image = pygame.transform.flip( self.anim.get_image().convert_alpha(), self.turned, False)

@@ -54,7 +54,7 @@ door_anim = Animation(door_ss, row=0, frames=4, speed=100, repeat=False)
 
 # Creating pickup animations
 key_ss = SpriteSheet(pygame.image.load('assets/objects/key.png'), 32, 32, BLACK, 2)
-key_anim = Animation(key_ss, row=0, frames=4, speed=100, repeat=False)
+key_anim = Animation(key_ss, row=0, frames=10, speed=50, repeat=True)
 
 
 """ Create main animation dict """
@@ -88,7 +88,7 @@ animations = {
     'doors': {
         'end-of-level': door_anim,
     },
-    'pickups': {
+    'drops': {
         'key': key_anim,
     }
 }

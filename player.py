@@ -22,10 +22,11 @@ class Player(pygame.sprite.Sprite):
 
         # Basic state information
         self.health_max = 1000
-        self.health_current = self.health_max - 200 # TODO: FOR TESTING ONLY
+        self.health_current = self.health_max
         self.powers_max = 1
         self.powers_current = self.powers_max
-        self.score = 0  # score from each move, added up outside of class
+        self.score = 0
+        self.inventory = []  # player inventory items
 
         # Setting up halth bar and powers list
         self.health_bar_length = int(self.world_data.SCREEN_WIDTH / 6 * self.health_current / 1000)  # grows when max health grows
@@ -237,7 +238,7 @@ class Player(pygame.sprite.Sprite):
         # Update world position
         self.world_x_pos += dx
 
-        return [scroll, self.score]
+        return scroll
 
     def draw(self) -> None:
         self.screen = pygame.display.get_surface()

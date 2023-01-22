@@ -1,14 +1,14 @@
 import pygame
 
-from game_world import GameWorld, GameData, GamePanel
+from game_world import GameWorld, GameData
 from player import Player
-from monsters import Monster, Projectile, Spell
+from monsters import Monster, Projectile, Spell, Drop
 
-from engine import draw_text, load_high_score, save_high_score
+from engine import draw_text, load_high_score, save_high_score, GamePanel
+
 
 # Flags for debug functionality
 DEBUG_BOXES = False
-
 
 # Game variables in a named tuple (new in Python 3.6) - we pass this to instances who need it
 phflorg_data = GameData(
@@ -40,21 +40,20 @@ pygame.display.set_caption("Phflorg the Destroyer")
 
 from animation_data import animations  # late import as we need display to be active for convert() 
 
-
 # Set frame rate
 clock = pygame.time.Clock() 
 FPS = 60
 
-# Player state
-score = 0
-
 # Game state variables
+level = 1
+max_level = 1
 scroll = 0
 bg_scroll = 0
 player_dying = False
 game_over = False
 wait_counter = FPS * 2  # after death, before we fade out
 fade_counter = 0
+arrow_damage = 600
 
 # State constants
 WALKING = 1
@@ -82,6 +81,7 @@ player_sound_effects = [attack_fx, jump_fx, death_fx, hit_fx]
 
 # Load audio for world
 item_pickup_fx = pygame.mixer.Sound('assets/sound/Power-up/OGG/Powerup 7 - Sound effects Pack 2.ogg')
+health_pickup_fx = pygame.mixer.Sound('assets/sound/Power-up/OGG/Powerup 7 - Sound effects Pack 2.ogg')
 
 # load background images
 pine1_img = pygame.image.load('assets/backgrounds/day1_pine1.png').convert_alpha()
@@ -89,18 +89,16 @@ pine2_img = pygame.image.load('assets/backgrounds/day1_pine2.png').convert_alpha
 mountain_img = pygame.image.load('assets/backgrounds/day1_mountain.png').convert_alpha()
 sky_img = pygame.image.load('assets/backgrounds/day1_sky_cloud.png').convert_alpha()
 
-level = 1
-
 p_w = GameWorld(phflorg_data)  # Loading all tiles in the world, less background and player (phflorg_world = p_w)
 p_w.load(f'lvl/level{level}_data.csv')
 
 # load projectiles (no animation variety)
 arrow_img = pygame.image.load('assets/arrow.png').convert_alpha()
 
+# load panel images 
+key_img = pygame.image.load('assets/panel/key.png').convert_alpha()
 
-
-
-# Function for drawing the background
+# Function for drawing a parallax background
 def draw_bg(bg_scroll) -> None:
     SKY_BLUE = (130, 181, 210)
     screen.fill(SKY_BLUE)
@@ -113,7 +111,7 @@ def draw_bg(bg_scroll) -> None:
         screen.blit(pine2_img, ((x * width) + bg_scroll * 0.8, phflorg_data.SCREEN_HEIGHT - pine2_img.get_height()))
 
 
-
+# TODO: get this to world loading module
 def load_monsters(phflorg_worldmonster_import_list) -> pygame.sprite.Group():
     monsters_sprite_group = pygame.sprite.Group()
     for mob in phflorg_worldmonster_import_list:
@@ -126,7 +124,7 @@ def load_monsters(phflorg_worldmonster_import_list) -> pygame.sprite.Group():
     return monsters_sprite_group
 
 """
-Defining instances
+Defining player and monster instances
 """
 # Player instance
 player = Player(phflorg_data.SCREEN_WIDTH // 2, phflorg_data.SCREEN_HEIGHT -170 , phflorg_data, p_w, \
@@ -135,13 +133,23 @@ player = Player(phflorg_data.SCREEN_WIDTH // 2, phflorg_data.SCREEN_HEIGHT -170 
 # Monsters
 monsters_sprite_group = load_monsters(p_w.monster_import_list)
 
+"""
+Local sprite groups
+"""
 # Projectiles 
-projectile_group =  pygame.sprite.Group()
-last_arrow = 0
+projectile_sprite_group =  pygame.sprite.Group()
+last_arrow = 0  # timer to limit attack speed
 
-# Load previous high score
+# Item drops
+drops_sprite_group = pygame.sprite.Group()
+
+# Player inventory 
+
+
+"""
+High score and status panel
+"""
 high_score = load_high_score()
-
 panel = GamePanel(screen, player)
 
 """
@@ -153,8 +161,7 @@ while run:
     
     if not game_over:
         # check keypresses and update position (and get back scroll value if any)
-        scroll, score_add = player.move()
-        score += score_add
+        scroll = player.move()
 
         # Update tiles and projectiles
         p_w.anim_objects_sprite_group.update(scroll)
@@ -163,8 +170,9 @@ while run:
         p_w.trigger_anim_sprite_group.update(scroll)
         p_w.decor_sprite_group.update(scroll)
         p_w.hazards_sprite_group.update(scroll)
-        projectile_group.update(scroll, p_w.platforms_sprite_group)
         p_w.anim_spells_sprite_group.update(scroll)
+        drops_sprite_group.update(scroll)
+        projectile_sprite_group.update(scroll, p_w.platforms_sprite_group)
         player.update()
 
         # Draw background
@@ -178,17 +186,14 @@ while run:
         p_w.decor_sprite_group.draw(screen)
         p_w.anim_objects_sprite_group.draw(screen)
         p_w.hazards_sprite_group.draw(screen)
-        projectile_group.draw(screen)
         p_w.anim_spells_sprite_group.draw(screen)
-
-        # Draw player
+        drops_sprite_group.draw(screen)
+        projectile_sprite_group.draw(screen)
         player.draw()
-
-        # Draw panel
         panel.draw()
 
         # Check animation imports
-        # skeleton_boss_anim_attack._show_anim(screen)
+        # skeleton_boss_anim_attack _show_anim(screen)
 
         # check game over from falling
         if player.rect.top > phflorg_data.SCREEN_HEIGHT:
@@ -206,7 +211,6 @@ while run:
             if pygame.Rect.colliderect(player.rect, t_anim_sprite) and player.state != DYING:
                 t_anim_sprite.animation.active = True
                 # print(t_anim_sprite.image)
-                # print(t_anim_sprite.animation.anim_counter )
 
                 
         """ We step through every single mob in the level """
@@ -223,8 +227,7 @@ while run:
                     for spell in mob.cast_anim_list:
                        if spell[0] == 'fire':
                             x, y = spell[1:3]
-                            animation = animations['fire']['fire-spell']
-                            p_w.anim_spells_sprite_group.add(Spell(x,y, animation, False, scale=1))
+                            p_w.anim_spells_sprite_group.add(Spell(x,y, animations['fire']['fire-spell'], False, scale=1))
 
                     mob.cast_anim_list = []
 
@@ -248,7 +251,7 @@ while run:
 
                         # WAIT UNTIL END OF ATTACK ANIMATION
                         if mob.attack_anim.anim_counter == 10:
-                            projectile_group.add(arrow)
+                            projectile_sprite_group.add(arrow)
                             last_arrow = now
 
                 # Mob collision: trigger player hit if a) collision with mob, b) mob is not already dead and c) player is not already dying
@@ -256,10 +259,10 @@ while run:
                     player.hit(500, mob.turned)
 
                 # Projectile collision
-                for projectile in projectile_group:
+                for projectile in projectile_sprite_group:
                     # Collision with player
                     if pygame.Rect.colliderect(player.rect, projectile) and player.state != DYING:
-                        player.hit(100, projectile.turned)
+                        player.hit(arrow_damage, projectile.turned)
                         projectile.kill()
                 
                 # Spell collision
@@ -274,17 +277,37 @@ while run:
                     if pygame.Rect.colliderect(player.rect, hazard) and player.state != DYING:
                         player.take_damage(100, hits_per_second=10)
 
+                # Drops pickup / collision
+                for drop_item in drops_sprite_group.sprites():
+                    if pygame.Rect.colliderect(player.rect, drop_item) and player.state != DYING:
+                        if drop_item.drop_type == 'key':
+                            player.inventory.append(('key', key_img))  # inventory of items and their animations
+                            item_pickup_fx.play()
+                            drop_item.kill()
+                        if drop_item.drop_type == 'health potion':
+                            health_pickup_fx.play()()
+                            player.health_current += 500
+                            if player.health_current > player.health_max:
+                                player.health_current = player.health_max
+
+
                 # PLAYER ATTACK
                 if player.state == ATTACKING:
                     # Check if mob hit
                     if pygame.Rect.colliderect(player.attack_rect, mob.hitbox): 
                         mob.vel_y = -5
                         mob.data.direction = -player.turned
-                        score += 100
+                        player.score += 100
                         mob.dead = True  # we run through the death anim sequence
+                        """ Adding drops from player death """
+                        # skeleton-boss is a key carrier
+                        #if mob.data.monster == 'skeleton-boss':
+                        if mob.data.monster == 'ogre-archer':
+                            drop_key = Drop( mob.hitbox.centerx, mob.hitbox.centery - 25 , animations['drops']['key'], turned = False, scale = 2, drop_type='key',)
+                            drops_sprite_group.add(drop_key)
 
                     # Check if projectile hit
-                    for projectile in projectile_group:
+                    for projectile in projectile_sprite_group:
                         if pygame.Rect.colliderect(player.attack_rect, projectile) and player.state != DYING:
                             projectile.kill()
 
@@ -347,9 +370,9 @@ while run:
 
         else:       
             draw_text('GAME OVER', font_big, WHITE, (phflorg_data.SCREEN_WIDTH/2)-130,300)
-            draw_text('SCORE: ' + str(score), font_big, WHITE, (phflorg_data.SCREEN_WIDTH/2)-100, 400)
-            if score > high_score:
-                    high_score = score
+            draw_text('SCORE: ' + str(player.score), font_big, WHITE, (phflorg_data.SCREEN_WIDTH/2)-100, 400)
+            if player.score > high_score:
+                    high_score = player.score
                     draw_text('NEW HIGH SCORE: ' + str(high_score), font_big, WHITE, (phflorg_data.SCREEN_WIDTH/2)-180, 500)
                     save_high_score(high_score)
             else:
@@ -367,14 +390,17 @@ while run:
                         player = Player(phflorg_data.SCREEN_WIDTH // 2, phflorg_data.SCREEN_HEIGHT -170 , phflorg_data, p_w, \
                             animations['player']['walk'], animations['player']['attack'], animations['player']['death'], player_sound_effects)
 
-                        score = 0
                         scroll = 0
                         bg_scroll = 0
+
+                        if level < max_level:
+                            level += 1
 
                         p_w.load(f'lvl/level{level}_data.csv')
 
                         fade_counter = 0
                         wait_counter = 0
+                        monsters_sprite_group.empty()
                         # Add monsters
                         monster_list = load_monsters(p_w.monster_import_list)
 
