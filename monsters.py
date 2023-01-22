@@ -202,6 +202,10 @@ class Monster(pygame.sprite.Sprite):
                         dx *= -1
                         self.data.direction *= -1
                         self.turned = not self.turned
+
+            elif self.state == DYING:
+                pass
+
             else:
                 print(f'ERROR, wrong state {self.state}')
                 exit(1)
@@ -261,7 +265,8 @@ class Monster(pygame.sprite.Sprite):
             elif new_state == DYING:
                     self.attack_anim.active = False
                     self.walk_anim.active = False
-                    self.cast_anim.active = False
+                    if self.data.caster:
+                        self.cast_anim.active = False 
                     self.vel_y = -5
                     self.dead = True  # we run through the death anim sequence
 

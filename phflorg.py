@@ -73,15 +73,15 @@ font_small = pygame.font.SysFont('Lucida Sans', 40)
 font_big = pygame.font.SysFont('Lucida Sans', 60)
 
 # Load audio for player
-attack_fx = pygame.mixer.Sound('assets/sound/Hit/OGG/Hit 2 - Sound effects Pack 2.ogg')
+attack_fx = pygame.mixer.Sound('assets/sound/player/attack.wav')
 jump_fx = pygame.mixer.Sound('assets/sound/Jump/OGG/Jump 5 - Sound effects Pack 2.ogg')
 death_fx = pygame.mixer.Sound('assets/sound/Lose/OGG/Lose 7 - Sound effects Pack 2.ogg')
 hit_fx = pygame.mixer.Sound('assets/sound/Laser-weapon/OGG/Laser-weapon 8 - Sound effects Pack 2.ogg')
 player_sound_effects = [attack_fx, jump_fx, death_fx, hit_fx]
 
 # Load audio for world
-key_pickup_fx = pygame.mixer.Sound('assets/sound/key_pickup.wav')
-health_pickup_fx = pygame.mixer.Sound('assets/sound/health_pickup.wav')
+key_pickup_fx = pygame.mixer.Sound('assets/sound/objects/key_pickup.wav')
+health_pickup_fx = pygame.mixer.Sound('assets/sound/objects/health_pickup.wav')
 
 # load background images
 pine1_img = pygame.image.load('assets/backgrounds/day1_pine1.png').convert_alpha()

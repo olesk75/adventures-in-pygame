@@ -46,7 +46,7 @@ class GamePanel():
 
         # Panel background image
         self.panel_bg = pygame.image.load('assets/game-panel.png').convert_alpha()
-        self.panel_highlight_fx = pygame.mixer.Sound('assets/sound/panel_highlight.wav')
+        self.panel_highlight_fx = pygame.mixer.Sound('assets/sound/game/panel_highlight.wav')
 
 
     def _blink_bar(self, duration) -> None:
