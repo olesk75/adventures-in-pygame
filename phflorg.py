@@ -1,6 +1,7 @@
 import pygame
 
-from game_world import GameWorld, GameData
+from settings import *
+from game_world import GameWorld
 from player import Player
 from monsters import Monster, Projectile, Spell, Drop
 
@@ -10,23 +11,6 @@ from engine import draw_text, load_high_score, save_high_score, BubbleMessage, G
 # Flags for debug functionality
 DEBUG_BOXES = False
 
-# Game variables in a named tuple (new in Python 3.6) - we pass this to instances who need it
-phflorg_data = GameData(
-    SCREEN_WIDTH = 1920,
-    SCREEN_HEIGHT = 1080,
-    LEVEL_WIDTH = 4,
-    GRAVITY = 0.5,
-    MAX_PLATFORMS = 10,
-    JUMP_HEIGHT = 15,
-    PLAYER_BOUNCING = False,
-    SCROLL_THRESHOLD = 400,  # How far left/right of center player can be before we scroll the background
-    ROWS = 16,
-    MAX_COLS = 150,
-    TILE_SIZE = 1080 // 16,
-    TILE_TYPES = 18,
-    ANIMATION_TYPES = 3,
-    OBJECT_TYPES = 9,
-)
 
 # Initializing
 pygame.mixer.pre_init(44100, -16, 2, 512)
@@ -35,17 +19,17 @@ pygame.mixer.init()
 pygame.init()
 
 # Create game window
-screen = pygame.display.set_mode((phflorg_data.SCREEN_WIDTH, phflorg_data.SCREEN_HEIGHT))
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Phflorg the Destroyer")
 
-from animation_data import animations  # late import as we need display to be active for convert() 
+from animation_data import anim  # late import as we need display to be active for convert() 
 
 # Set frame rate
 clock = pygame.time.Clock() 
 FPS = 60
 
 # Game state variables
-level = 3
+level = 1
 max_level = 1
 scroll = 0
 bg_scroll = 0
@@ -54,19 +38,6 @@ game_over = False
 wait_counter = FPS * 2  # after death, before we fade out
 fade_counter = 0
 arrow_damage = 600
-
-# State constants
-WALKING = 1
-ATTACKING = 2
-CASTING = 3
-DYING = 4
-DEAD = 5
-
-# Define colors
-WHITE    = (255, 255, 255)
-BLACK    = (  0,   0,   0)
-RED      = (255,   0,   0)
-DARKGRAY = ( 20,  20,  20)
 
 # Define fonts
 font_small = pygame.font.SysFont('Lucida Sans', 40)
@@ -94,11 +65,11 @@ pine2_img = pygame.image.load('assets/backgrounds/day1_pine2.png').convert_alpha
 mountain_img = pygame.image.load('assets/backgrounds/day1_mountain.png').convert_alpha()
 sky_img = pygame.image.load('assets/backgrounds/day1_sky_cloud.png').convert_alpha()
 
-p_w = GameWorld(phflorg_data)  # Loading all tiles in the world, less background and player (phflorg_world = p_w)
+p_w = GameWorld()  # Loading all tiles in the world, less background and player (phflorg_world = p_w)
 p_w.load(f'lvl/level{level}_data.csv')
 
 # load projectiles (no animation variety)
-arrow_img = pygame.image.load('assets/arrow.png').convert_alpha()
+arrow_img = pygame.image.load('assets/spritesheets/spells/arrow.png').convert_alpha()
 
 # load panel images 
 key_img = pygame.image.load('assets/panel/key.png').convert_alpha()
@@ -111,11 +82,11 @@ def draw_bg(bg_scroll) -> None:
     screen.fill(SKY_BLUE)
     width = sky_img.get_width()
 
-    for x in range(phflorg_data.LEVEL_WIDTH+ 300):
+    for x in range(LEVEL_WIDTH+ 300):
         screen.blit(sky_img, ((x * width) + bg_scroll * 0.5, 0))
-        screen.blit(mountain_img, ((x * width) + bg_scroll * 0.6, phflorg_data.SCREEN_HEIGHT - mountain_img.get_height() - 300))
-        screen.blit(pine1_img, ((x * width) + bg_scroll * 0.7, phflorg_data.SCREEN_HEIGHT - pine1_img.get_height() - 150))
-        screen.blit(pine2_img, ((x * width) + bg_scroll * 0.8, phflorg_data.SCREEN_HEIGHT - pine2_img.get_height()))
+        screen.blit(mountain_img, ((x * width) + bg_scroll * 0.6, SCREEN_HEIGHT - mountain_img.get_height() - 300))
+        screen.blit(pine1_img, ((x * width) + bg_scroll * 0.7, SCREEN_HEIGHT - pine1_img.get_height() - 150))
+        screen.blit(pine2_img, ((x * width) + bg_scroll * 0.8, SCREEN_HEIGHT - pine2_img.get_height()))
 
 
 # TODO: get this to world loading module
@@ -123,19 +94,19 @@ def load_monsters(phflorg_worldmonster_import_list) -> pygame.sprite.Group():
     monsters_sprite_group = pygame.sprite.Group()
     for mob in phflorg_worldmonster_import_list:
         if mob['monster'] == 'minotaur':
-            monsters_sprite_group.add(Monster(mob['x'], mob['y'], animations['minotaur']['walk'], animations['minotaur']['attack'], animations['minotaur']['death'], mob['ai']))
+            monsters_sprite_group.add(Monster(mob['x'], mob['y'], anim['minotaur']['walk'], anim['minotaur']['attack'], anim['minotaur']['death'], mob['ai']))
         if mob['monster'] == 'ogre-archer':
-            monsters_sprite_group.add(Monster(mob['x'], mob['y'], animations['ogre-archer']['walk'], animations['ogre-archer']['attack'], animations['ogre-archer']['death'], mob['ai']))
+            monsters_sprite_group.add(Monster(mob['x'], mob['y'], anim['ogre-archer']['walk'], anim['ogre-archer']['attack'], anim['ogre-archer']['death'], mob['ai']))
         if mob['monster'] == 'skeleton-boss':
-            monsters_sprite_group.add(Monster(mob['x'], mob['y'], animations['skeleton-boss']['walk'], animations['skeleton-boss']['attack'], animations['skeleton-boss']['death'], mob['ai'], cast_anim=animations['skeleton-boss']['cast']))
+            monsters_sprite_group.add(Monster(mob['x'], mob['y'], anim['skeleton-boss']['walk'], anim['skeleton-boss']['attack'], anim['skeleton-boss']['death'], mob['ai'], cast_anim=anim['skeleton-boss']['cast']))
     return monsters_sprite_group
 
 """
 Defining player and monster instances
 """
 # Player instance
-player = Player(phflorg_data.SCREEN_WIDTH // 2, phflorg_data.SCREEN_HEIGHT -170 , phflorg_data, p_w, \
-    animations['player']['walk'], animations['player']['attack'], animations['player']['death'], player_sound_effects)
+player = Player(SCREEN_WIDTH // 2, SCREEN_HEIGHT -170 , p_w, \
+    anim['player']['walk'], anim['player']['attack'], anim['player']['death'], player_sound_effects)
 
 # Monsters
 monsters_sprite_group = load_monsters(p_w.monster_import_list)
@@ -198,7 +169,7 @@ while run:
         player.draw()
         panel.draw()
 
-        # Checking if we have bubble messages
+        # Checking if we have bubble messages - this must be done AFTER everything else is drawn as bubbles are always on top
         bubble_list = list(dict.fromkeys(bubble_list))  # remove dupes TODO: DOESNT WORK
         for bubble in bubble_list:
             if not bubble.expired:
@@ -212,7 +183,7 @@ while run:
         # skeleton_boss_anim_attack _show_anim(screen)
 
         # check game over from falling
-        if player.rect.top > phflorg_data.SCREEN_HEIGHT:
+        if player.rect.top > SCREEN_HEIGHT:
             game_over = True
             player.dead = True
             print('!!!GAME OVER!!!')  # DEBUG
@@ -248,7 +219,7 @@ while run:
                     for spell in mob.cast_anim_list:
                        if spell[0] == 'fire':
                             x, y = spell[1:3]
-                            p_w.anim_spells_sprite_group.add(Spell(x,y, animations['fire']['fire-spell'], False, scale=1))
+                            p_w.anim_spells_sprite_group.add(Spell(x,y, anim['fire']['fire-spell'], False, scale=1))
 
                     mob.cast_anim_list = []
 
@@ -305,6 +276,7 @@ while run:
                             player.inventory.append(('key', key_img))  # inventory of items and their animations
                             key_pickup_fx.play()            
                             drop_item.kill()
+                            bubble_list.append(BubbleMessage(screen, 'You have found a key!\nWhere could it possibly fit?', player))
                         if drop_item.drop_type == 'health-potion':
                             health_pickup_fx.play()
                             player.heal(500)
@@ -328,7 +300,7 @@ while run:
                         # skeleton-boss is a key carrier
                         if mob.data.monster == 'skeleton-boss':
                         # if mob.data.monster == 'ogre-archer':
-                            drop_key = Drop( mob.hitbox.centerx, mob.hitbox.centery - 25 , animations['drops']['key'], turned = False, scale = 2, drop_type='key',)
+                            drop_key = Drop( mob.hitbox.centerx, mob.hitbox.centery - 25 , anim['drops']['key'], turned = False, scale = 2, drop_type='key',)
                             drops_sprite_group.add(drop_key)
 
                     # Check if projectile hit
@@ -337,7 +309,7 @@ while run:
                             projectile.kill()
 
                 # PLAYER END OF LEVEL (WIN!)
-                if player.world_x_pos > (phflorg_data.TILE_SIZE * phflorg_data.MAX_COLS) - player.width:
+                if player.world_x_pos > (TILE_SIZE * MAX_COLS) - player.width:
                     print('win!')
                     player.score += 1000
 
@@ -367,7 +339,7 @@ while run:
 
                     if event.key == pygame.K_UP:  # jump!
                         if player.on_ground:
-                            player.vel_y = - player.world_data.JUMP_HEIGHT
+                            player.vel_y = - JUMP_HEIGHT
                             player.animation.active = False
                             player.state = WALKING
                             player.on_ground = False
@@ -392,21 +364,21 @@ while run:
         """ --- GAME OVER ----"""
         if wait_counter:
             wait_counter -= 1
-        elif fade_counter < phflorg_data.SCREEN_WIDTH / 2:
+        elif fade_counter < SCREEN_WIDTH / 2:
             fade_counter += 15
-            pygame.draw.rect(screen, DARKGRAY, (0,0, fade_counter, phflorg_data.SCREEN_HEIGHT))
-            pygame.draw.rect(screen, DARKGRAY, (phflorg_data.SCREEN_WIDTH - fade_counter, 0, phflorg_data.SCREEN_WIDTH, phflorg_data.SCREEN_HEIGHT))
+            pygame.draw.rect(screen, DARKGRAY, (0,0, fade_counter, SCREEN_HEIGHT))
+            pygame.draw.rect(screen, DARKGRAY, (SCREEN_WIDTH - fade_counter, 0, SCREEN_WIDTH, SCREEN_HEIGHT))
 
         else:       
-            draw_text('GAME OVER', font_big, WHITE, (phflorg_data.SCREEN_WIDTH/2)-130,300)
-            draw_text('SCORE: ' + str(player.score), font_big, WHITE, (phflorg_data.SCREEN_WIDTH/2)-100, 400)
+            draw_text('GAME OVER', font_big, WHITE, (SCREEN_WIDTH/2)-130,300)
+            draw_text('SCORE: ' + str(player.score), font_big, WHITE, (SCREEN_WIDTH/2)-100, 400)
             if player.score > high_score:
                     high_score = player.score
-                    draw_text('NEW HIGH SCORE: ' + str(high_score), font_big, WHITE, (phflorg_data.SCREEN_WIDTH/2)-180, 500)
+                    draw_text('NEW HIGH SCORE: ' + str(high_score), font_big, WHITE, (SCREEN_WIDTH/2)-180, 500)
                     save_high_score(high_score)
             else:
-                draw_text('HIGH SCORE: ' + str(high_score), font_big, WHITE, (phflorg_data.SCREEN_WIDTH/2)-150, 500)
-            draw_text('Press space to play again', font_big, WHITE, (phflorg_data.SCREEN_WIDTH/2)-250, 600)
+                draw_text('HIGH SCORE: ' + str(high_score), font_big, WHITE, (SCREEN_WIDTH/2)-150, 500)
+            draw_text('Press space to play again', font_big, WHITE, (SCREEN_WIDTH/2)-250, 600)
             key = pygame.key.get_pressed()
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
@@ -416,8 +388,8 @@ while run:
                     if event.key == pygame.K_SPACE:
                         # Reset all variables
                         game_over = False
-                        player = Player(phflorg_data.SCREEN_WIDTH // 2, phflorg_data.SCREEN_HEIGHT -170 , phflorg_data, p_w, \
-                            animations['player']['walk'], animations['player']['attack'], animations['player']['death'], player_sound_effects)
+                        player = Player(SCREEN_WIDTH // 2, SCREEN_HEIGHT -170 , p_w, \
+                            anim['player']['walk'], anim['player']['attack'], anim['player']['death'], player_sound_effects)
 
                         scroll = 0
                         bg_scroll = 0

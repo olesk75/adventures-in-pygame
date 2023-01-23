@@ -8,13 +8,8 @@ Drop (pygame Sprite class)          : dropped items, like keys dropped by bosses
 
 import random
 import pygame
+from settings import *
 
-# State constants
-WALKING = 1
-ATTACKING = 2
-CASTING = 3
-DYING = 4
-DEAD = 5
 
 DEBUG_BOXES = False
 
@@ -207,6 +202,7 @@ class Monster(pygame.sprite.Sprite):
                         self.turned = not self.turned
 
             elif self.state == DYING:
+                # TODO: fixs
                 pass
 
             else:

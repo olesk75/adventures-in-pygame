@@ -1,24 +1,16 @@
 import pygame
+from settings import *
 
-WHITE = (255, 255, 255)
-
-# State constants
-WALKING = 1
-ATTACKING = 2
-CASTING = 3
-DYING = 4
-DEAD = 5
 
 # Player class
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y, game_world_data, game_world, walk_anim, attack_anim, death_anim, sounds):
+    def __init__(self, x, y, game_world, walk_anim, attack_anim, death_anim, sounds):
         """
         The Player class constructor - note that x and y is only for initialization,
         the player position will be tracked by the rect
         """
         super().__init__()
         self.world = game_world
-        self.world_data = game_world_data
 
         # Basic state information
         self.health_max = 1000
@@ -29,8 +21,8 @@ class Player(pygame.sprite.Sprite):
         self.inventory = []  # player inventory items
 
         # Setting up halth bar and powers list
-        self.health_bar_length = int(self.world_data.SCREEN_WIDTH / 6 * self.health_current / 1000)  # grows when max health grows
-        self.health_bar_max_length = int(self.world_data.SCREEN_WIDTH / 6 * self.health_max / 1000)  # grows when max health grows
+        self.health_bar_length = int(SCREEN_WIDTH / 6 * self.health_current / 1000)  # grows when max health grows
+        self.health_bar_max_length = int(SCREEN_WIDTH / 6 * self.health_max / 1000)  # grows when max health grows
 
         # Setting up walk animation
         self.animation = walk_anim
@@ -110,7 +102,7 @@ class Player(pygame.sprite.Sprite):
         if self.health_current <= 0:
             self.health_current = 0
             self.state = DYING
-        self.health_bar_length = int(self.world_data.SCREEN_WIDTH / 6 * self.health_current / 1000)
+        self.health_bar_length = int(SCREEN_WIDTH / 6 * self.health_current / 1000)
 
         direction = 1
         if turned:
@@ -144,7 +136,7 @@ class Player(pygame.sprite.Sprite):
             if self.health_current <= 0:
                 self.health_current = 0
                 self.state = DYING
-            self.health_bar_length = int(self.world_data.SCREEN_WIDTH / 6 * self.health_current / 1000)
+            self.health_bar_length = int(SCREEN_WIDTH / 6 * self.health_current / 1000)
             self.last_env_damage = now
 
 
@@ -152,7 +144,7 @@ class Player(pygame.sprite.Sprite):
         self.health_current += damage
         if self.health_current > self.health_max:
             self.health_current = self.health_max
-        self.health_bar_length = int(self.world_data.SCREEN_WIDTH / 6 * self.health_current / 1000)
+        self.health_bar_length = int(SCREEN_WIDTH / 6 * self.health_current / 1000)
 
 
     def die(self) -> None:
@@ -192,17 +184,17 @@ class Player(pygame.sprite.Sprite):
             self.death.anim_counter += 1
 
         # Gravity
-        self.vel_y += self.world_data.GRAVITY
+        self.vel_y += GRAVITY
         dy += self.vel_y
 
         # Watch screen boundaries (effectively world boundaries since the screen scrolls to world edges before player can get to end of screen)
         if self.rect.left + dx < 0:
             dx = - self.rect.left
-        if self.rect.right + dx > self.world_data.SCREEN_WIDTH:
-            dx = self.world_data.SCREEN_WIDTH - self.rect.right
+        if self.rect.right + dx > SCREEN_WIDTH:
+            dx = SCREEN_WIDTH - self.rect.right
         if self.rect.top + dy < 0:
             dy = - self.rect.top
-            self.vel_y = self.world_data.GRAVITY
+            self.vel_y = GRAVITY
 
         # Check platform collision
         for platform in self.world.platforms_sprite_group.sprites():
@@ -223,11 +215,11 @@ class Player(pygame.sprite.Sprite):
         x_pos = self.rect.center[0]
 
         # Check if player has reached scroll threshold to the LEFT (and we're not on the far left) + we're walking left
-        if dx < 0 and x_pos <= self.world_data.SCROLL_THRESHOLD and self.world_x_pos > self.world_data.SCROLL_THRESHOLD + self.width:
+        if dx < 0 and x_pos <= SCROLL_THRESHOLD and self.world_x_pos > SCROLL_THRESHOLD + self.width:
             scroll = -dx  # We scroll left by the opposite of the player's x speed
         
          # Check if player has reached scroll threshold to the right (and we're not on the far right) + we're walking right
-        if dx > 0 and x_pos >= self.world_data.SCREEN_WIDTH - self.world_data.SCROLL_THRESHOLD and self.world_x_pos < self.world_data.TILE_SIZE * self.world_data.MAX_COLS - self.world_data.SCROLL_THRESHOLD:
+        if dx > 0 and x_pos >= SCREEN_WIDTH - SCROLL_THRESHOLD and self.world_x_pos < TILE_SIZE * MAX_COLS - SCROLL_THRESHOLD:
             scroll = -dx  # We scroll right by the opposite of the player's x speed
         
 

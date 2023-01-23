@@ -3,16 +3,12 @@ monsters[]          : list of known monsters in game
 MonsterAI(class)    : contains monster data
 """
 
-import random
 import pygame
+from settings import *
+
 
 monsters = ['minotaur', 'ogre-archer', 'skeleton-boss', 'elven-caster']  # used to recognize tiles from level files - order must match tile numbering 
 
-# State constants
-WALKING = 1
-ATTACKING = 2
-CASTING = 3
-DYING = 4
 
 class MonsterData():
     """ Movement, detection and attack properties of monsters """

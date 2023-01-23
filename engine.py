@@ -1,6 +1,7 @@
 import pygame
 import pickle
 
+from settings import *
 from monsters import Drop
 
 
@@ -58,6 +59,7 @@ class BubbleMessage():
 
     def _display_msg(self) -> None:
             # TODO: BLIT ONTO A SPRITE BIG ENOUGH FOR RECT AND CIRCLES FIRST, THEN WE CAN USE THE SPRITE TO MOVE THE BUBBLE OVER TIME
+            # ALSO MAKE QUARTERR SIZE, SCALE UP, TO GET PIXEL ART EFFECT, OR REDUCE RESOLUTION EVERYWHERE AND SCALE UP!!
             padding_x = 10
             padding_y = 10
 
@@ -70,7 +72,6 @@ class BubbleMessage():
             pygame.Surface.fill(surf, grey)
             line_size = 3
 
-
             for row, msg_text in enumerate(self.msg_list):
                 text_img = self.font.render(msg_text, True, white)
                 surf.blit(text_img, (padding_x,padding_y + row * pygame.font.Font.size(self.font, msg_text)[1]))
@@ -81,7 +82,6 @@ class BubbleMessage():
             else:
                 self.screen.blit(surf, (self.player.rect.centerx - self.x_size, self.player.rect.top - self.y_size))
                 x = self.player.rect.centerx - self.x_size
-
             
             # Draw another rectangle + two half circles behind as a frame
             pygame.draw.rect(self.screen, black, (x-line_size,y-line_size, self.x_size+line_size*2, self.y_size+line_size*2))
@@ -90,7 +90,6 @@ class BubbleMessage():
             pygame.draw.circle(self.screen, black, (x + self.x_size, y + self.y_size/2), self.y_size/2+line_size, \
                 draw_top_right=True, draw_bottom_right=True, draw_top_left=False, draw_bottom_left = False)
 
-
             # Draw surface + two half circles on each end to round off - this is the inner part - in grey
             self.screen.blit(surf, (x, y))
             pygame.draw.circle(self.screen, grey, (x,y + self.y_size/2), self.y_size/2, \
@@ -98,9 +97,6 @@ class BubbleMessage():
             pygame.draw.circle(self.screen, grey, (x+self.x_size,y + self.y_size/2), self.y_size/2, \
                 draw_top_right=True, draw_bottom_right=True, draw_top_left=False, draw_bottom_left = False)
 
-            
-
-            pygame.display.update()
 
     def show(self):
         # we compensate for scrolling
@@ -120,7 +116,6 @@ class BubbleMessage():
 
         
 
-
 class GamePanel():
     """ Class to show a panel on top left corner of the screen """
     def __init__(self, screen: pygame.display, player)-> None:
@@ -138,7 +133,7 @@ class GamePanel():
         self.old_inv = []  # track changes in player in ventory to highlight
 
         # Panel background image
-        self.panel_bg = pygame.image.load('assets/game-panel.png').convert_alpha()
+        self.panel_bg = pygame.image.load('assets/panel/game-panel.png').convert_alpha()
         self.panel_highlight_fx = pygame.mixer.Sound('assets/sound/game/panel_highlight.wav')
 
 

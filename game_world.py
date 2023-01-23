@@ -8,57 +8,13 @@ GamePanel(class)                    : contans the player information for the scr
 
 
 import pygame
+from settings import *
 import csv
 import random
 from monster_data import MonsterData
 from monster_data import monsters
 from dataclasses import dataclass
-
-
-@dataclass
-class GameData:
-    SCREEN_WIDTH: int
-    SCREEN_HEIGHT: int
-    LEVEL_WIDTH: int
-    GRAVITY: int
-    MAX_PLATFORMS: int
-    JUMP_HEIGHT: int
-    PLAYER_BOUNCING: bool
-    SCROLL_THRESHOLD: int
-    ROWS: int
-    MAX_COLS: int
-    TILE_SIZE: int
-    TILE_TYPES: int
-    ANIMATION_TYPES: int
-    OBJECT_TYPES: int
-
-class GameTile(pygame.sprite.Sprite):
-    """
-    Customized Sprite class which allows update with scroll value, which will be triggerd by spritegroup.update(scroll)
-    """
-    def __init__(self):
-        super().__init__()
-        
-    def update(self, scroll) -> None:
-        # Moves the rectangle of this sprite 
-        self.rect.x += scroll
-
-class GameTileAnimation(GameTile):
-    """
-    Customized Sprite class which allows update with scroll value, which will be triggerd by spritegroup.update(scroll)
-    """
-    def __init__(self, animation):
-        super().__init__()
-        self.animation = animation
-        self.X_CENTER = self.animation.get_image().get_width() // 2
-        self.Y_CENTER = self.animation.get_image().get_height() // 2
-        self.sprites = self.animation.sprites
-        self.animation.active = True
-        
-    def update(self, scroll) -> None:
-        # Moves the rectangle of this sprite 
-        self.rect.x += scroll
-        self.image = self.animation.get_image().convert_alpha()
+from animation import GameTile, GameTileAnimation
 
 
 class GameWorld():
@@ -69,7 +25,7 @@ class GameWorld():
     We build sprite groups of all objects    
 
     """
-    def __init__(self, game_data) -> None:
+    def __init__(self) -> None:
 
         self.tile_types = {
             'platforms': [0,1,2,3,4,5,6,7,8],
@@ -80,10 +36,9 @@ class GameWorld():
             'trigg_anims': [28,29,30]
         }
         
-        self.data = game_data
-        self.rows = self.data.MAX_COLS
-        self.columns = self.data.ROWS
-        self.tile_size = self.data.TILE_SIZE
+        self.rows = MAX_COLS
+        self.columns = ROWS
+        self.tile_size = TILE_SIZE
 
         self.platforms = [[-1]*self.columns] * self.rows
         self.pickups = [[-1]*self.columns]*self.rows
@@ -99,6 +54,15 @@ class GameWorld():
 
         self.monster_import_list = []  # here we put all monsters from tile map, their type, x, y and AI properties
 
+    def _import_csv_layout(self, level_file):
+        terrain_map = []
+        with open(level_file) as map:
+            level = csv.reader(map,delimiter = ',')
+            for row in level:
+                terrain_map.append(list(row))
+            return terrain_map
+        
+
     def load(self, level_file) -> None:
         self.level_file = level_file
         img_list = []
@@ -110,11 +74,11 @@ class GameWorld():
 
         for x in range(sum([len(self.tile_types[x]) for x in self.tile_types if isinstance(self.tile_types[x], list)])):
             img = pygame.image.load(f'assets/tile/{x}.png').convert_alpha()
-            img = pygame.transform.scale(img, (self.data.TILE_SIZE, self.data.TILE_SIZE))
+            img = pygame.transform.scale(img, (TILE_SIZE, TILE_SIZE))
             img_list.append(img)
 
         
-        from animation_data import animations  # we do this late, as we need to have display() up first
+        from animation_data import anim  # we do this late, as we need to have display() up first
 
         with open(self.level_file, newline='') as csvfile:
             """
@@ -145,15 +109,15 @@ class GameWorld():
                             """ Animated objects - can be arbitrary size as we scale the sprites """
                             # ---> Animated objects
                             if int(tile) == self.tile_types['animated_objects'][0]:  # health potion
-                                animation = animations['objects']['health-potion']
+                                animation = anim['objects']['health-potion']
                                 hazard = False
                             
                             # --->  Animated hazards
                             if int(tile) == self.tile_types['hazards'][0]:  # fire
-                                animation = animations['fire']['fire-hazard']
+                                animation = anim['fire']['fire-hazard']
                                 hazard = True    
                             elif int(tile) == self.tile_types['hazards'][1]:  # spikes
-                                animation = animations['spikes']['spike-trap'] 
+                                animation = anim['spikes']['spike-trap'] 
                                 hazard = True                            
                             else:
                                 # --->  Animated tiles (fires, birds etc.) 
@@ -185,7 +149,7 @@ class GameWorld():
                         if int(tile) in self.tile_types['trigg_anims']:
                             """ Triggered animations """
                             if int(tile) == self.tile_types['trigg_anims'][2]: 
-                                animation = animations['doors']['end-of-level'] 
+                                animation = anim['doors']['end-of-level'] 
 
                             sprite = GameTileAnimation(animation)  # -> GameTile -> pygame.sprite.Sprite
                             image_height = sprite.sprites[0].get_height()  # height of the images in the animation
@@ -196,7 +160,7 @@ class GameWorld():
                             sprite.rect.x = x * self.tile_size - (image_width - self.tile_size) / 2 # we correct the x pos by removeing the part of the image that's larger than the tile
                             sprite.rect.y = ((y + 1)  * self.tile_size) - image_height # we correct the y pos
 
-                            if sprite.animation == animations['doors']['end-of-level']:   # the last triggered animation is a door 
+                            if sprite.animation == anim['doors']['end-of-level']:   # the last triggered animation is a door 
                                 self.triggered_anim_list.append(['doors', sprite])
                                 sprite.animation.active = False  # we trigger this in the main loop
 
