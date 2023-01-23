@@ -5,23 +5,25 @@ from animation import Animation
 BLACK = (0,0,0)
 
 # Create player animations
-p_sprite_sheet = SpriteSheet(pygame.image.load('assets/character-sprites2.png').convert_alpha(), 64, 64, BLACK, 2)
-p_sprite_sheet_oversize = SpriteSheet(pygame.image.load('assets/character-sprites2.png').convert_alpha(), 64*3, 64*3, BLACK, 2)
+p_sprite_sheet = SpriteSheet(pygame.image.load('assets/spritesheets/character-sprites2.png').convert_alpha(), 64, 64, BLACK, 2)
+p_sprite_sheet_oversize = SpriteSheet(pygame.image.load('assets/spritesheets/character-sprites2.png').convert_alpha(), 64*3, 64*3, BLACK, 2)
 player_anim_walk = Animation(p_sprite_sheet, row=11, frames=9, speed=75)
 player_anim_attack = Animation(p_sprite_sheet_oversize, row=10, frames=6, speed=30)
 player_anim_death = Animation(p_sprite_sheet, row=20, frames=6, speed=800)
 
 # Create monster animations
-minotaur_ss = SpriteSheet(pygame.image.load('assets/minotaur-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
+minotaur_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/minotaur-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
 minotaur_anim_walk = Animation(minotaur_ss, row=11, frames=9, speed=50)
 minotaur_anim_attack = Animation(minotaur_ss, row=7, frames=8, speed=75)
-ogre_archer_ss = SpriteSheet(pygame.image.load('assets/ogre-archer-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
+minotaur_anim_death = Animation(minotaur_ss, row=20, frames=6, speed=100)
+ogre_archer_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/ogre-archer-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
 ogre_anim_walk = Animation(ogre_archer_ss, row=11, frames=9, speed=50)
 ogre_anim_attack = Animation(ogre_archer_ss, row=19, frames=13, speed=100)
+ogre_anim_death = Animation(ogre_archer_ss, row=20, frames=6, speed=100)
 
 # Create boss animations
-skeleton_boss_ss = SpriteSheet(pygame.image.load('assets/skeleton-boss-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
-skeleton_boss_attack_ss = SpriteSheet(pygame.image.load('assets/skeleton-boss-sprites-attack.png').convert_alpha(), 64*3, 64*3, BLACK, 2)
+skeleton_boss_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/skeleton-boss-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
+skeleton_boss_attack_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/skeleton-boss-sprites-attack.png').convert_alpha(), 64*3, 64*3, BLACK, 2)
 skeleton_boss_anim_walk = Animation(skeleton_boss_ss, row=11, frames=9, speed=50)
 skeleton_boss_anim_attack = Animation(skeleton_boss_attack_ss, row=3, frames=8, speed=75)
 skeleton_boss_anim_death = Animation(skeleton_boss_ss, row=20, frames=6, speed=75)
@@ -69,11 +71,13 @@ animations = {
     },
     'minotaur': {
         'walk': minotaur_anim_walk, 
-        'attack': minotaur_anim_attack
+        'attack': minotaur_anim_attack,
+        'death': minotaur_anim_death
     },
     'ogre-archer': {
         'walk': ogre_anim_walk,
-        'attack': ogre_anim_attack
+        'attack': ogre_anim_attack,
+        'death': ogre_anim_death
     },
     'skeleton-boss': {
         'walk': skeleton_boss_anim_walk, 

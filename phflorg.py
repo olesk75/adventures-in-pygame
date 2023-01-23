@@ -45,7 +45,7 @@ clock = pygame.time.Clock()
 FPS = 60
 
 # Game state variables
-level = 1
+level = 3
 max_level = 1
 scroll = 0
 bg_scroll = 0
@@ -123,11 +123,11 @@ def load_monsters(phflorg_worldmonster_import_list) -> pygame.sprite.Group():
     monsters_sprite_group = pygame.sprite.Group()
     for mob in phflorg_worldmonster_import_list:
         if mob['monster'] == 'minotaur':
-            monsters_sprite_group.add(Monster(mob['x'], mob['y'], animations['minotaur']['walk'], animations['minotaur']['attack'], mob['ai']))
+            monsters_sprite_group.add(Monster(mob['x'], mob['y'], animations['minotaur']['walk'], animations['minotaur']['attack'], animations['minotaur']['death'], mob['ai']))
         if mob['monster'] == 'ogre-archer':
-            monsters_sprite_group.add(Monster(mob['x'], mob['y'], animations['ogre-archer']['walk'], animations['ogre-archer']['attack'], mob['ai']))
+            monsters_sprite_group.add(Monster(mob['x'], mob['y'], animations['ogre-archer']['walk'], animations['ogre-archer']['attack'], animations['ogre-archer']['death'], mob['ai']))
         if mob['monster'] == 'skeleton-boss':
-            monsters_sprite_group.add(Monster(mob['x'], mob['y'], animations['skeleton-boss']['walk'], animations['skeleton-boss']['attack'], mob['ai'], cast_anim=animations['skeleton-boss']['cast']))
+            monsters_sprite_group.add(Monster(mob['x'], mob['y'], animations['skeleton-boss']['walk'], animations['skeleton-boss']['attack'], animations['skeleton-boss']['death'], mob['ai'], cast_anim=animations['skeleton-boss']['cast']))
     return monsters_sprite_group
 
 """
@@ -198,6 +198,16 @@ while run:
         player.draw()
         panel.draw()
 
+        # Checking if we have bubble messages
+        bubble_list = list(dict.fromkeys(bubble_list))  # remove dupes TODO: DOESNT WORK
+        for bubble in bubble_list:
+            if not bubble.expired:
+                bubble.show()
+            else:
+                bubble_list.remove(bubble)
+                
+                
+
         # Check animation imports
         # skeleton_boss_anim_attack _show_anim(screen)
 
@@ -217,12 +227,10 @@ while run:
             if pygame.Rect.colliderect(player.rect, t_anim_sprite) and player.state != DYING:
                 if any('key' in sublist for sublist in player.inventory):  # do we have key?
                     t_anim_sprite.animation.active = True
-                    bubble_list.append(BubbleMessage(screen, 'Level complete! Congratualations!', player.rect.top, player.rect.left))
-                    
-
+                    bubble_list.append(BubbleMessage(screen, 'Level complete!\nCongratualations!', player))
                 else:
                     player.hit(0, -1)
-                    bubble_list.append(BubbleMessage(screen, 'Come back when you have a key!', player.rect.top, player.rect.left))
+                    bubble_list.append(BubbleMessage(screen, 'Come back when you have a key!', player))
     
 
                 
@@ -334,8 +342,7 @@ while run:
                     player.score += 1000
 
                 
-                for bubble in bubble_list:
-                    bubble.show()
+        
 
 
 

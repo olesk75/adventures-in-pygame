@@ -31,25 +31,94 @@ class BubbleMessage():
     """ Show floating info bubbles
         Meant to linger - 10 seconds between each message 
     """
-    def __init__(self, screen: pygame.display, msg: str, x:int, y:int) -> None:
+    def __init__(self, screen: pygame.display, msg: str, player: pygame.sprite.Sprite) -> None:
         self.screen = screen
         self.msg = msg
-        self.x = x
-        self.y = y
-        self.last_time = 0
+        self.player = player
+        self.active = False  
+        self.expired = False
         self.min_delay = 1000*10  # 10 seconds
-        self.font = pygame.font.Font("assets/fonts/m5x7.ttf", 16)  # 16, 32, 48
+        self.last_time = -self.min_delay  # just to make sure we run the first time without delay
+        self.start_time = 0
+        self.duration = 5000
+        self.font_size = 32
+        self.font = pygame.font.Font("assets/font/m5x7.ttf", self.font_size)  # 16, 32, 48
+        
+        self.half_screen = pygame.display.get_surface().get_size()[0] // 2
+
+        self.msg_list = msg.splitlines()  # splitting the msg into a list of lines
+
+        self.x_size = 10  # start padded
+        self.y_size = 10
+        y_padding = 10
+        for line in self.msg_list:
+            self.x_size += pygame.font.Font.size(self.font, line)[0]
+            self.y_size += pygame.font.Font.size(self.font, line)[1]
+            self.y_size += y_padding
+
+    def _display_msg(self) -> None:
+            # TODO: BLIT ONTO A SPRITE BIG ENOUGH FOR RECT AND CIRCLES FIRST, THEN WE CAN USE THE SPRITE TO MOVE THE BUBBLE OVER TIME
+            padding_x = 10
+            padding_y = 10
+
+            grey = (128,128,128)
+            black = (0,0,0)
+            white = (255,255,255)
+
+            # Create and fill a rectangle transparent gray
+            surf = pygame.Surface((self.x_size, self.y_size)).convert_alpha()
+            pygame.Surface.fill(surf, grey)
+            line_size = 3
+
+
+            for row, msg_text in enumerate(self.msg_list):
+                text_img = self.font.render(msg_text, True, white)
+                surf.blit(text_img, (padding_x,padding_y + row * pygame.font.Font.size(self.font, msg_text)[1]))
+            
+            y = self.player.rect.top - self.y_size
+            if self.player.rect.centerx < self.half_screen:
+                x = self.player.rect.centerx
+            else:
+                self.screen.blit(surf, (self.player.rect.centerx - self.x_size, self.player.rect.top - self.y_size))
+                x = self.player.rect.centerx - self.x_size
+
+            
+            # Draw another rectangle + two half circles behind as a frame
+            pygame.draw.rect(self.screen, black, (x-line_size,y-line_size, self.x_size+line_size*2, self.y_size+line_size*2))
+            pygame.draw.circle(self.screen, black, (x ,y + self.y_size/2), self.y_size/2+line_size, \
+                draw_top_right=False, draw_bottom_right=False, draw_top_left=True, draw_bottom_left = True)
+            pygame.draw.circle(self.screen, black, (x + self.x_size, y + self.y_size/2), self.y_size/2+line_size, \
+                draw_top_right=True, draw_bottom_right=True, draw_top_left=False, draw_bottom_left = False)
+
+
+            # Draw surface + two half circles on each end to round off - this is the inner part - in grey
+            self.screen.blit(surf, (x, y))
+            pygame.draw.circle(self.screen, grey, (x,y + self.y_size/2), self.y_size/2, \
+                draw_top_right=False, draw_bottom_right=False, draw_top_left=True, draw_bottom_left = True)
+            pygame.draw.circle(self.screen, grey, (x+self.x_size,y + self.y_size/2), self.y_size/2, \
+                draw_top_right=True, draw_bottom_right=True, draw_top_left=False, draw_bottom_left = False)
+
+            
+
+            pygame.display.update()
 
     def show(self):
+        # we compensate for scrolling
         now = pygame.time.get_ticks()
-        if now > self.last_time + self.min_delay:
-            print(f'Bubble message: "{self.msg}"')
+        if now > self.last_time + self.min_delay and not self.active:
+            self._display_msg()
+            self.active = True
+            pygame.time.wait(50)
+
             self.last_time = now
-        # DO STUFF
+            self.start_time = now
+        elif self.active and now < self.start_time + self.duration:
+            self._display_msg()
+        else:
+            self.active = False
+            self.expired = True
 
         
-
-
 
 
 class GamePanel():

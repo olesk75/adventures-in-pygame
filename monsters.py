@@ -1,6 +1,8 @@
 """
 Monster (pygame Sprite class)       : base class for all mobs
 Projectile (pygame Sprite class)    : class for all projectiles (arrows etc.)
+Spell (pygame Sprite class)         : class for spells - player and monster spells both
+Drop (pygame Sprite class)          : dropped items, like keys dropped by bosses
 """
 
 
@@ -17,7 +19,7 @@ DEAD = 5
 DEBUG_BOXES = False
 
 class Monster(pygame.sprite.Sprite):
-    def __init__(self,x, y, walk_anim, attack_anim, mob_data, cast_anim = False):
+    def __init__(self,x, y, walk_anim, attack_anim, death_anim, mob_data, cast_anim = False):
         """
         The Player class constructor - note that x and y is only for initialization,
         the player position will be tracked by the rect
@@ -32,9 +34,10 @@ class Monster(pygame.sprite.Sprite):
         self.height = walk_anim.ss.y_dim * walk_anim.ss.scale
         self.image = self.walk_anim.get_image()
 
-        # Setting up attack and castr animations
+        # Setting up state animations
         self.attack_anim = attack_anim
         self.cast_anim = cast_anim
+        self.death_anim = death_anim
         self.cast_player_pos = ()
 
         # Setting up death animation
@@ -118,7 +121,7 @@ class Monster(pygame.sprite.Sprite):
             if platform.rect.colliderect(moved_hitbox):  # we are standing on a platform essentially
                 # Preventing falling through platforms
                 if moved_hitbox.bottom > platform.rect.top:  # Is player above platform?
-                    if self.vel_y > 0 and not self.dead:  # Is monster falling and not dead?
+                    if self.vel_y > 0:
                         dy = 0
                         self.at_bottom = True                     
                         self.vel_y = 0
@@ -207,7 +210,7 @@ class Monster(pygame.sprite.Sprite):
                 pass
 
             else:
-                print(f'ERROR, wrong state {self.state}')
+                print(f'ERROR, wrong state for monster in boss fight: {self.state}')
                 exit(1)
 
         return dx, dy
@@ -225,10 +228,11 @@ class Monster(pygame.sprite.Sprite):
                 if self.ready_to_attack:  # if previous attack is done
                     self.walk_anim.active = False
                     self.attack_anim.active = True
+                    self.death_anim.active = False
                     if self.data.caster:
                         self.cast_anim.active = False
 
-                    self.last_attack = pygame.time.get_ticks()
+                    self.last_attack = pygame.time.get_ticks()  # recording time of last attack
 
                     new_rect = self.attack_anim.get_image().get_rect()  # we need to scale the rect for different size attack images
                     new_rect.center = self.rect.center
@@ -241,6 +245,7 @@ class Monster(pygame.sprite.Sprite):
             elif new_state == WALKING:
                     self.walk_anim.active = True
                     self.attack_anim.active = False
+                    self.death_anim.active = False
                     if self.data.caster:
                         self.cast_anim.active = False
 
@@ -251,6 +256,7 @@ class Monster(pygame.sprite.Sprite):
             elif new_state == CASTING:
                     self.attack_anim.active = False
                     self.walk_anim.active = False
+                    self.death_anim.active = False
                     self.cast_anim.active = True
 
                     new_rect = self.cast_anim.get_image().get_rect()  # we need to scale back to walking image size after an attack
@@ -266,6 +272,7 @@ class Monster(pygame.sprite.Sprite):
             elif new_state == DYING:
                     self.attack_anim.active = False
                     self.walk_anim.active = False
+                    self.death_anim.active = True
                     if self.data.caster:
                         self.cast_anim.active = False 
                     self.vel_y = -5
@@ -343,14 +350,15 @@ class Monster(pygame.sprite.Sprite):
             
 
         elif self.state == DYING:
-            # Spin sprite
-            angle = 5
-            orig_rect = self.image.get_rect()
-            rot_image = pygame.transform.rotate(self.image, angle)
-            rot_rect = orig_rect.copy()
-            rot_rect.center = rot_image.get_rect().center
-            self.image = rot_image.subsurface(rot_rect).copy()
-            self.image = pygame.transform.flip(self.image, self.turned, False)
+            self.image = self.death_anim.get_image().convert_alpha()
+            # # Spin sprite
+            # angle = 5
+            # orig_rect = self.image.get_rect()
+            # rot_image = pygame.transform.rotate(self.image, angle)
+            # rot_rect = orig_rect.copy()
+            # rot_rect.center = rot_image.get_rect().center
+            # self.image = rot_image.subsurface(rot_rect).copy()
+            # self.image = pygame.transform.flip(self.image, self.turned, False)
         elif self.state == WALKING:
             self.image = self.walk_anim.get_image()
 
