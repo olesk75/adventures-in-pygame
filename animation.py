@@ -3,7 +3,7 @@ import pygame
 # Animation class
 class Animation():
     # Getting a sprite sheet
-    def __init__(self, sprite_sheet: pygame.Surface, row:int, frames:int, speed:int, repeat:bool=True):
+    def __init__(self, sprite_sheet: pygame.Surface, row:int, frames:int, speed:int, repeat:bool=True) -> None:
         self.ss = sprite_sheet
         self.row = row
         self.frames = frames
@@ -67,31 +67,3 @@ class Animation():
             self.screen.blit(sprite, (frame_x + n * sprite_width, frame_y))  # draw sprites horisontally
             self.screen.blit(sprite, (frame_x, frame_y + n * sprite_height))
             n += 1
-
-class GameTile(pygame.sprite.Sprite):
-    """
-    Customized Sprite class which allows update with scroll value, which will be triggerd by spritegroup.update(scroll)
-    """
-    def __init__(self):
-        super().__init__()
-        
-    def update(self, scroll) -> None:
-        # Moves the rectangle of this sprite 
-        self.rect.x += scroll
-
-class GameTileAnimation(GameTile):
-    """
-    Customized Sprite class which allows update with scroll value, which will be triggerd by spritegroup.update(scroll)
-    """
-    def __init__(self, animation):
-        super().__init__()
-        self.animation = animation
-        self.X_CENTER = self.animation.get_image().get_width() // 2
-        self.Y_CENTER = self.animation.get_image().get_height() // 2
-        self.sprites = self.animation.sprites
-        self.animation.active = True
-        
-    def update(self, scroll) -> None:
-        # Moves the rectangle of this sprite 
-        self.rect.x += scroll
-        self.image = self.animation.get_image().convert_alpha()

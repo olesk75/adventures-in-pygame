@@ -1,9 +1,11 @@
 import pygame
 import pickle
+import glob
+import re
+from csv import reader
 
 from settings import *
 from monsters import Drop
-
 
 # --- Draw on screen ---
 def draw_text(text, font, text_col, x, y)-> None:
@@ -22,17 +24,47 @@ def load_high_score() -> int:
             return(0)
     return(high_score)
 
-def save_high_score(high_score: int) -> None:
+def save_high_score(high_score :int) -> None:
     """ Save high score to file """
     with open('highscore.dat', 'wb') as save_file:
         pickle.dump(high_score, save_file)    
 
+# --- Import CSV data ---
+def import_csv_layout(path :str) -> list:
+    # Reads the map CSV files
+    terrain_map = []
+    with open (path) as map:
+        level = reader(map, delimiter = ',')
+        for row in level:
+            terrain_map.append(list(row))
+    return terrain_map
+    
+# --- Reads all tiles of a certain category, in numerical order, and returns list
+def import_tile_graphics(path :str) -> list:
+    tiles = []
+    
+    tile_files = glob.glob(path, recursive=False)
 
+    # sort files by numer, meaning 10.png comes after 9.png, not alphabetically
+    tile_files.sort(key=lambda var:[int(x) if x.isdigit() else x for x in re.findall(r'[^0-9]|[0-9]+', var)])
+
+    for filename in tile_files:  # read tile files sorted by name
+        tiles.append(pygame.image.load(filename).convert_alpha())
+    return tiles
+
+
+
+# --- Show floating info bubbles ---
 class BubbleMessage():
     """ Show floating info bubbles
         Meant to linger - 10 seconds between each message 
     """
-    def __init__(self, screen: pygame.display, msg: str, player: pygame.sprite.Sprite) -> None:
+    def __init__(self, screen: pygame.display, msg: str, ttl: int, msg_type: str, player: pygame.sprite.Sprite) -> None:
+        # Arguments:
+        # ttl : durtaion of bubble in ms
+        # msg_type: type of message, to avoid dupes
+        # player: player instance
+        self.msg_type = msg_type
         self.screen = screen
         self.msg = msg
         self.player = player
@@ -41,7 +73,7 @@ class BubbleMessage():
         self.min_delay = 1000*10  # 10 seconds
         self.last_time = -self.min_delay  # just to make sure we run the first time without delay
         self.start_time = 0
-        self.duration = 5000
+        self.duration = ttl
         self.font_size = 32
         self.font = pygame.font.Font("assets/font/m5x7.ttf", self.font_size)  # 16, 32, 48
         
@@ -98,7 +130,7 @@ class BubbleMessage():
                 draw_top_right=True, draw_bottom_right=True, draw_top_left=False, draw_bottom_left = False)
 
 
-    def show(self):
+    def show(self) -> None:
         # we compensate for scrolling
         now = pygame.time.get_ticks()
         if now > self.last_time + self.min_delay and not self.active:
@@ -118,10 +150,12 @@ class BubbleMessage():
 
 class GamePanel():
     """ Class to show a panel on top left corner of the screen """
-    def __init__(self, screen: pygame.display, player)-> None:
+    def __init__(self, screen: pygame.display)-> None:
         self.screen = screen
         self.window_size = pygame.display.get_window_size()# screen.get_window_size()
-        self.player = player
+        
+        self.inventory = []
+        self.health_current = 0
 
         # Define fonts
         self.font_small = pygame.font.SysFont('Lucida Sans', 40)
@@ -131,26 +165,33 @@ class GamePanel():
         self.blink = False
         self.last_health = 0
         self.old_inv = []  # track changes in player in ventory to highlight
-
+        
         # Panel background image
         self.panel_bg = pygame.image.load('assets/panel/game-panel.png').convert_alpha()
-        self.panel_highlight_fx = pygame.mixer.Sound('assets/sound/game/panel_highlight.wav')
 
+    def setup_bars(self, health_current, health_max) -> None:
+        self.health_bar_length = int(SCREEN_WIDTH / 6 * health_current / 1000)  # grows when max health grows
+        self.health_bar_max_length = int(SCREEN_WIDTH / 6 * health_max / 1000)  # grows when max health grows
 
     def _blink_bar(self, duration) -> None:
         if self.blink == True:
             if self.blink_counter < duration:
                 self.blink_counter += 1
-                pygame.draw.rect(self.screen, (255,0,0), (20,40,self.player.health_bar_max_length+4,20) ,2 )
+                pygame.draw.rect(self.screen, (255,0,0), (20,40,self.health_bar_max_length+4,20) ,2 )
             else:
                 self.blink_counter = 0
                 self.blink = False
         else:
-            if self.player.health_current < self.last_health: 
+            if self.health_current < self.last_health: 
                 self.blink = True
 
-    def _flash_show(self, img, x,y):
-        self.panel_highlight_fx.play()
+    def _flash_show(self, img, x,y) -> None:
+        # Flashes the health bar when hit
+        print('flash')
+        # Play sound effect
+        audio_highlight = pygame.mixer.Sound('assets/sound/game/panel_highlight.wav')
+        audio_highlight.play()
+
         opacity = 128
         img2 = img
         img2.fill((100, 100, 100, 0), special_flags=pygame.BLEND_RGBA_ADD)
@@ -174,47 +215,52 @@ class GamePanel():
             pygame.time.wait(75)
 
         
-    def draw(self) -> None:
+    def draw(self, score, current_health, inventory) -> None:
+        self.score = score
+        self.health_current = current_health
+
+        self.health_bar_length = int(SCREEN_WIDTH / 6 * current_health / 1000)
+        
         # first the panel background
         self.screen.blit(self.panel_bg, (0,0))
 
         # score in the top left
         WHITE = (255, 255, 255)
-        draw_text(f'SCORE: {self.player.score}', self.font_small, WHITE, self.window_size[0]/100, self.window_size[1]/100)  # score
+        draw_text(f'SCORE: {self.score}', self.font_small, WHITE, self.window_size[0]/100, self.window_size[1]/100)  # score
 
         # health bar, white and semi transparent
-        bar_frame = pygame.Surface((self.player.health_bar_max_length+4,20), pygame.SRCALPHA)   # per-pixel alpha
+        bar_frame = pygame.Surface((self.health_bar_max_length+4,20), pygame.SRCALPHA)   # per-pixel alpha
         bar_frame.fill((255,255,255,128))                         # notice the alpha value in the color
         self.screen.blit(bar_frame, (20,40))
 
         self._blink_bar(10)  # blink if we should
 
-        ratio = self.player.health_bar_length / self.player.health_bar_max_length
+        ratio = self.health_bar_length / self.health_bar_max_length
         GREEN = 255 * ratio
         RED = 255 * (1-ratio)
         BLUE = 0
 
-        health_bar = pygame.Surface((self.player.health_bar_length,16), pygame.SRCALPHA)   # per-pixel alpha
+        health_bar = pygame.Surface((self.health_bar_length,16), pygame.SRCALPHA)   # per-pixel alpha
         health_bar.fill((RED,GREEN,BLUE,200))                         # notice the alpha value in the color
-        self.screen.blit(health_bar, (22,42))
+        self.screen.blit(health_bar, (22,42)) 
     
-        self.last_health = self.player.health_current
+        self.last_health = current_health
 
         # player inventory top right
         key_x = self.window_size[0] * 0.8
         key_y = self.window_size[1] * 0.02
 
 
-        for items in self.player.inventory:
+        for items in inventory:
             if items[0] == 'key':
                 img = pygame.transform.scale(items[1], (40,50))
                 self.screen.blit(img, (key_x,key_y))
 
-        if len(self.player.inventory) > len(self.old_inv):  # new items! 
-            new_items = [x for x in self.player.inventory if x not in self.old_inv]
+        if len(self.inventory) > len(self.old_inv):  # new items! 
+            new_items = [x for x in inventory if x not in self.old_inv]
             for items in new_items:
                 if items[0] == 'key':
                     img = pygame.transform.scale(items[1], (40,50))
                     self._flash_show(img, key_x, key_y)
 
-            self.old_inv = self.player.inventory
+            self.old_inv = inventory

@@ -9,6 +9,7 @@ from settings import *
 
 monsters = ['minotaur', 'ogre-archer', 'skeleton-boss', 'elven-caster']  # used to recognize tiles from level files - order must match tile numbering 
 
+arrow_damage = 100
 
 class MonsterData():
     """ Movement, detection and attack properties of monsters """
