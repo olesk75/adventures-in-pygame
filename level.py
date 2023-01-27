@@ -8,6 +8,7 @@ GamePanel(class)                    : contans the player information for the scr
 
 
 import pygame
+import logging
 
 from settings import *
 
@@ -21,6 +22,10 @@ from monster_data import arrow_damage
 
 class Level():
     def __init__(self,current_level,surface, health_max) -> None:
+        logging.basicConfig(level=logging.DEBUG)
+        self.last_log = ''  # we do this to only log when something _new_ happens
+
+
         from animation_data import anim  # we do this late, as we need to have display() up first
         self.anim = anim
 
@@ -81,7 +86,6 @@ class Level():
         # monsters 
         monsters_layout = import_csv_layout(level_data['monsters'])
         self.monsters_sprites = self.create_tile_group(monsters_layout,'monsters')
-
 
         # ---> Sprites not loaded from the map (projectiles, spels, panels etc.)
 
@@ -227,7 +231,7 @@ class Level():
                 # Check if mob hit
                 if pygame.Rect.colliderect(self.player.attack_rect, monster.hitbox): 
                     monster.state_change(DYING)
-                    print(f'killed {monster.data.monster}')
+                    logging.debug(f'{monster.data.monster} killed by player attack')
                     monster.data.direction = -self.player.turned
                     self.player_score += monster.data.points_reward
                     """ Adding drops from player death """
@@ -235,6 +239,7 @@ class Level():
                     if monster.data.monster == 'skeleton-boss':
                         drop_key = Drop( monster.hitbox.centerx, monster.hitbox.centery - 25 , self.anim['pickups']['key'], turned = False, scale = 2, drop_type='key',)
                         self.drops_sprites.add(drop_key)
+                        logging.debug(f'{monster.data.monster} dropped a key')
 
 
     def check_player_win(self) -> None:
@@ -248,13 +253,13 @@ class Level():
         if self.player.rect.top > SCREEN_HEIGHT:
             self.player.state = DYING
             self.player_dead = True
-            print('Oooops! Player fell off.')
+            logging.debug('Oooops! Player fell off.')
 
 
     def check_coll_player_hazard(self) -> None:
         # Player + hazard group collision 
         if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.hazards_sprites,False) and self.player.state != DYING:
-            self.player.take_damage(100, hits_per_second=10)
+            self.player.hazard_damage(100, hits_per_second=10)
             self.bubble_list.append(BubbleMessage(self.screen, 'Ouch! Ouch!', 1000, 'spikes', self.player))
 
     def check_coll_player_projectile(self) -> None:
@@ -274,7 +279,7 @@ class Level():
     def check_coll_player_spell(self) -> None:
         if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.spell_sprites,False) and self.player.state != DYING:
             for _ in pygame.sprite.spritecollide(self.player,self.spell_sprites,False):
-                self.player.take_damage(100, hits_per_second=2)
+                self.player.hazard_damage(100, hits_per_second=2)
 
     # Animated objects pickup / collision
     def check_coll_player_pickup(self) -> None:
@@ -302,7 +307,6 @@ class Level():
         if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.drops_sprites,False) and self.player.state != DYING:
             for drop in pygame.sprite.spritecollide(self.player,self.drops_sprites,False):
                 if drop.drop_type == 'key':
-                    print('picked up key!')
                     self.player_inventory.append(('key', self.key_img))  # inventory of items and their animations
                     self.fx_key_pickup.play()            
                     drop.kill()
@@ -310,6 +314,8 @@ class Level():
                 if drop.drop_type == 'health-potion':
                     self.fx_health_pickup.play()
                     self.player.heal(500)
+                logging.debug(f'PICKUP: {drop.drop_type}')
+                logging.debug(f'Inventory: {self.player_inventory}')
         
 
     def check_coll_player_monster(self) -> None:
@@ -332,12 +338,13 @@ class Level():
         # Monsters can be up to several things, which we check for here
         now = pygame.time.get_ticks()
         for monster in self.monsters_sprites.sprites():
+            if monster.state == DEAD:
+                monster.kill()
             if monster.state != DYING and monster.state != DEAD:  # only dealing with the living
                 #  --> casting spells=
                 if monster.cast_anim_list:
                     for spell in monster.cast_anim_list:
                         if spell[0] == 'fire':
-                            print('fire')
                             x, y = spell[1:3]
                             self.spell_sprites.add(Spell(x,y, self.anim['fire']['fire-spell'], False, scale=1))
                     monster.cast_anim_list = []
@@ -356,8 +363,8 @@ class Level():
                         self.player.hit(monster.data.attack_damage, monster.turned, self.terrain_sprites)  # melee hit
                     elif now - monster.last_arrow > monster.data.attack_delay:  # launching projectile 
                         arrow = Projectile(monster.hitbox.centerx, monster.hitbox.centery, self.arrow_img, turned = monster.turned, scale = 2)
-                        # We only add the arrow once the bow animation is complete
-                        if monster.attack_anim.anim_counter == monster.attack_anim.frames -1:
+                        # We only add the arrow once the bow animation is complete (and we know we're ATTACKING, so attack anim is active)
+                        if monster.check_anim_done():
                             self.projectile_sprites.add(arrow)
                             monster.last_arrow = now
 
@@ -440,3 +447,8 @@ class Level():
         self.check_player_fallen_off()
         self.show_bubbles()
         
+        # --> Log status if in the right mode
+        log_mob_msg = f'{len(self.monsters_sprites.sprites())} monsters left in the sprite group'
+        if log_mob_msg != self.last_log:
+            logging.debug(log_mob_msg)
+        self.last_log = log_mob_msg

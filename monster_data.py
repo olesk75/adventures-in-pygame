@@ -60,7 +60,7 @@ class MonsterData():
             self.sound_attack = pygame.mixer.Sound('assets/sound/monster/ogre-archer/attack.ogg')
             self.sound_attack_volume = 0.5
             self.sound_death = pygame.mixer.Sound('assets/sound/monster/ogre-archer/death.wav') 
-            self.sound_death_volume = 1
+            self.sound_death_volume = 0.3
  
         if monster == 'skeleton-boss':
             self.boss = True

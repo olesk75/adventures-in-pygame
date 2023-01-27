@@ -8,6 +8,8 @@ Drop (pygame Sprite class)          : dropped items, like keys dropped by bosses
 
 import random
 import pygame
+import logging
+
 from settings import *
 from monster_data import MonsterData
 
@@ -27,23 +29,28 @@ class Monster(pygame.sprite.Sprite):
         from animation_data import anim
 
         # Setting up state animations
-        self.walk_anim = anim[monster_type]['walk']
-        self.attack_anim = anim[monster_type]['attack']
-        if self.data.caster:
-            self.cast_anim = anim[monster_type]['cast']
-        self.death_anim = anim[monster_type]['death']
+
+        # Setting up animations
+        self.animations = {
+            'idle': None,  # TODO
+            'walk': anim[monster_type]['walk'],
+            'attack': anim[monster_type]['attack'],
+            'death': anim[monster_type]['death'],
+            'cast': anim[monster_type]['cast']
+        }
+
         self.cast_player_pos = ()
 
-        self.animation = self.walk_anim  # setting active animation
+        self.animation = self.animations['walk']  # setting active animation
         self.animation.active = True
 
-        self.image = self.walk_anim.get_image()
-        self.width = self.walk_anim.ss.x_dim * self.walk_anim.ss.scale
-        self.height = self.walk_anim.ss.y_dim * self.walk_anim.ss.scale
+        self.image = self.animations['walk'].get_image()
+        self.width = self.animations['walk'].ss.x_dim * self.animations['walk'].ss.scale
+        self.height = self.animations['walk'].ss.y_dim * self.animations['walk'].ss.scale
 
         # Setting up sprite's rectangle
-        self.X_ADJ = self.walk_anim.ss.scale * 44
-        self.Y_ADJ = self.walk_anim.ss.scale * 18
+        self.X_ADJ = self.animations['walk'].ss.scale * 44
+        self.Y_ADJ = self.animations['walk'].ss.scale * 18
         self.rect = self.image.get_rect()
         self.rect.center = (x ,y)
 
@@ -66,6 +73,12 @@ class Monster(pygame.sprite.Sprite):
         self.currently_casting = None  # if the mob is busy casting, this is what it is casting
         self.cast_anim_list = []  # if the mob casts a spell, we creat animations here
 
+
+    def check_anim_done(self) -> bool:
+        if self.animation.anim_counter == self.animation.frames -1:
+            return True
+        else:
+            return False
 
     def create_rects(self) -> None:
         """
@@ -148,12 +161,13 @@ class Monster(pygame.sprite.Sprite):
         
         def _casting() -> None:
             sprite_size = 32
-            if self.cast_anim.anim_counter == self.cast_anim.frames - 1:  # on last cast animation frame, trigger the spell
+            if self.check_anim_done():  # on last cast animation frame, trigger the spell
                 if self.currently_casting == 'firewalker':
                     attack_width = 12
                     for a in range(attack_width):
                         player_center_x = self.cast_player_pos[0]
                         player_bottom_y = self.cast_player_pos[1]
+
                         self.cast_anim_list.append(['fire', player_center_x - sprite_size * a/2, player_bottom_y - sprite_size * 2])    
                         self.cast_anim_list.append(['fire', player_center_x + sprite_size * a/2, player_bottom_y - sprite_size * 2])
 
@@ -194,7 +208,7 @@ class Monster(pygame.sprite.Sprite):
             elif self.state == DYING:
                 self.hitbox = pygame.Rect(0,0,0,0)
                 if self.animation.anim_counter == self.animation.frames -1:
-                    print('boss dies')
+                    logging.debug(f'BOSS {self.data.monster} dies')
                     self.state = DEAD
                     self.kill() 
 
@@ -203,7 +217,6 @@ class Monster(pygame.sprite.Sprite):
                 exit(1)
 
         return dx, dy
-
 
     def state_change(self, new_state:int, attack_type:str=None, player_pos:tuple=None) -> None:
         """
@@ -215,7 +228,7 @@ class Monster(pygame.sprite.Sprite):
             self.state = new_state
             if new_state == ATTACKING:
                 if self.ready_to_attack:  # if previous attack is done
-                    self.animation = self.attack_anim
+                    self.animation = self.animations['attack']
                     self.animation.active = True
 
                     self.last_attack = pygame.time.get_ticks()  # recording time of last attack
@@ -225,12 +238,12 @@ class Monster(pygame.sprite.Sprite):
                         self.data.sound_attack.play()
 
             elif new_state == WALKING:
-                    self.animation = self.walk_anim
+                    self.animation = self.animations['walk']
                     self.animation.active = True
                     self.rect_attack = pygame.Rect(0,0,0,0)  # disabling attack rect
 
             elif new_state == CASTING:
-                    self.animation = self.cast_anim
+                    self.animation = self.animations['cast']
                     self.animation.active = True
                     
                     self.currently_casting = attack_type
@@ -240,7 +253,7 @@ class Monster(pygame.sprite.Sprite):
                         self.data.sound_cast.play()
 
             elif new_state == DYING:
-                    self.animation = self.death_anim
+                    self.animation = self.animations['death']
                     self.animation.active = True
                     self.rect_attack = pygame.Rect(0,0,0,0)
                     self.rect_detect = pygame.Rect(0,0,0,0)
@@ -254,7 +267,6 @@ class Monster(pygame.sprite.Sprite):
             new_rect = self.animation.get_image().get_rect()  # we need to scale back to walking image size after an attack
             new_rect.center = self.rect.center
             self.rect = new_rect
-
 
     def update(self, scroll, platforms_sprite_group, player) -> None:
         dx = 0
@@ -322,15 +334,15 @@ class Monster(pygame.sprite.Sprite):
 
         # Get the correct image for the SpriteGroup.update()
         if self.state == CASTING:
-            self.image = self.cast_anim.get_image().convert_alpha()
-            self.image = self.cast_anim.get_image(repeat_delay = self.data.cast_delay)
+            self.image = self.animations['cast'].get_image().convert_alpha()
+            self.image = self.animations['cast'].get_image(repeat_delay = self.data.cast_delay)
         elif self.state == ATTACKING:
             # If we have a diffent size attack sprites, we need to take scale into account
-            self.image = self.attack_anim.get_image(repeat_delay = self.data.attack_delay).convert_alpha()
+            self.image = self.animations['attack'].get_image(repeat_delay = self.data.attack_delay).convert_alpha()
         elif self.state == DYING:
-            self.image = self.death_anim.get_image().convert_alpha()
+            self.image = self.animations['death'].get_image().convert_alpha()
         elif self.state == WALKING:
-            self.image = self.walk_anim.get_image()
+            self.image = self.animations['walk'].get_image()
 
         self.image = pygame.transform.flip(self.image, self.turned, False)        
 
@@ -345,7 +357,7 @@ class Monster(pygame.sprite.Sprite):
 
 
 class Projectile(pygame.sprite.Sprite):
-    def __init__(self,x, y, image, turned, scale = 1):
+    def __init__(self,x, y, image, turned, scale = 1) -> None:
         """
         The Projector class constructor - note that x and y is only for initialization,
         the projectile position will be tracked by the rect
@@ -440,6 +452,7 @@ class Drop(pygame.sprite.Sprite):
         
     def update(self, scroll) -> None:
         self.rect.x += scroll # we compensate for scrolling
+
         self.image = pygame.transform.flip( self.anim.get_image().convert_alpha(), self.turned, False) 
-        self.image = pygame.transform.scale(self.image, (self.image.get_width() * self.scale, self.image.get_height() * self.scale))
+        #self.image = pygame.transform.scale(self.image, (self.image.get_width() * self.scale, self.image.get_height() * self.scale))
         

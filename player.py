@@ -21,27 +21,33 @@ class Player(pygame.sprite.Sprite):
         self.health_max = health_max
         self.health_current = self.health_max
 
+        self.invincible = False
+        self.invincibility_duration = 500
+
         from animation_data import anim
 
         # Setting up animations
-        self.walk_anim = anim['player']['walk']
-        self.attack_anim = anim['player']['attack']
-        self.death_anim = anim['player']['death']
+        self.animations = {
+            'idle': None,  # TODO
+            'walk': anim['player']['walk'],
+            'attack': anim['player']['attack'],
+            'death': anim['player']['death']
+        }
         
-        self.animation = self.walk_anim  # Walking by default
+        self.animation = self.animations['walk']  # Walking by default
         self.image = self.animation.get_image()
         
         # Convert from original resolution to game resolution
-        self.width = int(self.walk_anim.ss.x_dim * self.walk_anim.ss.scale * 1.4 )  # we make the sprite a bit wider so we can encapsulate the attack anim without resizing
-        self.height = self.walk_anim.ss.y_dim * self.walk_anim.ss.scale
+        self.width = int(self.animations['walk'].ss.x_dim * self.animations['walk'].ss.scale * 1.4 )  # we make the sprite a bit wider so we can encapsulate the attack anim without resizing
+        self.height = self.animations['walk'].ss.y_dim * self.animations['walk'].ss.scale
 
         self.vel_x = 0  # we add and substract to this value based on keypresses
         self.vel_y = 0  # jumping or falling
         self.walking = False
 
         # Manual adjustments of player rect - as we use general draw() method from SpriteGroup(), the rect will position the surface, so need to be full size
-        self.X_ADJ = self.walk_anim.ss.scale * 44
-        self.Y_ADJ = self.walk_anim.ss.scale * 18
+        self.X_ADJ = self.animations['walk'].ss.scale * 44
+        self.Y_ADJ = self.animations['walk'].ss.scale * 18
 
         # The main rect for the player sprite
         self.rect = pygame.Rect(x,y, self.width, self.height)  
@@ -61,7 +67,6 @@ class Player(pygame.sprite.Sprite):
 
         # Setting up sound effects
         sounds = GameAudio(1)  # TODO: remove level hardcoding
-
         self.fx_attack = sounds.player['attack']
         self.fx_jump = sounds.player['jump']
         self.fx_die = sounds.player['die']
@@ -70,7 +75,6 @@ class Player(pygame.sprite.Sprite):
         self.fx_jump.set_volume(0.5)
         self.fx_die.set_volume(0.5)
         self.fx_hit.set_volume(0.2)
-
         self.fx_attack_channel = pygame.mixer.Channel(0)  # we use separate channel to avoid overlapping sounds with repeat attacks
 
         # Status variables
@@ -80,11 +84,81 @@ class Player(pygame.sprite.Sprite):
         self.previous_state = None  # to check if we change state for sprite scaling etc.
         self.bouncing = False  # hit by something --> small bounce in the opposite direction
         self.last_env_damage = 0  # to manage frequency of damage
-
         self.last_attack = 0  # slowing down the attack
         self.attack_delay = 100
 
         self.world_x_pos = x + self.rect.width / 2 # player center x position across the whole world, not just screen
+
+    def _manage_state_change(self) -> None:
+        # Handles state changes 
+        if self.state != self.previous_state:
+            # New attack
+            if self.state == ATTACKING:
+                self.animation = self.animations['attack']
+                self.animation.active = True
+                
+                # Attack rect
+                if self.turned:
+                    x = self.hitbox.left - self.hitbox.width / 2
+                else:
+                    x = self.hitbox.right
+
+                self.attack_rect = pygame.Rect(x, self.rect.top + 30, self.rect.right - self.hitbox.right, 100) 
+
+            # Dying
+            if self.state == DYING:
+                self.animation = self.animations['death']
+
+            # Walking, jumping or idle
+            if self.state == WALKING:  # the only other possible previous state is ATTACKING
+                self.animation = self.animations['walk']
+                self.animation.active = True
+                self.attack_rect = None  # removing the attack rect
+
+            self.previous_state = self.state
+            self.animation.anim_counter = 0  # start over after transition
+
+    def _flash(self) -> None: 
+        coloured_image = pygame.Surface(self.image.get_size())
+        coloured_image.fill(RED)
+        
+        final_image = self.image.copy()
+        final_image.blit(coloured_image, (0, 0), special_flags = pygame.BLEND_MULT)
+        self.image = final_image
+ 
+    def check_game_over(self) -> bool:
+        """ Manage the time from player is hit and dies until the death animation is complete and GAME OVER screen shows  """
+        # print(f'self.death.anim_counter ({self.death.anim_counter})> self.death.frames ({self.death.frames})')  # DEBUG
+        if  self.animations['death'].anim_counter == self.animations['death'].frames -1:
+            self.state = DEAD
+            return True
+        else:
+            return False
+
+    def die(self) -> None:
+        """ Starting the death animation and settings state to DYING """
+        if self.state != DYING:
+            self.state = DYING  # we start the death sequence
+            self.animation = self.animations['death']
+            self.animation.anim_counter = 0  # Animation counter the death animation
+   
+    def get_anim_image(self) -> None:
+        # Once animation points to the correct state animation, we have our image
+        anim_frame = self.animation.get_image().convert_alpha()
+        anim_frame = pygame.transform.flip( anim_frame, self.turned, False)
+        
+        self.image = pygame.Surface((self.width, self.height)).convert_alpha()
+        self.image.fill((0, 0, 0, 0))
+
+        x_adjustment = 25  # to center the player image in the sprite
+
+        if self.state == WALKING or self.state == DYING:
+            self.image.blit(anim_frame, (x_adjustment, 0))
+        if self.state == ATTACKING:
+            # The sprite is larger when we attack, so we need to adjust center
+            ATTACK_X = -2 * 64
+            ATTACK_Y = -2 * 64
+            self.image.blit(anim_frame,(ATTACK_X + x_adjustment, ATTACK_Y))
 
     def get_input(self) -> None:
         keys = pygame.key.get_pressed()
@@ -94,20 +168,20 @@ class Player(pygame.sprite.Sprite):
             self.state = WALKING
             self.turned = False
             if self.on_ground == True:
-                self.walk_anim.active = True
+                self.animations['walk'].active = True
 
         elif keys[pygame.K_LEFT]:
             self.walking = -1  # left
             self.state = WALKING
             self.turned = True
             if self.on_ground == True:
-                self.walk_anim.active = True
+                self.animations['walk'].active = True
         else:
             self.walking = False
 
         if keys[pygame.K_UP] and self.on_ground:
             self.vel_y = - JUMP_HEIGHT
-            self.walk_anim.active = False
+            self.animations['walk'].active = False
             self.state = WALKING
             self.on_ground = False
             self.fx_jump.play()
@@ -125,15 +199,25 @@ class Player(pygame.sprite.Sprite):
             pygame.quit()
             exit(0)
 
-        
-    def check_game_over(self) -> bool:
-        """ Manage the time from player is hit and dies until the death animation is complete and GAME OVER screen shows  """
-        # print(f'self.death.anim_counter ({self.death.anim_counter})> self.death.frames ({self.death.frames})')  # DEBUG
-        if  self.death_anim.anim_counter == self.death_anim.frames -1:
-            self.state = DEAD
-            return True
-        else:
-            return False
+    def hazard_damage(self, damage: int, hits_per_second:int=0) -> None:
+        """ Player has been in contact with enviromnmental damage, gets damage once or frequency per second """
+        now = pygame.time.get_ticks()
+        if now > self.last_env_damage + 1000 / hits_per_second:
+            self.fx_hit.play()
+            # Adjust health and bars
+            self.health_current -= damage
+            if self.health_current <= 0:
+                self.health_current = 0
+                self.die()
+            self.health_bar_length = int(SCREEN_WIDTH / 6 * self.health_current / 1000)
+            self.last_env_damage = now
+
+    def heal(self, damage) -> None:
+        """ Player is being healed """
+        self.health_current += damage
+        if self.health_current > self.health_max:
+            self.health_current = self.health_max
+        self.health_bar_length = int(SCREEN_WIDTH / 6 * self.health_current / 1000)
 
     def hit(self, damage: int, turned: bool, platforms) -> None:
         """ Player has been hit by mob or projectile, gets damage and bounces backs"""
@@ -166,36 +250,6 @@ class Player(pygame.sprite.Sprite):
         self.rect.x += x_bounce * direction
         # Update world position 
         self.world_x_pos += x_bounce * direction
-
-    def take_damage(self, damage: int, hits_per_second:int=0) -> None:
-        """ Player has been in contact with enviromnmental damage, gets damage once or frequency per second """
-        now = pygame.time.get_ticks()
-        if now > self.last_env_damage + 1000 / hits_per_second:
-            self.fx_hit.play()
-            # Adjust health and bars
-            self.health_current -= damage
-            if self.health_current <= 0:
-                self.health_current = 0
-                self.die()
-            self.health_bar_length = int(SCREEN_WIDTH / 6 * self.health_current / 1000)
-            self.last_env_damage = now
-
-
-    def heal(self, damage) -> None:
-        """ Player is being healed """
-        self.health_current += damage
-        if self.health_current > self.health_max:
-            self.health_current = self.health_max
-        self.health_bar_length = int(SCREEN_WIDTH / 6 * self.health_current / 1000)
-
-
-    def die(self) -> None:
-        """ Starting the death animation and settings state to DYING """
-        if self.state != DYING:
-            self.state = DYING  # we start the death sequence
-            self.animation = self.death_anim
-            self.animation.anim_counter = 0  # Animation counter the death animation
-
 
     def move(self, platforms) -> int:
         """ Movement as a result of keypresses as well as gravity and collision """
@@ -294,56 +348,7 @@ class Player(pygame.sprite.Sprite):
                 pygame.draw.rect(self.screen, (255,0,0), self.attack_rect, 2 )  # attack rect (RED)
 
         return scroll
-    
-    def get_anim_image(self) -> None:
-        # Once animation points to the correct state animation, we have our image
-        anim_frame = self.animation.get_image().convert_alpha()
-        anim_frame = pygame.transform.flip( anim_frame, self.turned, False)
-        
-        self.image = pygame.Surface((self.width, self.height)).convert_alpha()
-        self.image.fill((0, 0, 0, 0))
-
-        x_adjustment = 25  # to center the player image in the sprite
-
-        if self.state == WALKING or self.state == DYING:
-            self.image.blit(anim_frame, (x_adjustment, 0))
-        if self.state == ATTACKING:
-            # The sprite is larger when we attack, so we need to adjust center
-            ATTACK_X = -2 * 64
-            ATTACK_Y = -2 * 64
-            self.image.blit(anim_frame,(ATTACK_X + x_adjustment, ATTACK_Y))
-
-
-    def _manage_state_change(self) -> None:
-        # Handles state changes 
-        if self.state != self.previous_state:
-            # New attack
-            if self.state == ATTACKING:
-                self.animation = self.attack_anim
-                self.animation.active = True
-                
-                # Attack rect
-                if self.turned:
-                    x = self.hitbox.left - self.hitbox.width / 2
-                else:
-                    x = self.hitbox.right
-
-                self.attack_rect = pygame.Rect(x, self.rect.top + 30, self.rect.right - self.hitbox.right, 100) 
-
-            # Dying
-            if self.state == DYING:
-                self.animation = self.death_anim
-
-            # Walking, jumping or idle
-            if self.state == WALKING:  # the only other possible previous state is ATTACKING
-                self.animation = self.walk_anim
-                self.animation.active = True
-                self.attack_rect = None  # removing the attack rect
-
-            self.previous_state = self.state
-            self.animation.anim_counter = 0  # start over after transition
-
-    
+ 
     def update(self, platforms) -> int:
         self.get_input()
         scroll = self.move(platforms)

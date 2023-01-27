@@ -1,4 +1,7 @@
-import pygame, sys
+import pygame
+import sys
+import logging
+
 from settings import * 
 from level import Level
 from level_data import GameAudio
@@ -32,7 +35,8 @@ class Game:
         if self.health_current == 0 or self.level.player_dead:
             self.max_level = 1
             self.level_audio.music.stop()
-            print('GAME OVER')
+            logging.debug('--- GAME OVER ---')
+            logging.debug('     EXITING')
             exit(0)
 
   
