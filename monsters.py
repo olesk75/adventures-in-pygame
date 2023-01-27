@@ -262,6 +262,7 @@ class Monster(pygame.sprite.Sprite):
                     self.vel_y = -5
 
                     if self.data.sound_death:
+                        self.data.sound_death.set_volume(self.data.sound_death_volume)
                         self.data.sound_death.play()
 
             new_rect = self.animation.get_image().get_rect()  # we need to scale back to walking image size after an attack

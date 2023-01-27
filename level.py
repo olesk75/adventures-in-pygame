@@ -293,19 +293,17 @@ class Level():
     def check_coll_player_triggered_objects(self) -> None:
         if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.triggered_objects_sprites,False) and self.player.state != DYING:
             for t_object in pygame.sprite.spritecollide(self.player,self.triggered_objects_sprites,False):
-                if any('key' in sublist for sublist in self.player_inventory):  # do we have key?
+                if any('key' in sublist for sublist in self.player_inventory): # do we have key?
                     t_object.animation.active = True
                     self.bubble_list.append(BubbleMessage(self.screen, 'Level complete!\nCongratualations!', 5000, 'exit', self.player))
                 else:
                     self.player.hit(0, -1, self.terrain_sprites)
                     self.bubble_list.append(BubbleMessage(self.screen, 'Come back when you have a key!', 5000, 'exit', self.player))
 
-        
-
     # Dropped objects pickup / collision
     def check_coll_player_drops(self) -> None:
         if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.drops_sprites,False) and self.player.state != DYING:
-            for drop in pygame.sprite.spritecollide(self.player,self.drops_sprites,False):
+            for drop in pygame.sprite.spritecollide(self.player.hitbox_sprite,self.drops_sprites,False):
                 if drop.drop_type == 'key':
                     self.player_inventory.append(('key', self.key_img))  # inventory of items and their animations
                     self.fx_key_pickup.play()            
@@ -315,8 +313,7 @@ class Level():
                     self.fx_health_pickup.play()
                     self.player.heal(500)
                 logging.debug(f'PICKUP: {drop.drop_type}')
-                logging.debug(f'Inventory: {self.player_inventory}')
-        
+                logging.debug(f'Inventory: {self.player_inventory}')   
 
     def check_coll_player_monster(self) -> None:
         # Player + mobs group collision -> stomp means kill, otherwise player damage
