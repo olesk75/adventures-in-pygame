@@ -32,24 +32,26 @@ class Player(pygame.sprite.Sprite):
         self.image = self.animation.get_image()
         
         # Convert from original resolution to game resolution
-        self.width = int(self.walk_anim.ss.x_dim * self.walk_anim.ss.scale * 1.4 )  # we mike the sprite a bit wider so we can encapsulate the attack anim without resizing
+        self.width = int(self.walk_anim.ss.x_dim * self.walk_anim.ss.scale * 1.4 )  # we make the sprite a bit wider so we can encapsulate the attack anim without resizing
         self.height = self.walk_anim.ss.y_dim * self.walk_anim.ss.scale
 
         self.vel_x = 0  # we add and substract to this value based on keypresses
         self.vel_y = 0  # jumping or falling
         self.walking = False
 
-        # Manual adjustments of player rect - as we use general draw() method from SpriteGroup(), the rect wil position the surface, so need to be full size
+        # Manual adjustments of player rect - as we use general draw() method from SpriteGroup(), the rect will position the surface, so need to be full size
         self.X_ADJ = self.walk_anim.ss.scale * 44
         self.Y_ADJ = self.walk_anim.ss.scale * 18
-        self.X_CENTER = 40
-        self.Y_CENTER = 28
-        self.rect = pygame.Rect(x,y, self.width, self.height)
+
+        # The main rect for the player sprite
+        self.rect = pygame.Rect(x,y, self.width, self.height)  
 
         # Hitbox rect and spriteflip
         self.hitbox = pygame.Rect(x,y, self.width - self.X_ADJ, self.height - self.Y_ADJ)
         hitbox_image = pygame.Surface((self.width, self.height)).convert_alpha()
         hitbox_image.fill((0, 0, 0, 0))
+
+        # To do efficient sprite collision check against monster groups, the hitbox need to be a Sprite, not just a rect
         self.hitbox_sprite = pygame.sprite.Sprite()
         self.hitbox_sprite.image = hitbox_image
         self.hitbox_sprite.rect = self.hitbox
@@ -69,7 +71,7 @@ class Player(pygame.sprite.Sprite):
         self.fx_die.set_volume(0.5)
         self.fx_hit.set_volume(0.2)
 
-        self.fx_attack_channel = pygame.mixer.Channel(0)  # we sue separate channel to avoid overlapping sounds with repeat attacks
+        self.fx_attack_channel = pygame.mixer.Channel(0)  # we use separate channel to avoid overlapping sounds with repeat attacks
 
         # Status variables
         self.turned = False  # flip sprite/animations when moving left
@@ -82,7 +84,7 @@ class Player(pygame.sprite.Sprite):
         self.last_attack = 0  # slowing down the attack
         self.attack_delay = 100
 
-        self.world_x_pos = x + self.X_CENTER # player x position across the whole world, not just screen
+        self.world_x_pos = x + self.rect.width / 2 # player center x position across the whole world, not just screen
 
     def get_input(self) -> None:
         keys = pygame.key.get_pressed()
@@ -124,9 +126,8 @@ class Player(pygame.sprite.Sprite):
             exit(0)
 
         
-
     def check_game_over(self) -> bool:
-        # Manage the time from player is hit and dies until the death animation is complete and GAME OVER screen shows
+        """ Manage the time from player is hit and dies until the death animation is complete and GAME OVER screen shows  """
         # print(f'self.death.anim_counter ({self.death.anim_counter})> self.death.frames ({self.death.frames})')  # DEBUG
         if  self.death_anim.anim_counter == self.death_anim.frames -1:
             self.state = DEAD
@@ -134,7 +135,7 @@ class Player(pygame.sprite.Sprite):
         else:
             return False
 
-    def hit(self, damage: int, turned: bool) -> None:
+    def hit(self, damage: int, turned: bool, platforms) -> None:
         """ Player has been hit by mob or projectile, gets damage and bounces backs"""
         self.fx_hit.play()
         # Adjust health and bars
@@ -144,7 +145,6 @@ class Player(pygame.sprite.Sprite):
             self.die()
 
         self.health_bar_length = int(SCREEN_WIDTH / 6 * self.health_current / 1000)
-
 
         direction = 1
         if turned:
@@ -158,10 +158,10 @@ class Player(pygame.sprite.Sprite):
             self.vel_y = y_bounce
             self.bouncing = True
 
-        # # Prevent us getting bounced inside platforms
-        # for platform in self.world.platforms_sprite_group.sprites():
-        #     if platform.rect.colliderect(self.rect.x + x_bounce, self.rect.y, self.width - self.X_ADJ, self.height - self.Y_ADJ):
-        #         x_bounce = 0
+        # Prevent us getting bounced inside platforms
+        for platform in platforms:
+            if platform.rect.colliderect(self.rect.x + x_bounce, self.rect.y, self.width - self.X_ADJ, self.height - self.Y_ADJ):
+                x_bounce = 0
 
         self.rect.x += x_bounce * direction
         # Update world position 

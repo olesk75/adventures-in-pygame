@@ -50,7 +50,8 @@ class GameAudio():
             'attack': pygame.mixer.Sound('assets/sound/player/attack.wav'),
             'jump': pygame.mixer.Sound('assets/sound/Jump/OGG/Jump 5 - Sound effects Pack 2.ogg'),
             'die': pygame.mixer.Sound('assets/sound/Lose/OGG/Lose 7 - Sound effects Pack 2.ogg'),
-            'hit': pygame.mixer.Sound('assets/sound/Laser-weapon/OGG/Laser-weapon 8 - Sound effects Pack 2.ogg')                                       
+            'hit': pygame.mixer.Sound('assets/sound/Laser-weapon/OGG/Laser-weapon 8 - Sound effects Pack 2.ogg'),
+            'stomp': pygame.mixer.Sound('assets/sound/player/stomp.flac')                            
         }
 
         # Load audio for world

@@ -44,8 +44,6 @@ class Monster(pygame.sprite.Sprite):
         # Setting up sprite's rectangle
         self.X_ADJ = self.walk_anim.ss.scale * 44
         self.Y_ADJ = self.walk_anim.ss.scale * 18
-        self.X_CENTER = 40
-        self.Y_CENTER = 28
         self.rect = self.image.get_rect()
         self.rect.center = (x ,y)
 

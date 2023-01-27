@@ -46,8 +46,10 @@ class Level():
         sounds = GameAudio(self.current_level)
         self.fx_key_pickup = sounds.key_pickup_fx
         self.fx_health_pickup = sounds.health_pickup_fx
+        self.fx_player_stomp = sounds.player['stomp']
         self.fx_key_pickup.set_volume(0.5)
         self.fx_health_pickup.set_volume(0.5)
+        self.fx_player_stomp.set_volume(0.5)
 
         # messages 
         self.bubble_list = []
@@ -259,7 +261,7 @@ class Level():
     # Player + projectile collision (arrows etc.) AND player's attack collision (so attacking arrows in flight for example)
         if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.projectile_sprites,False) and self.player.state != DYING:
             for projectile in pygame.sprite.spritecollide(self.player.hitbox_sprite,self.projectile_sprites,False):
-                self.player.hit(self.arrow_damage, projectile.turned)
+                self.player.hit(self.arrow_damage, projectile.turned, self.terrain_sprites)  # TODO: separate sprite group for solid terrain
                 projectile.kill()
         for projectile in self.projectile_sprites.sprites():
 
@@ -290,7 +292,7 @@ class Level():
                     t_object.animation.active = True
                     self.bubble_list.append(BubbleMessage(self.screen, 'Level complete!\nCongratualations!', 5000, 'exit', self.player))
                 else:
-                    self.player.hit(0, -1)
+                    self.player.hit(0, -1, self.terrain_sprites)
                     self.bubble_list.append(BubbleMessage(self.screen, 'Come back when you have a key!', 5000, 'exit', self.player))
 
         
@@ -320,10 +322,11 @@ class Level():
                         if monster.rect.top < self.player.rect.bottom < monster.rect.centery and \
                             self.player.vel_y >= 0 and monster.data and monster.data.boss == False:  #stomp!! Doesn't work on bosses!
                             monster.state = DYING
+                            self.fx_player_stomp.play()
                             self.player.vel_y = -10
                         elif monster.state != DYING:  # check to avoid repeat damage
                             # Player gets bumped _away_ from mob:
-                            self.player.hit(100, monster.turned)  # bump player _away_ from monster
+                            self.player.hit(100, monster.turned, self.terrain_sprites)  # bump player _away_ from monster
 
     def check_monsters(self) -> None:
         # Monsters can be up to several things, which we check for here
@@ -350,7 +353,7 @@ class Level():
                 # --> attacking the player and hitting or not the player's hitbox (or launching arrow or not)                
                 if pygame.Rect.colliderect(self.player.hitbox, monster.rect_attack) and monster.state == ATTACKING:
                     if monster.data.attack_instant_damage:  
-                        self.player.hit(monster.data.attack_damage, monster.turned)  # melee hit
+                        self.player.hit(monster.data.attack_damage, monster.turned, self.terrain_sprites)  # melee hit
                     elif now - monster.last_arrow > monster.data.attack_delay:  # launching projectile 
                         arrow = Projectile(monster.hitbox.centerx, monster.hitbox.centery, self.arrow_img, turned = monster.turned, scale = 2)
                         # We only add the arrow once the bow animation is complete
