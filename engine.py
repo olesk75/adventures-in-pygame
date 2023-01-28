@@ -13,8 +13,7 @@ def draw_text(text, font, text_col, x, y)-> None:
     img = font.render(text, True, text_col)
     pygame.display.get_surface().blit(img, (x, y))
 
-
-# --- Manage high scores ---
+# --- Load high scores ---
 def load_high_score() -> int:
     """ Load high score from file """
     with open('highscore.dat', 'rb') as high_score_file:
@@ -24,6 +23,7 @@ def load_high_score() -> int:
             return(0)
     return(high_score)
 
+# --- Save high score
 def save_high_score(high_score :int) -> None:
     """ Save high score to file """
     with open('highscore.dat', 'wb') as save_file:
@@ -51,8 +51,6 @@ def import_tile_graphics(path :str) -> list:
     for filename in tile_files:  # read tile files sorted by name
         tiles.append(pygame.image.load(filename).convert_alpha())
     return tiles
-
-
 
 # --- Show floating info bubbles ---
 class BubbleMessage():
@@ -146,8 +144,7 @@ class BubbleMessage():
             self.active = False
             self.expired = True
 
-        
-
+# --- Shows panel on top of screen with score and inventory
 class GamePanel():
     """ Class to show a panel on top left corner of the screen """
     def __init__(self, screen: pygame.display)-> None:
@@ -264,3 +261,27 @@ class GamePanel():
                     self._flash_show(img, key_x, key_y)
 
             self.old_inv = inventory
+
+
+# --- Imports sprite sheets for animatons
+# SpriteSheet class
+class SpriteSheet():
+    def __init__(self, image, x_dim, y_dim, transp_color, scale):
+        self.image = image
+        self.x_dim = x_dim
+        self.y_dim = y_dim
+        self.scale = scale
+        self.transp_color = transp_color
+
+    def get_image(self, row, frame) -> pygame.Surface:
+        x_start = frame * self.x_dim
+        y_start = row * self.y_dim
+
+        image = pygame.Surface((self.x_dim, self.y_dim)).convert_alpha()  # empty surface with alpha
+        image.blit(self.image, (0,0), (x_start, y_start, self.x_dim, self.y_dim))  # Copy part of sheet on top of empty image
+        image = pygame.transform.scale(image, (self.x_dim * self.scale, self.y_dim * self.scale))
+        image.set_colorkey(self.transp_color)
+        
+        return image
+
+

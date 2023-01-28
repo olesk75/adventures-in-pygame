@@ -16,6 +16,7 @@ level_1 = {
     'triggered_objects': 'lvl/1/level1_triggered_objects.csv',
     'monsters': 'lvl/1/level1_monsters.csv',
     'player': 'lvl/1/level1_player.csv',
+    'environmental_effect': 'leaves',
     'background': {
         'near': 'assets/backgrounds/lvl1/near.png',
         'medium': 'assets/backgrounds/lvl1/medium.png',

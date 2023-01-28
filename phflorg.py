@@ -7,7 +7,6 @@ from level import Level
 from level_data import GameAudio
 from engine import GamePanel
 
-
 class Game:
     def __init__(self) -> None:
 

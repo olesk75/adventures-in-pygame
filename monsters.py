@@ -13,7 +13,6 @@ import logging
 from settings import *
 from monster_data import MonsterData
 
-DEBUG_BOXES = True
 
 class Monster(pygame.sprite.Sprite):
     def __init__(self,x, y, surface, monster_type) -> None:
@@ -347,7 +346,7 @@ class Monster(pygame.sprite.Sprite):
 
         self.image = pygame.transform.flip(self.image, self.turned, False)        
 
-        if DEBUG_BOXES:
+        if DEBUG_HITBOXES:
             pygame.draw.rect(pygame.display.get_surface(), (255,255,255), self.rect, 4 )  # self.rect - WHITE
             if self.hitbox:
                 pygame.draw.rect(pygame.display.get_surface(), (128,128,128), self.hitbox, 2 )  # Hitbox rect (grey)

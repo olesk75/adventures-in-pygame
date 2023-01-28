@@ -67,3 +67,4 @@ class Animation():
             self.screen.blit(sprite, (frame_x + n * sprite_width, frame_y))  # draw sprites horisontally
             self.screen.blit(sprite, (frame_x, frame_y + n * sprite_height))
             n += 1
+

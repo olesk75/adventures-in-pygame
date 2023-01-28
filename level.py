@@ -13,11 +13,11 @@ import logging
 from settings import *
 
 from engine import import_csv_layout, import_tile_graphics,BubbleMessage
-from tile import GameTile, GameTileAnimation, MovingGameTile
+from game_tiles import GameTile, GameTileAnimation, MovingGameTile
 from level_data import levels, GameAudio
 from player import Player, PlayerInOut
 from monsters import Monster, Projectile, Spell, Drop
-from decoration import Sky
+from decoration import Sky, EnvironmentalEffects
 from monster_data import arrow_damage
 
 class Level():
@@ -104,6 +104,9 @@ class Level():
 
         # sky
         self.sky = Sky(self.current_level, self.screen)
+
+        # environmental effects (leaves, snow etc.)
+        self.env_sprites = EnvironmentalEffects(level_data['environmental_effect'])  # 'leaves' for lvl1
 
         # player
         self.player = self.player_setup()
@@ -428,6 +431,10 @@ class Level():
         self.player_sprites.draw(self.screen)
         if self.player.state == DEAD:
             self.player_dead = True
+
+        # environmental effects
+        self.env_sprites.update(self.scroll)
+        self.env_sprites.draw(self.screen)
 
 
         # --> Check collisions <--

@@ -1,5 +1,5 @@
 import pygame
-from spritesheet import SpriteSheet
+from engine import SpriteSheet
 from animation import Animation
 
 BLACK = (0,0,0)

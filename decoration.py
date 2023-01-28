@@ -1,4 +1,7 @@
 import pygame
+import math
+
+from random import randint
 from level_data import *
 from settings import *
 
@@ -30,3 +33,58 @@ class Sky():
             surface.blit(self.bg_near, ((x * width) + self.bg_scroll * 0.8, SCREEN_HEIGHT - self.bg_near.get_height()))
 
     # TODO: right now the parallax factor is hard coded; move to level_data.py to allow different factors for different levels
+
+class EnvironmentalEffects(pygame.sprite.Group):
+    def __init__(self, effect) -> pygame.sprite.Group:
+        super().__init__()
+
+        self.wind = Wind(-3)  # blowing toward the left of the screen
+        self.fall_from_top = 0
+        self.last_leaf = 0
+        
+        if effect == 'leaves':
+            self.leaf_surface = pygame.image.load('assets/sprites/leaf.png').convert_alpha()
+            self._add_leaf(1000)
+        
+    def _add_leaf(self, delay) -> None:
+        now = pygame.time.get_ticks() 
+        if now - self.last_leaf > delay:  # making sure we've waited long enough
+            print('gos')
+            leaf = pygame.sprite.Sprite()
+            leaf.image = self.leaf_surface
+            leaf.rect = pygame.rect.Rect((randint(0, SCREEN_WIDTH), 0), leaf.image.get_size())
+            self.add(leaf)
+            self.last_leaf = now
+
+    def update(self, scroll) -> None:
+        for sprite in self.sprites():
+            sprite.rect.centerx += scroll  # compensating for scrolling
+
+            sprite.rect.centery += 1
+            if sprite.rect.centery > SCREEN_HEIGHT:
+                sprite.kill()
+
+            # Updating wind impact
+            sprite.rect.centerx += self.wind.get_speed(sprite.rect.centery)
+
+
+        if len(self.sprites()) < 10:
+        #     print(f'leaves in the air: {len.self.sprites()}')
+            self._add_leaf(1000)
+
+class Wind:
+    """ Defines the wind speed both overall and at various heights, using sine waves
+        Returns the added wind component to velocity in the x direction depending on height"""
+    def __init__(self, baseline) -> None:
+        self.baseline = baseline  # the constant background speed
+        self.wave_length = 200  # wavelength for sine function
+        self.amplitude = 4
+
+    def get_speed(self, y) -> int:
+        # Returns the x speed at height y
+        x = math.sin(y/self.wave_length)  # varies between 0 and 1
+        print(x)
+        x *= self.amplitude
+        x += self.baseline
+        return x
+
