@@ -218,7 +218,7 @@ class Player(pygame.sprite.Sprite):
 
     def hit(self, damage: int, turned: bool, platforms) -> None:
         """ Player has been hit by mob or projectile, gets damage and bounces backs"""
-        if not self.invincible:
+        if not self.invincible:  # we have half a sec of invincibility after damage to avoid repeat damage
             if damage:  # we also use hits without damage to bump the player
                 self._flash()
                 self.fx_hit.play()
@@ -251,8 +251,6 @@ class Player(pygame.sprite.Sprite):
                 if platform.rect.colliderect(self.hitbox.x + x_bounce, (self.hitbox.y + y_bounce) - 200, self.width - self.X_ADJ, self.height - self.Y_ADJ):
                     x_bounce = 0
                     self.vel_x = 0
-        else: 
-            print('damage ignored')
 
 
     def move(self, platforms) -> int:
@@ -265,11 +263,10 @@ class Player(pygame.sprite.Sprite):
         if self.invincible:
             if pygame.time.get_ticks() - self.last_damage > self.invincibility_duration:
                 self.invincible = False
-                print('no more!')
 
+        # updating hitbox location to follow player sprite
+        self.hitbox.center = (self.rect.centerx, self.rect.centery + 10) 
 
-        self.hitbox.center = (self.rect.centerx, self.rect.centery + 10)  # updating hitbox location to follow player sprite
-        
         # Moving left or right (also possible while attacking) and turning
         if self.state in (WALKING, ATTACKING):
             if self.walking == 1:  # right
@@ -285,6 +282,7 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.animation.active = False  # we're idle
 
+        # After every attack, we switch back into WALKING 
         if self.state == ATTACKING: 
             self.animation.active = True
             if self.animation.anim_counter == self.animation.frames -1:  # reset after attack animation is complete
