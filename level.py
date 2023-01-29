@@ -106,7 +106,7 @@ class Level():
         self.sky = Sky(self.current_level, self.screen)
 
         # environmental effects (leaves, snow etc.)
-        self.env_sprites = EnvironmentalEffects(level_data['environmental_effect'])  # 'leaves' for lvl1
+        self.env_sprites = EnvironmentalEffects(level_data['environmental_effect'], self.screen)  # 'leaves' for lvl1
 
         # player
         self.player = self.player_setup()

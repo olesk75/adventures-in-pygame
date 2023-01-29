@@ -27,6 +27,9 @@ spike_ss = SpriteSheet(pygame.image.load('assets/spritesheets/hazards/spikes.png
 # Spells
 fire_spell_ss = SpriteSheet(pygame.image.load('assets/spritesheets/spells/fire-spell.png').convert_alpha(), 24,32, BLACK, 2)
 
+# Environmental effects
+leaves_ss = SpriteSheet(pygame.image.load('assets/spritesheets/env/leaf.png').convert_alpha(), 16,16, BLACK, 1)
+
 
 
 """ Create main animation dict """
@@ -70,5 +73,9 @@ anim = {
         'key': Animation(key_ss, row=0, frames=10, speed=50, repeat=True),
         'health-potion': Animation(health_potion_ss, row=0, frames=7, speed=150, repeat=True),
     },
+    'environment': {
+        'leaves': Animation(leaves_ss, row=0, frames=10, speed=100, repeat=True)
+    
+    }
     
 }

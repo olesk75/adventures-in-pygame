@@ -24,7 +24,7 @@ class GameTileAnimation(GameTile):
 	"""
 	Customized Sprite class which allows update with scroll value, which will be triggerd by spritegroup.update(scroll)
 	"""
-	def __init__(self, size_x, size_y, x, y, surface, animation) -> None:
+	def __init__(self, size_x :int, size_y :int, x :int, y :int, surface :pygame.Surface, animation: classmethod) -> None:
 		super().__init__(size_x, size_y, x, y, surface)
 		
 		self.animation = animation  # the animation generates images for us
@@ -34,6 +34,9 @@ class GameTileAnimation(GameTile):
 
 		self.sprites = self.animation.sprites  # contains all sprites in the animation cycle
 		self.animation.active = True
+
+		self.x_vel = 0  # this allows us to keep track of movement speed (not pos)
+		self.y_vel = 0
         
 	def update(self, scroll) -> None:
 		# Moves the rectangle of this sprite 

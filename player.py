@@ -166,15 +166,12 @@ class Player(pygame.sprite.Sprite):
             self.walking = 1  # right
             self.state = WALKING
             self.turned = False
-            if self.on_ground == True:
-                self.animations['walk'].active = True
 
         elif keys[pygame.K_LEFT]:
             self.walking = -1  # left
             self.state = WALKING
             self.turned = True
-            if self.on_ground == True:
-                self.animations['walk'].active = True
+
         else:
             self.walking = False
 
@@ -236,27 +233,27 @@ class Player(pygame.sprite.Sprite):
             direction = -1
 
         # Bounce back
-        x_bounce = 20
-        y_bounce = -5         
+        x_bounce = 5 * direction
+        y_bounce = -15         
 
         if not self.bouncing:
+            self.vel_x = x_bounce
             self.vel_y = y_bounce
             self.bouncing = True
 
         # Prevent us getting bounced inside platforms
         for platform in platforms:
-            if platform.rect.colliderect(self.rect.x + x_bounce, self.rect.y, self.width - self.X_ADJ, self.height - self.Y_ADJ):
+            if platform.rect.colliderect(self.hitbox.x + x_bounce, (self.hitbox.y + y_bounce) - 200, self.width - self.X_ADJ, self.height - self.Y_ADJ):
                 x_bounce = 0
+                self.vel_x = 0
 
-        self.rect.x += x_bounce * direction
-        # Update world position 
-        self.world_x_pos += x_bounce * direction
 
     def move(self, platforms) -> int:
         """ Movement as a result of keypresses as well as gravity and collision """
         dx = 0
         dy = 0
         scroll = 0
+        print(self.vel_x)
 
         self.hitbox.center = (self.rect.centerx, self.rect.centery + 10)  # updating hitbox location to follow player sprite
         
@@ -293,6 +290,10 @@ class Player(pygame.sprite.Sprite):
         self.vel_y += GRAVITY
         dy += self.vel_y
 
+        # Bounce (in x-direction, y is handled by gravity)
+        if self.bouncing:
+            dx += self.vel_x
+
         # Watch screen boundaries (effectively world boundaries since the screen scrolls to world edges before player can get to end of screen)
         if self.rect.left + dx < 0:
             dx = - self.rect.left
@@ -325,9 +326,15 @@ class Player(pygame.sprite.Sprite):
                             dy = 0
                             self.on_ground = True
                             self.vel_y = 0
+                            self.bouncing = False
                     if platform.moving == True:  # We add the travel of the platform to the x pos of the player
                         self.rect.centerx += platform.dist_player_pushed
                         platform.dist_player_pushed = 0     
+
+                else:   # we're below the platform, abou to bump our head, so resetting vel_y to falling
+                    if platform.solid == True:
+                        self.vel_y = 1
+            
             
             # Checking horisontal collision - walking into terrain
             if platform.rect.colliderect(self.hitbox.x + dx, self.hitbox.y, self.width - self.X_ADJ, self.height - self.Y_ADJ):

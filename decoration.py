@@ -5,6 +5,8 @@ import math
 from random import randint
 from level_data import *
 from settings import *
+from game_tiles import GameTileAnimation
+
 
 class Sky():
     """ Class for showing and scrolling a multi-level parallax background """
@@ -36,67 +38,67 @@ class Sky():
     # TODO: right now the parallax factor is hard coded; move to level_data.py to allow different factors for different levels
 
 class EnvironmentalEffects(pygame.sprite.Group):
-    def __init__(self, effect) -> pygame.sprite.Group:
+    def __init__(self, effect, screen) -> pygame.sprite.Group:
         super().__init__()
-
-        self.wind = Wind(-3)  # blowing toward the left of the screen
+        from animation_data import anim
+        self.anim = anim
+        self.screen = screen
+        self.wind = Wind(-1)  # blowing toward the left of the screen
         self.fall_from_top = 0
         self.last_leaf = 0
+        self.last_update = 0 
         
-        if effect == 'leaves':
-            self.leaf_surface = pygame.image.load('assets/sprites/leaf.png').convert_alpha()
-        
+
     def _add_leaf(self) -> None:
         now = pygame.time.get_ticks() 
         if random.random() < 1/30: # making sure we've waited long enough
-            print('gos')
-            leaf = pygame.sprite.Sprite()
-            leaf.image = self.leaf_surface
-            leaf.rect = pygame.rect.Rect((SCREEN_WIDTH, (randint(0, SCREEN_HEIGHT))), leaf.image.get_size())
+            leaf = GameTileAnimation(16,16,randint(SCREEN_WIDTH/2, SCREEN_WIDTH*2), randint(0, SCREEN_HEIGHT), self.screen, self.anim['environment']['leaves'])
+            leaf.x_vel = random.uniform(-4, -1)
+            leaf.y_vel = random.randint(1, 2)
+            leaf.animation.active = True
             self.add(leaf)
             self.last_leaf = now
+    
 
     def update(self, scroll) -> None:
+       
         for sprite in self.sprites():
             sprite.rect.centerx += scroll  # compensating for scrolling
+            if random.random() < 0.01:  # one in 10 times
+                sprite.y_vel = random.randint(1, 2)
 
-            sprite.rect.centery += 1
+            sprite.rect.centerx += int(sprite.x_vel)
+            sprite.rect.centery += int(sprite.y_vel)
             if sprite.rect.centery > SCREEN_HEIGHT:
                 sprite.kill()
-
-            # Updating wind impact
-            sprite.rect.centerx += self.wind.get_speed(sprite.rect.centery)
-
-
-        if len(self.sprites()) < 10:
-        #     print(f'leaves in the air: {len.self.sprites()}')
+            sprite.image = sprite.animation.get_image()
+            
+        if len(self.sprites()) < 100:
             self._add_leaf()
 
 class Wind:
     """ Defines the wind speed both overall and at various heights, using sine waves
         Returns the added wind component to velocity in the x direction depending on height"""
     def __init__(self, baseline) -> None:
-        self.baseline = 1  # the constant background speed
-        self.wave_length = 200  # wavelength for sine function
-        self.amplitude = 2
-        self.last_baseline = pygame.time.get_ticks()
-        self.counter = 0
+        self.wind_direction = baseline
+        self.wind_speed = -1
+        self.max_wind_speed = 3
+        self.last_update = 0
 
-    def _update_baseline(self) -> None:
+        # Keep track of the wind speed change over time
+        self.wind_speed_change = 0.001 
+
+    def update_wind_speed(self) -> float:
         now = pygame.time.get_ticks()
-        wind_baseline = 0  
-        if now - self.last_baseline > 1000:
-            wind_baseline = math.sin(self.counter/4000) * 1
-            self.counter += 1
-        print(wind_baseline)
-        return wind_baseline
-        
+        if now - self.last_update > 200:
+            # Update the wind speed
+            self.wind_speed += self.wind_speed_change
+            if self.wind_speed > self.max_wind_speed or self.wind_speed < -self.max_wind_speed:  # too much speed, so we start reducing
+                self.wind_speed_change = -self.wind_speed_change
+            self.last_update = now
+            return self.wind_speed
 
-    def get_speed(self, y) -> int:
-        baseline = self._update_baseline()
-        # Returns the x speed at height y
-        x = math.sin(y/self.wave_length) * self.amplitude # varies between 0 and 1
-        print(x)
-        x -= abs(baseline)
-        return int(x)
+        # Reducing down to something that works on our scale
+        print(self.wind_speed)
+        return 0
         
