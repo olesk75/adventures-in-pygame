@@ -17,8 +17,8 @@ skeleton_boss_attack_ss = SpriteSheet(pygame.image.load('assets/spritesheets/mon
 
 # Drops and animated objects
 health_potion_ss =  SpriteSheet(pygame.image.load('assets/spritesheets/objects/lifepotion.png').convert_alpha(), 16, 16, BLACK, 3)
-key_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/key.png'), 32, 32, BLACK, 2)
-door_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/door-sprites - large.png'), 64, 61, BLACK, 2)
+key_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/key.png').convert_alpha(), 32, 32, BLACK, 2)
+door_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/door-sprites - large.png').convert_alpha(), 64, 61, BLACK, 2)
 
 # Hazards
 fire_ss = SpriteSheet(pygame.image.load('assets/spritesheets/hazards/fire-loop-sheet.png').convert_alpha(), 16,24, BLACK, 4)

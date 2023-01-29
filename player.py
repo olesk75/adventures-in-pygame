@@ -234,7 +234,8 @@ class Player(pygame.sprite.Sprite):
 
         # Bounce back
         x_bounce = 5 * direction
-        y_bounce = -15         
+        y_bounce = -15
+        self.on_ground = False
 
         if not self.bouncing:
             self.vel_x = x_bounce
