@@ -17,7 +17,7 @@ from game_tiles import GameTile, GameTileAnimation, MovingGameTile
 from level_data import levels, GameAudio
 from player import Player, PlayerInOut
 from monsters import Monster, Projectile, Spell, Drop
-from decoration import Sky, EnvironmentalEffects
+from decoration import Sky, EnvironmentalEffects, ExpandingCircle
 from monster_data import arrow_damage
 
 class Level():
@@ -105,8 +105,15 @@ class Level():
         # sky
         self.sky = Sky(self.current_level, self.screen)
 
+        # test expanding circle TODO: TEST TEST DEBUG
+        self.exp_circle1 = ExpandingCircle(1000, 500, WHITE, 30, 300,10)
+        self.exp_circle2 = ExpandingCircle(1100, 450, WHITE, 30, 200,10)
+        self.exp_circle3 = ExpandingCircle(800, 600, WHITE, 30, 100,10)
+
+
         # environmental effects (leaves, snow etc.)
         self.env_sprites = EnvironmentalEffects(level_data['environmental_effect'], self.screen)  # 'leaves' for lvl1
+
 
         # player
         self.player = self.player_setup()
@@ -436,6 +443,14 @@ class Level():
         self.env_sprites.update(self.scroll)
         self.env_sprites.draw(self.screen)
 
+        """ DEMO ZONE """
+        # TEST-CIRCLES
+        self.exp_circle1.update(self.scroll)
+        self.exp_circle1.draw(self.screen)
+        self.exp_circle2.update(self.scroll)
+        self.exp_circle2.draw(self.screen)
+        self.exp_circle3.update(self.scroll)
+        self.exp_circle3.draw(self.screen)
 
         # --> Check collisions <--
         self.check_player_attack()

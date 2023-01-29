@@ -102,3 +102,38 @@ class Wind:
         print(self.wind_speed)
         return 0
         
+
+class ExpandingCircle:
+    def __init__(self, x: int, y: int, color: pygame.Color, thickness: int, radius_max: int, frame_delay: int) -> None:
+        self.x = x
+        self.y = y
+        self.color = color
+        self.wide = thickness
+        self.width = 0
+        self.radius_max = radius_max
+        self.radius = 0
+        self.frame_delay = frame_delay
+
+        self.last_update = 0  # for timing
+        self.done = False
+
+    def update(self, scroll) -> None:
+        # It's fire-and-forget
+        self.x += scroll
+        now = pygame.time.get_ticks()
+
+        if now - self.last_update > self.frame_delay:
+            self.radius += 3
+            self.width = int((self.radius/self.radius_max) * self.wide)  # scaling width with radius
+            self.last_update = now
+            if self.radius >= self.radius_max:
+                self.done = True
+
+    def draw(self, screen) -> None:
+        if not self.done:
+            pygame.draw.circle(screen, (self.color), (self.x,self.y), self.radius, width=self.width)
+
+
+
+
+
