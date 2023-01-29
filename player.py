@@ -22,6 +22,7 @@ class Player(pygame.sprite.Sprite):
 
         self.invincible = False
         self.invincibility_duration = 500
+        self.last_damage = 0
 
         from animation_data import anim
 
@@ -217,36 +218,41 @@ class Player(pygame.sprite.Sprite):
 
     def hit(self, damage: int, turned: bool, platforms) -> None:
         """ Player has been hit by mob or projectile, gets damage and bounces backs"""
-        if damage:  # we also use hits without damage to bump the player
-            self._flash()
-            self.fx_hit.play()
-            # Adjust health and bars
-            self.health_current -= damage
-            if self.health_current <= 0:
-                self.health_current = 0
-                self.die()
+        if not self.invincible:
+            if damage:  # we also use hits without damage to bump the player
+                self._flash()
+                self.fx_hit.play()
+                self.invincible = True  # we want 
+                self.last_damage = pygame.time.get_ticks()  
+                # Adjust health and bars
+                self.health_current -= damage
+                if self.health_current <= 0:
+                    self.health_current = 0
+                    self.die()
 
-            self.health_bar_length = int(SCREEN_WIDTH / 6 * self.health_current / 1000)
+                self.health_bar_length = int(SCREEN_WIDTH / 6 * self.health_current / 1000)
 
-        direction = 1
-        if turned:
-            direction = -1
+            direction = 1
+            if turned:
+                direction = -1
 
-        # Bounce back
-        x_bounce = 5 * direction
-        y_bounce = -15
-        self.on_ground = False
+            # Bounce back
+            x_bounce = 5 * direction
+            y_bounce = -15
+            self.on_ground = False
 
-        if not self.bouncing:
-            self.vel_x = x_bounce
-            self.vel_y = y_bounce
-            self.bouncing = True
+            if not self.bouncing:
+                self.vel_x = x_bounce
+                self.vel_y = y_bounce
+                self.bouncing = True
 
-        # Prevent us getting bounced inside platforms
-        for platform in platforms:
-            if platform.rect.colliderect(self.hitbox.x + x_bounce, (self.hitbox.y + y_bounce) - 200, self.width - self.X_ADJ, self.height - self.Y_ADJ):
-                x_bounce = 0
-                self.vel_x = 0
+            # Prevent us getting bounced inside platforms
+            for platform in platforms:
+                if platform.rect.colliderect(self.hitbox.x + x_bounce, (self.hitbox.y + y_bounce) - 200, self.width - self.X_ADJ, self.height - self.Y_ADJ):
+                    x_bounce = 0
+                    self.vel_x = 0
+        else: 
+            print('damage ignored')
 
 
     def move(self, platforms) -> int:
@@ -254,7 +260,13 @@ class Player(pygame.sprite.Sprite):
         dx = 0
         dy = 0
         scroll = 0
-        print(self.vel_x)
+        
+        # If we've been hit, we're invincible - check if it's time to reset
+        if self.invincible:
+            if pygame.time.get_ticks() - self.last_damage > self.invincibility_duration:
+                self.invincible = False
+                print('no more!')
+
 
         self.hitbox.center = (self.rect.centerx, self.rect.centery + 10)  # updating hitbox location to follow player sprite
         
