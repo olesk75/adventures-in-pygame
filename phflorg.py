@@ -68,7 +68,8 @@ class Game:
         self.level.run()
         self.check_damage_effects()
         self.health_current = self.level.player.health_current
-        self.panel.draw(self.level.player_score, self.health_current, self.level.player_inventory) 
+        self.panel.inventory = self.level.player_inventory
+        self.panel.draw(self.level.player_score, self.health_current) 
         
         self.check_game_over()
 

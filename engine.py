@@ -171,6 +171,7 @@ class GamePanel():
         self.health_bar_max_length = int(SCREEN_WIDTH / 6 * health_max / 1000)  # grows when max health grows
 
     def _blink_bar(self, duration) -> None:
+        # Blinks the frame around the health bar red
         if self.blink == True:
             if self.blink_counter < duration:
                 self.blink_counter += 1
@@ -184,7 +185,7 @@ class GamePanel():
 
     def _flash_show(self, img, x,y) -> None:
         # Flashes the health bar when hit
-        print('flash')
+
         # Play sound effect
         audio_highlight = pygame.mixer.Sound('assets/sound/game/panel_highlight.wav')
         audio_highlight.play()
@@ -212,7 +213,7 @@ class GamePanel():
             pygame.time.wait(75)
 
         
-    def draw(self, score, current_health, inventory) -> None:
+    def draw(self, score, current_health) -> None:
         self.score = score
         self.health_current = current_health
 
@@ -229,38 +230,36 @@ class GamePanel():
         bar_frame = pygame.Surface((self.health_bar_max_length+4,20), pygame.SRCALPHA)   # per-pixel alpha
         bar_frame.fill((255,255,255,128))                         # notice the alpha value in the color
         self.screen.blit(bar_frame, (20,40))
-
         self._blink_bar(10)  # blink if we should
-
         ratio = self.health_bar_length / self.health_bar_max_length
         GREEN = 255 * ratio
         RED = 255 * (1-ratio)
         BLUE = 0
-
         health_bar = pygame.Surface((self.health_bar_length,16), pygame.SRCALPHA)   # per-pixel alpha
         health_bar.fill((RED,GREEN,BLUE,200))                         # notice the alpha value in the color
         self.screen.blit(health_bar, (22,42)) 
     
         self.last_health = current_health
 
+
         # player inventory top right
         key_x = self.window_size[0] * 0.8
         key_y = self.window_size[1] * 0.02
 
 
-        for items in inventory:
+        for items in self.inventory:
             if items[0] == 'key':
                 img = pygame.transform.scale(items[1], (40,50))
                 self.screen.blit(img, (key_x,key_y))
 
         if len(self.inventory) > len(self.old_inv):  # new items! 
-            new_items = [x for x in inventory if x not in self.old_inv]
+            new_items = [x for x in self.inventory if x not in self.old_inv]
             for items in new_items:
                 if items[0] == 'key':
                     img = pygame.transform.scale(items[1], (40,50))
                     self._flash_show(img, key_x, key_y)
 
-            self.old_inv = inventory
+            self.old_inv = self.inventory
 
 
 # --- Imports sprite sheets for animatons

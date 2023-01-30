@@ -240,7 +240,7 @@ class Level():
             if self.player.state == ATTACKING and monster.state != DYING and monster.state != DEAD:
                 # Check if mob hit
                 if pygame.Rect.colliderect(self.player.attack_rect, monster.hitbox): 
-                    monster.state_change(DYING)
+                    
                     logging.debug(f'{monster.data.monster} killed by player attack')
                     monster.data.direction = -self.player.turned
                     self.player_score += monster.data.points_reward
@@ -250,6 +250,8 @@ class Level():
                         drop_key = Drop( monster.hitbox.centerx, monster.hitbox.centery - 25 , self.anim['pickups']['key'], turned = False, scale = 2, drop_type='key',)
                         self.drops_sprites.add(drop_key)
                         logging.debug(f'{monster.data.monster} dropped a key')
+
+                    monster.state_change(DYING)  # we do this _after_ key drop, as the hitbox disappears when the mob enters DYING state
 
 
     def check_player_win(self) -> None:
