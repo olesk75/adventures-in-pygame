@@ -74,10 +74,12 @@ class Game:
 
 # Pygame setup
 pygame.init()
+#screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)  # OSX
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
 clock = pygame.time.Clock()
 game = Game()
-game.create_level(1)
+game.create_level(0)
 
 while True:
     for event in pygame.event.get():
