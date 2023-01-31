@@ -2,7 +2,6 @@
 WorldData (dataclass)               : basic world information
 GameTile (Sprite class)             : the background tiles, including platforms
 GameTileAnimation (GameTile class)  : animated background tiles (flames, torches etc.)
-GameWorld (class)                   : contains sprite groups and lists of sprites loaded from the level file
 GamePanel(class)                    : contans the player information for the screen - score, health etc.
 """
 
