@@ -17,6 +17,7 @@ level_0 = {
     'background': {
         'near': 'assets/backgrounds/lvl0/near.png',
         'medium': 'assets/backgrounds/lvl0/medium.png',
+        'further': 'assets/backgrounds/lvl0/further.png',
         'far': 'assets/backgrounds/lvl0/far.png',
         'clouds': 'assets/backgrounds/lvl0/clouds.png',
         'background_color': (130, 181, 255),
@@ -35,9 +36,29 @@ level_1 = {
     'background': {
         'near': 'assets/backgrounds/lvl1/near.png',
         'medium': 'assets/backgrounds/lvl1/medium.png',
+        'further': 'assets/backgrounds/lvl1/further.png',
         'far': 'assets/backgrounds/lvl1/far.png',
         'clouds': 'assets/backgrounds/lvl1/clouds.png',
         'background_color': (130, 181, 210),
+    }
+}
+
+level_2 = {
+    'terrain': 'lvl/2/level2_terrain.csv',
+    'decorations': 'lvl/2/level2_decorations.csv',
+    'hazards':  'lvl/2/level2_hazards.csv',
+    'pickups': 'lvl/2/level2_pickups.csv',
+    'triggered_objects': 'lvl/2/level2_triggered_objects.csv',
+    'monsters': 'lvl/2/level2_monsters.csv',
+    'player': 'lvl/2/level2_player.csv',
+    'environmental_effect': 'leaves',
+    'background': {
+        'near': 'assets/backgrounds/lvl2/near.png',
+        'medium': 'assets/backgrounds/lvl2/medium.png',
+        'further': 'assets/backgrounds/lvl2/medium.png',
+        'far': 'assets/backgrounds/lvl2/far.png',
+        'clouds': 'assets/backgrounds/lvl2/clouds.png',
+        'background_color': (171, 106, 140),
     }
 }
 
@@ -45,7 +66,7 @@ level_1 = {
 levels = {
     0: level_0,  # test level
 	1: level_1,
-	# 2: level_2,
+	2: level_2,
 	# 3: level_3,
 	# 4: level_4,
 	# 5: level_5
@@ -75,7 +96,7 @@ class GameAudio():
         self.health_pickup_fx = pygame.mixer.Sound('assets/sound/objects/health_pickup.wav')
 
         # Game music
-        if level == 1 or level == 0:
+        if level == 2 or level == 1 or level == 0:
             self.music = pygame.mixer.music
             self.music.load("assets/music/Hidden-Agenda.mp3")
             pygame.mixer.music.set_volume(0.3)

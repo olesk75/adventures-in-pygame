@@ -1,0 +1,39 @@
+{
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "Monsters.tsx": {
+            "dynamicWrapping": true
+        },
+        "Phflorg0.tmx": {
+            "scale": 0.6006770833333334,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 2401.456689499696,
+                "y": 256.3773519465881
+            }
+        },
+        "Phflorg1.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1162.3333333333333,
+                "y": 231.33333333333337
+            }
+        },
+        "Terrain.tsx": {
+            "dynamicWrapping": false
+        },
+        "Trigger objects.tsx": {
+            "dynamicWrapping": true
+        }
+    },
+    "last.exportedFilePath": "/home/olesk/Nextcloud/CODE/Python/adventures-in-pygame/lvl/2",
+    "map.lastUsedExportFilter": "All Files (*)",
+    "openFiles": [
+    ],
+    "project": "Phflorg.tiled-project",
+    "recentFiles": [
+    ]
+}

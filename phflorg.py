@@ -14,9 +14,9 @@ FPS = 60
 class Game:
     def __init__(self) -> None:
         self.state = GS_PLAYING  # we start with the welcome screen
-
+        
         # game attributes
-        self.max_level = 1
+        self.max_level = 2
         self.score = 0
         self.health_max = PLAYER_HEALTH
         self.health_current = self.health_max
@@ -46,7 +46,6 @@ class Game:
     
     def check_level_complete(self) -> None:
         if self.level.level_complete == True:
-            fade_to_color(pygame.Color('black'))  # fade to black
             self.state = GS_LEVEL_COMPLETE
             logging.debug('Game state: LEVEL COMPLETE ')
             
@@ -88,12 +87,35 @@ class Game:
 
         if keys[pygame.K_q]:
             self.state = GS_QUIT
-            pygame.quit()
+            
         if keys[pygame.K_SPACE]:
             game.create_level(1)  # starting at level 1
             fade_to_color(pygame.Color('black'))  # fade to red
             self.faded = False
             self.state = GS_PLAYING
+
+    def level_complete(self) -> None:
+        if not self.faded:
+            fade_to_color(pygame.Color('black'))  # fade to black
+            self.faded = True
+            
+        self.write_text(f"LEVEL {self.level.current_level} COMPLETE", WHITE, 0, 200, align='center')
+        self.write_text(f"SCORE : {self.level.player_score}", WHITE, 0, 300, align='center')
+        self.write_text(f"HIGH SCORE : 99999", WHITE, 0, 400, align='center')
+        self.write_text("Press SPACE to continue to the next level Q to quit", WHITE, 0, 500, align='center')
+
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_q]:
+            self.state = GS_QUIT
+            
+        if keys[pygame.K_SPACE]:
+            game.create_level(game.level.current_level + 1)  # next level!
+            game.create_level(1)  # starting at level 1
+            self.faded = False
+            self.state = GS_PLAYING
+            fade_to_color(pygame.Color('white'))  # fade to white
+
 
     def write_text(self, text: str, color: pygame.Color, x :int, y: int, align: str=None) -> None:
         text_img = self.font.render(text, True, color)  # surface with the string 
@@ -140,7 +162,12 @@ while True:
         game.game_over()
 
     if game.state == GS_QUIT:
-        event.type = pygame.QUIT
+       pygame.quit()
+       sys.exit()
+
+    if game.state == GS_LEVEL_COMPLETE:
+        game.level_complete()
+        
 
     pygame.display.update()
     clock.tick(FPS)

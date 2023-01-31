@@ -307,10 +307,10 @@ class Level():
             for t_object in pygame.sprite.spritecollide(self.player,self.triggered_objects_sprites,False):
                 if any('key' in sublist for sublist in self.player_inventory): # do we have key?
                     t_object.animation.active = True
-                    self.bubble_list.append(BubbleMessage(self.screen, 'Level complete!\nCongratualations!', 5000, 'exit', self.player))
+                    self.bubble_list.append(BubbleMessage(self.screen, 'Level complete!\nCongratulations!', 3000, 'exit', self.player))
                 else:
                     self.player.hit(0, -1, self.terrain_sprites)
-                    self.bubble_list.append(BubbleMessage(self.screen, 'Come back when you have a key!', 5000, 'exit', self.player))
+                    self.bubble_list.append(BubbleMessage(self.screen, 'Come back when you have a key!', 3000, 'exit', self.player))
 
     # Dropped objects pickup / collision
     def check_coll_player_drops(self) -> None:
@@ -320,7 +320,7 @@ class Level():
                     self.player_inventory.append(('key', self.key_img))  # inventory of items and their animations
                     self.fx_key_pickup.play()            
                     drop.kill()
-                    self.bubble_list.append(BubbleMessage(self.screen, 'You have found a key!\nWhere could it possibly fit?', 5000, 'key', self.player))
+                    self.bubble_list.append(BubbleMessage(self.screen, 'You have found a key!', 5000, 'key', self.player))
                 if drop.drop_type == 'health-potion':
                     self.fx_health_pickup.play()
                     self.player.heal(500)

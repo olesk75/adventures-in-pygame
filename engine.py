@@ -72,9 +72,9 @@ class BubbleMessage():
         self.last_time = -self.min_delay  # just to make sure we run the first time without delay
         self.start_time = 0
         self.duration = ttl
-        self.font_size = 32
-        #self.font = pygame.font.Font("assets/font/m5x7.ttf", self.font_size)  # 16, 32, 48
-        self.font = pygame.font.Font("assets/font/OldSchoolAdventures-42j9.ttf", self.font_size)  # 16, 32, 48
+        self.font_size = 48
+        self.font = pygame.font.Font("assets/font/m5x7.ttf", self.font_size)  # 16, 32, 48
+        #self.font = pygame.font.Font("assets/font/OldSchoolAdventures-42j9.ttf", self.font_size)  # 16, 32, 48
 
         self.bubble_bg = pygame.image.load('assets/panel/bubble.png').convert_alpha()
         
@@ -100,7 +100,7 @@ class BubbleMessage():
             black = (0,0,0)
             white = (255,255,255)
 
-            surf = pygame.transform.scale(self.bubble_bg,(self.x_size, self.y_size))
+            surf = pygame.transform.scale(self.bubble_bg,(self.x_size + int(self.x_size * 0.2), self.y_size))
             line_size = 3
 
 

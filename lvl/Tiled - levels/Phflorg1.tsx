@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.9" tiledversion="1.9.2" name="Terrain" tilewidth="32" tileheight="32" tilecount="19" columns="0">
+<tileset version="1.9" tiledversion="1.9.2" name="Terrain" tilewidth="32" tileheight="32" tilecount="11" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <image width="32" height="32" source="../../assets/tile/terrain/0.png"/>
@@ -36,23 +36,5 @@
  </tile>
  <tile id="11">
   <image width="32" height="32" source="../../assets/tile/terrain/11.png"/>
- </tile>
- <tile id="12">
-  <image width="32" height="32" source="../../assets/tile/terrain/12.png"/>
- </tile>
- <tile id="13">
-  <image width="32" height="32" source="../../assets/tile/terrain/13.png"/>
- </tile>
- <tile id="14">
-  <image width="32" height="32" source="../../assets/tile/terrain/14.png"/>
- </tile>
- <tile id="15">
-  <image width="32" height="32" source="../../assets/tile/terrain/15.png"/>
- </tile>
- <tile id="18">
-  <image width="32" height="32" source="../../assets/tile/terrain/18.png"/>
- </tile>
- <tile id="19">
-  <image width="32" height="32" source="../../assets/tile/terrain/19.png"/>
  </tile>
 </tileset>
