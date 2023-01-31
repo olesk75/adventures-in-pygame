@@ -74,6 +74,8 @@ class BubbleMessage():
         self.duration = ttl
         self.font_size = 32
         self.font = pygame.font.Font("assets/font/m5x7.ttf", self.font_size)  # 16, 32, 48
+
+        self.bubble_bg = pygame.image.load('assets/panel/bubble.png').convert_alpha()
         
         self.half_screen = pygame.display.get_surface().get_size()[0] // 2
 
@@ -90,42 +92,42 @@ class BubbleMessage():
     def _display_msg(self) -> None:
             # TODO: BLIT ONTO A SPRITE BIG ENOUGH FOR RECT AND CIRCLES FIRST, THEN WE CAN USE THE SPRITE TO MOVE THE BUBBLE OVER TIME
             # ALSO MAKE QUARTERR SIZE, SCALE UP, TO GET PIXEL ART EFFECT, OR REDUCE RESOLUTION EVERYWHERE AND SCALE UP!!
-            padding_x = 10
-            padding_y = 10
+            padding_x = 30
+            padding_y = 12
 
             grey = (128,128,128)
             black = (0,0,0)
             white = (255,255,255)
 
-            # Create and fill a rectangle transparent gray
-            surf = pygame.Surface((self.x_size, self.y_size)).convert_alpha()
-            pygame.Surface.fill(surf, grey)
+            surf = pygame.transform.scale(self.bubble_bg,(self.x_size, self.y_size))
             line_size = 3
+
 
             for row, msg_text in enumerate(self.msg_list):
                 text_img = self.font.render(msg_text, True, white)
-                surf.blit(text_img, (padding_x,padding_y + row * pygame.font.Font.size(self.font, msg_text)[1]))
+                surf.blit(text_img, (padding_x, padding_y + row * pygame.font.Font.size(self.font, msg_text)[1]))
             
-            y = self.player.rect.top - self.y_size
             if self.player.rect.centerx < self.half_screen:
-                x = self.player.rect.centerx
+                self.screen.blit(surf, (self.player.rect.centerx, self.player.rect.top - self.y_size))    
             else:
                 self.screen.blit(surf, (self.player.rect.centerx - self.x_size, self.player.rect.top - self.y_size))
-                x = self.player.rect.centerx - self.x_size
+                
             
-            # Draw another rectangle + two half circles behind as a frame
-            pygame.draw.rect(self.screen, black, (x-line_size,y-line_size, self.x_size+line_size*2, self.y_size+line_size*2))
-            pygame.draw.circle(self.screen, black, (x ,y + self.y_size/2), self.y_size/2+line_size, \
-                draw_top_right=False, draw_bottom_right=False, draw_top_left=True, draw_bottom_left = True)
-            pygame.draw.circle(self.screen, black, (x + self.x_size, y + self.y_size/2), self.y_size/2+line_size, \
-                draw_top_right=True, draw_bottom_right=True, draw_top_left=False, draw_bottom_left = False)
 
-            # Draw surface + two half circles on each end to round off - this is the inner part - in grey
-            self.screen.blit(surf, (x, y))
-            pygame.draw.circle(self.screen, grey, (x,y + self.y_size/2), self.y_size/2, \
-                draw_top_right=False, draw_bottom_right=False, draw_top_left=True, draw_bottom_left = True)
-            pygame.draw.circle(self.screen, grey, (x+self.x_size,y + self.y_size/2), self.y_size/2, \
-                draw_top_right=True, draw_bottom_right=True, draw_top_left=False, draw_bottom_left = False)
+
+            # # Draw another rectangle + two half circles behind as a frame
+            # pygame.draw.rect(self.screen, black, (x-line_size,y-line_size, self.x_size+line_size*2, self.y_size+line_size*2))
+            # pygame.draw.circle(self.screen, black, (x ,y + self.y_size/2), self.y_size/2+line_size, \
+            #     draw_top_right=False, draw_bottom_right=False, draw_top_left=True, draw_bottom_left = True)
+            # pygame.draw.circle(self.screen, black, (x + self.x_size, y + self.y_size/2), self.y_size/2+line_size, \
+            #     draw_top_right=True, draw_bottom_right=True, draw_top_left=False, draw_bottom_left = False)
+
+            # # Draw surface + two half circles on each end to round off - this is the inner part - in grey
+            # self.screen.blit(surf, (x, y))
+            # pygame.draw.circle(self.screen, grey, (x,y + self.y_size/2), self.y_size/2, \
+            #     draw_top_right=False, draw_bottom_right=False, draw_top_left=True, draw_bottom_left = True)
+            # pygame.draw.circle(self.screen, grey, (x+self.x_size,y + self.y_size/2), self.y_size/2, \
+            #     draw_top_right=True, draw_bottom_right=True, draw_top_left=False, draw_bottom_left = False)
 
 
     def show(self) -> None:

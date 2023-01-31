@@ -34,15 +34,18 @@ class Animation():
 
             if self.active == True and time_since_last > self.speed:  # time for a new frame
                 self.frame_number += 1
+                
                 if self.frame_number == self.frames -1:  # on the last frame
-                    self.on_last_frame = True                    
+                    self.on_last_frame = True
+                else:
+                    self.on_last_frame = False
+
                 if self.frame_number == self.frames:  # past the last frame
-                    if not self.repeat:  # we disable if we're no repeating after first iteration
+                    if not self.repeat:  # we disable if we're not repeating after first iteration
                         self.active = False 
-                        self.frame_number -= 1  # we show the last frame forever
+                        self.frame_number -= 1   # we show the last frame forever
                     else:
                         self.frame_number = 0
-                        self.on_last_frame = False
                         self.first_done = True
                         self.repeat_start = now
                     

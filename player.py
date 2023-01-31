@@ -98,7 +98,9 @@ class Player(pygame.sprite.Sprite):
         self.image = final_image
     
     def _manage_state_change(self) -> None:
-        """ Handles state changes - so only when we have a new a different state """
+        """ Handles state changes - so only when we have a new a different state 
+            But also maintans a queue so that attack animations are never interrupted
+        """
         if self.state != self.previous_state:
             # New attack
             if self.state == ATTACKING:
@@ -111,19 +113,23 @@ class Player(pygame.sprite.Sprite):
                 else:
                     x = self.hitbox.right
                 self.attack_rect = pygame.Rect(x, self.rect.top + 30, self.rect.right - self.hitbox.right, 100) 
+                self.previous_state = self.state
 
             # Dying
             if self.state == DYING:
                 self.animation = self.animations['death']
+                self.previous_state = self.state
 
             # Walking, jumping or idle
             if self.state == WALKING:  # the only other possible previous state is ATTACKING
-                self.animation = self.animations['walk']
-                self.animation.active = True
-                self.attack_rect = None  # removing the attack rect
+                if self.animation.on_last_frame:
+                    self.animation = self.animations['walk']
+                    self.animation.active = True
+                    self.attack_rect = None  # removing the attack rect
+                    self.previous_state = self.state
+                else: self.state = ATTACKING  # we only allow transition back to WALKING after the ATTACKING animation has finished
 
-            self.previous_state = self.state
-            self.animation.frame_number = 0  # start over after transition
+            
 
 
  
@@ -159,7 +165,10 @@ class Player(pygame.sprite.Sprite):
             self.image.blit(anim_frame, (x_adjustment, 0))
         if self.state == ATTACKING:
             # To fit the attack animation in the sprite, the character was moved a bit, compensating
-            ATTACK_X = 20
+            direction = 1
+            if self.turned:
+                direction = -1
+            ATTACK_X = 20 * direction
             ATTACK_Y = 12
             self.image.blit(anim_frame,(ATTACK_X + x_adjustment, ATTACK_Y))
 
@@ -291,13 +300,10 @@ class Player(pygame.sprite.Sprite):
                 #self.state = IDLE
                 self.animation.active = False  # we're idle
 
-
-        if self.state == ATTACKING:
-            # self.animation.active = True
-            print(self.animation.frame_number)
         # After every attack, we switch back into WALKING 
         if self.state == ATTACKING and self.animation.on_last_frame:  # reset after attack animation is complete
                 self.attack_rect = None
+                self.animation.frame_number = 0  # resetting for next animation
                 self.state = WALKING
         
         if self.state == DYING:

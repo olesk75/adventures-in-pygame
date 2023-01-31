@@ -39,7 +39,7 @@ leaves_ss = SpriteSheet(pygame.image.load('assets/spritesheets/env/leaf.png').co
 anim = {
     'player': {
         'walk': Animation(player_ss_walk, row=0, frames=9, speed=75), 
-        'attack': Animation(player_ss_attack, row=0, frames=10, speed=300), 
+        'attack': Animation(player_ss_attack, row=0, frames=10, speed=30), 
         'death': Animation(player_ss_die, row=0, frames=6, speed=200),
         'cast': Animation(player_ss_cast, row=0, frames=7, speed=200),
         'idle': None
