@@ -129,7 +129,7 @@ class Player(pygame.sprite.Sprite):
     def check_game_over(self) -> bool:
         """ Manage the time from player is hit and dies until the death animation is complete and GAME OVER screen shows  """
         # print(f'self.death.anim_counter ({self.death.anim_counter})> self.death.frames ({self.death.frames})')  # DEBUG
-        if  self.animations['death'].anim_counter == self.animations['death'].frames -1:
+        if  self.animations['death'].on_last_frame:
             self.state = DEAD
             return True
         else:
@@ -285,14 +285,14 @@ class Player(pygame.sprite.Sprite):
         # After every attack, we switch back into WALKING 
         if self.state == ATTACKING: 
             self.animation.active = True
-            if self.animation.anim_counter == self.animation.frames -1:  # reset after attack animation is complete
+            if self.animation.on_last_frame:  # reset after attack animation is complete
                 self.animation.active = False  # stopping attack anim
                 self.attack_rect = None
                 self.state = WALKING
         
         if self.state == DYING:
             self.animation.active = True
-            if self.animation.anim_counter == self.animation.frames -1:
+            if self.animation.on_last_frame:
                 self.state = DEAD
         
         self._manage_state_change()  # manages state transitions

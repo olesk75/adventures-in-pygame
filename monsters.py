@@ -73,12 +73,6 @@ class Monster(pygame.sprite.Sprite):
         self.cast_anim_list = []  # if the mob casts a spell, we creat animations here
 
 
-    def check_anim_done(self) -> bool:
-        if self.animation.anim_counter == self.animation.frames -1:
-            return True
-        else:
-            return False
-
     def create_rects(self) -> None:
         """
         Creating rects for monster hitbox, detection range and attack damage range
@@ -160,7 +154,7 @@ class Monster(pygame.sprite.Sprite):
         
         def _casting() -> None:
             sprite_size = 32
-            if self.check_anim_done():  # on last cast animation frame, trigger the spell
+            if self.animation.on_last_frame:  # on last cast animation frame, trigger the spell
                 if self.currently_casting == 'firewalker':
                     attack_width = 12
                     for a in range(attack_width):
@@ -206,7 +200,7 @@ class Monster(pygame.sprite.Sprite):
 
             elif self.state == DYING:
                 self.hitbox = pygame.Rect(0,0,0,0)
-                if self.animation.anim_counter == self.animation.frames -1:
+                if self.animation.on_last_frame:
                     logging.debug(f'BOSS {self.data.monster} dies')
                     self.state = DEAD
                     self.kill() 
@@ -321,7 +315,7 @@ class Monster(pygame.sprite.Sprite):
             self.rect_attack = None
             self.rect_detect = None
             self.hitbox = None
-            if self.animation.anim_counter == self.animation.frames -1:
+            if self.animation.on_last_frame:
                 self.state = DEAD
 
         # Updating the ready_to_attack flag 

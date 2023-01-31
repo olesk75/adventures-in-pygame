@@ -2,6 +2,11 @@ import pygame
 
 # Animation class
 class Animation():
+    """ Class which reads the sprite sheet and animates the images in sprites 
+        Reads single rwo from the sprite sheet and builds list of images which
+        is iterated through (and looped over if repeat==True)
+    """
+
     # Getting a sprite sheet
     def __init__(self, sprite_sheet: pygame.Surface, row:int, frames:int, speed:int, repeat:bool=True) -> None:
         self.ss = sprite_sheet
@@ -15,23 +20,29 @@ class Animation():
         [self.sprites.append(self.ss.get_image(row, frame)) for frame in range(frames)]
         
         self.anim_counter = 0
+        self.on_last_frame = False  # gives way to check if animation is done (and ready to start over)
         self.last_run = 0
         self.repeat_start = 0  # ticks of time when we're done with one animation frame cycle
         self.first_done = False  # True when done one cycle of frames
         
-    def get_image(self, repeat_delay=0):
+    def get_image(self, repeat_delay=0) -> pygame.Surface:
+        # Returns the next image in the animation when active
         now = pygame.time.get_ticks()
         time_since_last = now - self.last_run  # ticks since last run
+
         if now > self.repeat_start + repeat_delay:
 
             if self.active == True and time_since_last > self.speed:  # time for a new frame
                 self.anim_counter += 1
-                if self.anim_counter == len(self.sprites):
+                if self.anim_counter == self.frames -1:  # on the last frame
+                    self.on_last_frame = True                    
+                if self.anim_counter == self.frames:  # past the last frame
                     if not self.repeat:  # we disable if we're no repeating after first iteration
                         self.active = False 
                         self.anim_counter -= 1  # we show the last frame forever
                     else:
                         self.anim_counter = 0
+                        self.on_last_frame = False
                         self.first_done = True
                         self.repeat_start = now
                     
@@ -44,9 +55,10 @@ class Animation():
         return image
 
 
+
     # Scale override is non-funtional
-    def _show_anim(self, scale_override=False):
-        """This function is only to display every frame of an animation in a grid on screen for testing """
+    def _show_anim(self, scale_override=False) -> None:
+        """This function is only to display every frame of an animation in a grid on screen FOR TESTING """
         self.screen = pygame.display.get_surface()
         if scale_override:
             scale = scale_override
