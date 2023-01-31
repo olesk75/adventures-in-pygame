@@ -449,8 +449,6 @@ class Drop(pygame.sprite.Sprite):
         self.height = image.get_height()
         self.rect = pygame.Rect(x, y, self.width, self.height)
         self.turned = turned
-
-        print(f'dropped at ({x}{y})')
         
     def update(self, scroll) -> None:
         self.rect.x += scroll # we compensate for scrolling

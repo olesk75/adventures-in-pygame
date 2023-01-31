@@ -18,7 +18,7 @@ skeleton_boss_attack_ss = SpriteSheet(pygame.image.load('assets/spritesheets/mon
 # Drops and animated objects
 health_potion_ss =  SpriteSheet(pygame.image.load('assets/spritesheets/objects/lifepotion.png').convert_alpha(), 16, 16, BLACK, 3)
 key_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/key.png').convert_alpha(), 32, 32, BLACK, 2)
-door_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/door-sprites - large.png').convert_alpha(), 64, 61, BLACK, 3)
+door_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/portcullis.png').convert_alpha(), 32, 32, BLACK, 4)
 
 # Hazards
 fire_ss = SpriteSheet(pygame.image.load('assets/spritesheets/hazards/fire-loop-sheet.png').convert_alpha(), 16,24, BLACK, 4)
@@ -67,7 +67,7 @@ anim = {
         'spike-trap': Animation(spike_ss, row=0, frames=2, speed=100)
     },
     'doors': {
-        'end-of-level': Animation(door_ss, row=0, frames=4, speed=100, repeat=False),
+        'end-of-level': Animation(door_ss, row=0, frames=22, speed=100, repeat=False),
     },
     'pickups': {
         'key': Animation(key_ss, row=0, frames=10, speed=50, repeat=True),

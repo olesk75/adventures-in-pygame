@@ -80,7 +80,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 clock = pygame.time.Clock()
 game = Game()
-game.create_level(0)
+game.create_level(1)
 
 while True:
     for event in pygame.event.get():
