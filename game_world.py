@@ -32,7 +32,7 @@ class GameTile(pygame.sprite.Sprite):
     """
     Customized Sprite class which allows update with scroll value, which will be triggerd by spritegroup.update(scroll)
     """
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         
     def update(self, scroll) -> None:
@@ -43,7 +43,7 @@ class GameTileAnimation(GameTile):
     """
     Customized Sprite class which allows update with scroll value, which will be triggerd by spritegroup.update(scroll)
     """
-    def __init__(self, animation):
+    def __init__(self, animation) -> None:
         super().__init__()
         self.animation = animation
         self.X_CENTER = self.animation.image().get_width() // 2

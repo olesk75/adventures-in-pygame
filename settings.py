@@ -1,11 +1,18 @@
 
-# State constants
+# Player and monster state constants
 IDLE = 0
 WALKING = 1
 ATTACKING = 2
 CASTING = 3
 DYING = 4
 DEAD = 5
+
+# Game state constants
+GS_WELCOME = 0
+GS_PLAYING = 1
+GS_GAME_OVER = 2
+GS_LEVEL_COMPLETE = 3
+GS_QUIT = 5
 
 # Color contants
 WHITE    = (255, 255, 255)

@@ -13,6 +13,7 @@ FPS = 60
 
 class Game:
     def __init__(self) -> None:
+        self.state = GS_PLAYING  # we start with the welcome screen
 
         # game attributes
         self.max_level = 1
@@ -23,10 +24,12 @@ class Game:
         self.powers_max = 1
         self.powers_current = self.powers_max
         self.level_audio = None
+        self.faded = False
         
         # user interface 
         self.panel = GamePanel(screen)
         self.panel.setup_bars(self.health_current, self.health_max)
+        self.font = pygame.font.Font("assets/font/OldSchoolAdventures-42j9.ttf", 32)  
 
         # damage overlay (red tendrils)
         self.damage_img = pygame.image.load('assets/panel/damage.png').convert_alpha()
@@ -44,9 +47,8 @@ class Game:
     def check_level_complete(self) -> None:
         if self.level.level_complete == True:
             fade_to_color(pygame.Color('black'))  # fade to black
-            print('WINWINWINWINW')
-            print('No plan!')
-            exit(0)
+            self.state = GS_LEVEL_COMPLETE
+            logging.debug('Game state: LEVEL COMPLETE ')
             
 
     def check_game_over(self) -> None:
@@ -55,10 +57,9 @@ class Game:
             self.max_level = 1
             self.level_audio.music.stop()
 
-            fade_to_color(pygame.Color('red'))  # fade to red
-            logging.debug('--- GAME OVER ---')
-            logging.debug('     EXITING')
-            exit(0)
+            self.state = GS_GAME_OVER
+            logging.debug('Game state: GAME OVER ')
+            
 
     def check_damage_effects(self) -> None:
         """ Slow-motion effect after player loses health """
@@ -72,6 +73,40 @@ class Game:
             FPS = 10
             self.slowmo = True
             self.last_run = pygame.time.get_ticks()
+
+    def game_over(self) -> None:
+        if not self.faded:
+            fade_to_color(pygame.Color('red'))  # fade to red
+            self.faded = True
+
+        self.write_text("GAME OVER", WHITE, 0, 200, align='center')
+        self.write_text(f"SCORE : {self.level.player_score}", WHITE, 0, 300, align='center')
+        self.write_text(f"HIGH SCORE : 99999", WHITE, 0, 400, align='center')
+        self.write_text("Press SPACE to try again, Q to quit", WHITE, 0, 500, align='center')
+
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_q]:
+            self.state = GS_QUIT
+            pygame.quit()
+        if keys[pygame.K_SPACE]:
+            game.create_level(1)  # starting at level 1
+            fade_to_color(pygame.Color('black'))  # fade to red
+            self.faded = False
+            self.state = GS_PLAYING
+
+    def write_text(self, text: str, color: pygame.Color, x :int, y: int, align: str=None) -> None:
+        text_img = self.font.render(text, True, color)  # surface with the string 
+        if align == 'center':  # we ignore x and calculate x based on length of string
+            x = (SCREEN_WIDTH / 2) - (text_img.get_width() / 2)  # start half of the text length left of x center
+        
+
+        screen.blit(text_img, (x, y))
+        pygame.display.update()
+            
+            
+        #self.screen.blit(surf, (self.player.rect.centerx, self.player.rect.top - self.y_size))    
+
 
     def run(self) -> None:
         """ Run the game """
@@ -98,8 +133,14 @@ while True:
             pygame.quit()
             sys.exit()
         
-    #screen.fill('grey')
-    game.run() 
+    if game.state == GS_PLAYING:
+        game.run() 
+    
+    if game.state == GS_GAME_OVER:
+        game.game_over()
+
+    if game.state == GS_QUIT:
+        event.type = pygame.QUIT
 
     pygame.display.update()
     clock.tick(FPS)
