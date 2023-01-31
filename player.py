@@ -322,13 +322,14 @@ class Player(pygame.sprite.Sprite):
             dx += self.vel_x
 
         # Watch screen boundaries (effectively world boundaries since the screen scrolls to world edges before player can get to end of screen)
-        if self.rect.left + dx < 0:
+        if self.hitbox.left + dx < 0:
             dx = - self.rect.left
-        if self.rect.right + dx > SCREEN_WIDTH:
+        if self.hitbox.right + dx > SCREEN_WIDTH:
             dx = SCREEN_WIDTH - self.rect.right
-        if self.rect.top + dy < 0:
-            dy = - self.rect.top
-            self.vel_y = GRAVITY
+        
+        # if self.rect.top + dy < 0:  
+        #     dy = - self.rect.top
+        #     self.vel_y = GRAVITY
         
         
         # Check if player has reached scroll threshold to the LEFT (and we're not on the far left) + we're walking left
@@ -406,7 +407,10 @@ class PlayerInOut(pygame.sprite.Sprite):
             self.out_y = y
         
         self.image = pygame.Surface((TILE_SIZE, TILE_SIZE))  #  empty surface
-        self.rect = self.image.get_rect()
+        self.rect = self.image.get_rect(center=(x + TILE_SIZE/2, y + TILE_SIZE/2))
+
+    def update(self, scroll) -> None:
+        self.rect.centerx += scroll
 
 
 

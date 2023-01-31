@@ -134,6 +134,20 @@ class ExpandingCircle:
             pygame.draw.circle(screen, (self.color), (self.x,self.y), self.radius, width=self.width)
 
 
+"""
+Functions
+"""
 
-
-
+def fade_to_color(color: pygame.color.Color) -> None:
+    # Fades to color (and pauses game while doing so!)
+    
+    screen = pygame.display.get_surface()
+    rect = screen.get_rect()
+    rectsurf = pygame.Surface(rect.size,pygame.SRCALPHA)
+    color.a = 1
+    for _ in range(0,255):
+        pygame.time.wait(1)
+        rectsurf.fill(color)
+        screen.blit(rectsurf,(0,0))
+        pygame.display.update()
+        

@@ -16,7 +16,7 @@ from game_tiles import GameTile, GameTileAnimation, MovingGameTile
 from level_data import levels, GameAudio
 from player import Player, PlayerInOut
 from monsters import Monster, Projectile, Spell, Drop
-from decoration import Sky, EnvironmentalEffects, ExpandingCircle
+from decor_and_effects import Sky, EnvironmentalEffects, ExpandingCircle
 from monster_data import arrow_damage
 
 class Level():
@@ -30,6 +30,7 @@ class Level():
 
         # general setup
         self.current_level = current_level
+        self.level_complete = False
         self.screen = surface
         self.scroll = 0
         self.current_x = None
@@ -196,7 +197,7 @@ class Level():
                         x_size = x_size * 2 + 3
                         y_size = y_size * 2 + 3
                         if int(val) == 0:  # door at end of level
-                            sprite = GameTileAnimation(x_size, y_size,x,y,tile_surface, self.anim['doors']['end-of-level'])
+                            sprite = GameTileAnimation(x_size, y_size,x,y - 10 ,tile_surface, self.anim['doors']['end-of-level'])
                             sprite.animation.active = False
                         sprite.rect.bottom = bottom_pos
 
@@ -256,15 +257,15 @@ class Level():
     def check_player_win(self) -> None:
         # Player sprite reaches goal tile
         if pygame.sprite.spritecollide(self.player,self.player_in_out_sprites,False):
-            print('START OR FINISH')
             if pygame.sprite.spritecollide(self.player,self.player_in_out_sprites,False)[0].inout == 'out':  # first colliding sprite
-                print('WIN!!!')
+                logging.debug('WIN! Level complete')
+                self.level_complete = True
 
     def check_player_fallen_off(self) -> None:
         if self.player.rect.top > SCREEN_HEIGHT:
             self.player.state = DYING
             self.player_dead = True
-            logging.debug('Oooops! Player fell off.')
+            logging.debug('Oooops! Player fell off')
 
 
     def check_coll_player_hazard(self) -> None:
@@ -439,6 +440,10 @@ class Level():
         self.player_sprites.draw(self.screen)
         if self.player.state == DEAD:
             self.player_dead = True
+
+        # entry and exit points
+        self.player_in_out_sprites.update(self.scroll)  
+        #self.player_in_out_sprites.draw(self.screen)  # normally we do not draw these, but good to have for debugging
 
         # environmental effects
         self.env_sprites.update(self.scroll)

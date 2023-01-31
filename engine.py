@@ -73,7 +73,8 @@ class BubbleMessage():
         self.start_time = 0
         self.duration = ttl
         self.font_size = 32
-        self.font = pygame.font.Font("assets/font/m5x7.ttf", self.font_size)  # 16, 32, 48
+        #self.font = pygame.font.Font("assets/font/m5x7.ttf", self.font_size)  # 16, 32, 48
+        self.font = pygame.font.Font("assets/font/OldSchoolAdventures-42j9.ttf", self.font_size)  # 16, 32, 48
 
         self.bubble_bg = pygame.image.load('assets/panel/bubble.png').convert_alpha()
         

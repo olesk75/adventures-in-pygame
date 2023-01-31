@@ -6,6 +6,7 @@ from settings import *
 from level import Level
 from level_data import GameAudio
 from engine import GamePanel
+from decor_and_effects import fade_to_color
 
 
 FPS = 60
@@ -16,7 +17,7 @@ class Game:
         # game attributes
         self.max_level = 1
         self.score = 0
-        self.health_max = 1000
+        self.health_max = PLAYER_HEALTH
         self.health_current = self.health_max
         self.inventory = []  # player inventory items
         self.powers_max = 1
@@ -39,13 +40,22 @@ class Game:
         self.level_audio = GameAudio(current_level)
         self.level_audio.music.play(-1,0.0)
         self.level_audio.music.set_volume(0.4)
-        
+    
+    def check_level_complete(self) -> None:
+        if self.level.level_complete == True:
+            fade_to_color(pygame.Color('black'))  # fade to black
+            print('WINWINWINWINW')
+            print('No plan!')
+            exit(0)
+            
 
     def check_game_over(self) -> None:
         """ Check if out of health"""
         if self.health_current == 0 or self.level.player_dead:
             self.max_level = 1
             self.level_audio.music.stop()
+
+            fade_to_color(pygame.Color('red'))  # fade to red
             logging.debug('--- GAME OVER ---')
             logging.debug('     EXITING')
             exit(0)
@@ -70,7 +80,7 @@ class Game:
         self.health_current = self.level.player.health_current
         self.panel.inventory = self.level.player_inventory
         self.panel.draw(self.level.player_score, self.health_current) 
-        
+        self.check_level_complete()
         self.check_game_over()
 
 # Pygame setup

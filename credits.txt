@@ -227,3 +227,7 @@ Animated torch: https://opengameart.org/content/lpc-animated-torch
 Artwork created by Luis Zuno (@ansimuz) - background mountains
 
 Further sound effects by Jesús Lastra (https://opengameart.org/content/8-bit-pickup-1)
+
+Font "Old-School Adventure":
+license: Freeware, Non-Commercial
+link: https://www.fontspace.com/old-school-adventures-font-f26494
