@@ -19,7 +19,7 @@ class Animation():
 
         [self.sprites.append(self.ss.get_image(row, frame)) for frame in range(frames)]
         
-        self.anim_counter = 0
+        self.frame_number = 0
         self.on_last_frame = False  # gives way to check if animation is done (and ready to start over)
         self.last_run = 0
         self.repeat_start = 0  # ticks of time when we're done with one animation frame cycle
@@ -33,24 +33,24 @@ class Animation():
         if now > self.repeat_start + repeat_delay:
 
             if self.active == True and time_since_last > self.speed:  # time for a new frame
-                self.anim_counter += 1
-                if self.anim_counter == self.frames -1:  # on the last frame
+                self.frame_number += 1
+                if self.frame_number == self.frames -1:  # on the last frame
                     self.on_last_frame = True                    
-                if self.anim_counter == self.frames:  # past the last frame
+                if self.frame_number == self.frames:  # past the last frame
                     if not self.repeat:  # we disable if we're no repeating after first iteration
                         self.active = False 
-                        self.anim_counter -= 1  # we show the last frame forever
+                        self.frame_number -= 1  # we show the last frame forever
                     else:
-                        self.anim_counter = 0
+                        self.frame_number = 0
                         self.on_last_frame = False
                         self.first_done = True
                         self.repeat_start = now
                     
                 self.last_run = now
         try:
-            image = self.sprites[self.anim_counter].convert_alpha()
+            image = self.sprites[self.frame_number].convert_alpha()
         except IndexError:
-            print(f'INDEX ERROR: unable to get frame (anim_counter) {self.anim_counter} from sprite sheet {self.ss}')
+            print(f'INDEX ERROR: unable to get frame (frame_number) {self.frame_number} from sprite sheet {self.ss}')
             exit(1)
         return image
 

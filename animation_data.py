@@ -6,8 +6,11 @@ BLACK = (0,0,0)
 
 """ Loading sprite sheets """
 # Player
-player_ss = SpriteSheet(pygame.image.load('assets/spritesheets/player_with_axe.png').convert_alpha(), 64, 64, BLACK, 2)
-player_ss_attack = SpriteSheet(pygame.image.load('assets/spritesheets/player_with_axe.png').convert_alpha(), 64*3, 64*3, BLACK, 2)
+player_ss_walk = SpriteSheet(pygame.image.load('assets/spritesheets/player-walking.png').convert_alpha(), 64, 64, BLACK, 2)
+player_ss_attack = SpriteSheet(pygame.image.load('assets/spritesheets/player-attacking.png').convert_alpha(), 64, 64, BLACK, 2)
+player_ss_cast = SpriteSheet(pygame.image.load('assets/spritesheets/player-casting.png').convert_alpha(), 64, 64, BLACK, 2)
+player_ss_die = SpriteSheet(pygame.image.load('assets/spritesheets/player-dying.png').convert_alpha(), 64, 64, BLACK, 2)
+
 
 # Monsters
 minotaur_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/minotaur-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
@@ -35,10 +38,11 @@ leaves_ss = SpriteSheet(pygame.image.load('assets/spritesheets/env/leaf.png').co
 """ Create main animation dict """
 anim = {
     'player': {
-        'walk': Animation(player_ss, row=11, frames=9, speed=75), 
-        'attack': Animation(player_ss_attack, row=10, frames=6, speed=30), 
-        'death': Animation(player_ss, row=20, frames=6, speed=200),
-        'cast': None
+        'walk': Animation(player_ss_walk, row=0, frames=9, speed=75), 
+        'attack': Animation(player_ss_attack, row=0, frames=10, speed=300), 
+        'death': Animation(player_ss_die, row=0, frames=6, speed=200),
+        'cast': Animation(player_ss_cast, row=0, frames=7, speed=200),
+        'idle': None
     },
     'minotaur': {
         'walk': Animation(minotaur_ss, row=11, frames=9, speed=50), 

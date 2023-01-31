@@ -372,7 +372,7 @@ class Level():
                     elif now - monster.last_arrow > monster.data.attack_delay:  # launching projectile 
                         arrow = Projectile(monster.hitbox.centerx, monster.hitbox.centery, self.arrow_img, turned = monster.turned, scale = 2)
                         # We only add the arrow once the bow animation is complete (and we know we're ATTACKING, so attack anim is active)
-                        if monster.check_anim_done():
+                        if monster.animation.on_last_frame:
                             self.projectile_sprites.add(arrow)
                             monster.last_arrow = now
 
