@@ -9,6 +9,99 @@ from settings import *
 from game_tiles import GameTileAnimation
 
 
+# --- Show floating info bubbles ---
+class BubbleMessage():
+    """ Show floating info bubbles
+        Meant to linger - 10 seconds between each message 
+    """
+    def __init__(self, screen: pygame.display, msg: str, ttl: int, start_delay: int, msg_type: str, player: pygame.sprite.Sprite) -> None:
+        # Arguments:
+        # ttl : durtaion of bubble in ms
+        # msg_type: type of message, to avoid dupes
+        # player: player instance
+        self.msg_type = msg_type
+        self.screen = screen
+        self.msg = msg
+        self.player = player
+
+        self.start_delay = start_delay
+
+        self.active = False  
+        self.shutting_down = False
+        self.shutdown_counter = 25  # 5 steps to remove the bubble
+        self.expired = False
+
+        self.min_delay = 1000*10  # 10 seconds
+        self.last_time = -self.min_delay  # just to make sure we run the first time without delay
+        self.start_time = 0
+        self.init_time = pygame.time.get_ticks()
+        self.duration = ttl
+        self.font_size = 48
+        self.font = pygame.font.Font("assets/font/m5x7.ttf", self.font_size)  # 16, 32, 48
+        #self.font = pygame.font.Font("assets/font/OldSchoolAdventures-42j9.ttf", self.font_size)  # 16, 32, 48
+
+        self.bubble_bg = pygame.image.load('assets/panel/bubble.png').convert_alpha()
+        
+        self.half_screen = pygame.display.get_surface().get_size()[0] // 2
+
+        self.msg_list = msg.splitlines()  # splitting the msg into a list of lines
+
+        self.x_size = 10  # start padded
+        self.y_size = 10
+        y_padding = 10
+        for line in self.msg_list:
+            self.x_size += pygame.font.Font.size(self.font, line)[0]
+            self.y_size += pygame.font.Font.size(self.font, line)[1]
+            self.y_size += y_padding
+
+    def _display_msg(self) -> None:
+            # TODO: BLIT ONTO A SPRITE BIG ENOUGH FOR RECT AND CIRCLES FIRST, THEN WE CAN USE THE SPRITE TO MOVE THE BUBBLE OVER TIME
+            # ALSO MAKE QUARTERR SIZE, SCALE UP, TO GET PIXEL ART EFFECT, OR REDUCE RESOLUTION EVERYWHERE AND SCALE UP!!
+            padding_x = 30
+            padding_y = 12
+
+            white = (255,255,255)
+
+            surf = pygame.transform.scale(self.bubble_bg,(self.x_size + int(self.x_size * 0.2), self.y_size))
+            line_size = 3
+
+
+            for row, msg_text in enumerate(self.msg_list):
+                text_img = self.font.render(msg_text, True, white)
+                surf.blit(text_img, (padding_x, padding_y + row * pygame.font.Font.size(self.font, msg_text)[1]))
+            
+            if self.player.rect.centerx < self.half_screen:
+                self.screen.blit(surf, (self.player.rect.centerx, self.player.rect.top - self.y_size))    
+            else:
+                self.screen.blit(surf, (self.player.rect.centerx - self.x_size, self.player.rect.top - self.y_size))
+
+
+    def show(self) -> None:
+        # we compensate for scrolling
+        now = pygame.time.get_ticks()
+        if now - self.init_time > self.start_delay:
+            # First we show the message and freeze for a brief moment
+            if now > self.last_time + self.min_delay and not self.active:
+                self._display_msg()
+                self.active = True
+                pygame.time.wait(50)
+                self.last_time = now
+                self.start_time = now
+
+            elif self.active and now < self.start_time + self.duration:
+                self._display_msg()
+            else:
+                self.shutting_down = True
+
+            if self.shutting_down:
+                self.y_size = self.y_size - int((self.y_size / self.shutdown_counter))  # we shrink the height a little each time
+                self._display_msg()
+
+                self.shutdown_counter -=1 
+                if self.shutdown_counter == 0:
+                    self.active = False
+                    self.expired = True
+
 class Sky():
     """ Class for showing and scrolling a multi-level parallax background """
     def __init__(self,level,screen) -> None:
@@ -80,13 +173,11 @@ class EnvironmentalEffects(pygame.sprite.Group):
         if now - self.last_run >  1000 / self.frequency:
             if now - self.last_gust_change > 1000 * 10:
                 self.gust_strength = randint(1,3)  # every 10 seconds we change the wind gust speed 
-                print(f'Now gusting {self.gust_strength}')
                 self.last_gust_change = now
 
             # The wind provides a list of wind speed 
             wind_field = self.wind.update(self.gust_strength)
 
-            counter = 0
             for sprite in self.sprites():
                 # Compensate for wind
                 list_pos = int((sprite.rect.centery / SCREEN_HEIGHT) * 100)  # position in list depending on y position of sprite
@@ -97,14 +188,6 @@ class EnvironmentalEffects(pygame.sprite.Group):
                     sprite.x_vel -= sprite.x_vel * self.inertia
                 if sprite.x_vel > self.base_wind:
                     sprite.x_vel += sprite.x_vel * self.inertia
-
-                # if counter == 0:
-                #     print(f'{sprite.x_vel=}, += {(sprite.x_vel * self.inertia)=}')
-                # counter +=1
-
-
-                if sprite.x_vel > self.base_wind:
-                    sprite.x_vel -= abs(sprite.x_vel - self.base_wind) * (self.inertia / 100)
 
                 sprite.update(scroll)
                 

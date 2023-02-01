@@ -11,12 +11,12 @@ import logging
 
 from settings import *
 
-from engine import import_csv_layout, import_tile_graphics,BubbleMessage
+from engine import import_csv_layout, import_tile_graphics
 from game_tiles import GameTile, GameTileAnimation, MovingGameTile
 from level_data import levels, GameAudio
 from player import Player, PlayerInOut
 from monsters import Monster, Projectile, Spell, Drop
-from decor_and_effects import Sky, EnvironmentalEffects, ExpandingCircle
+from decor_and_effects import Sky, EnvironmentalEffects, ExpandingCircle,BubbleMessage
 from monster_data import arrow_damage
 
 class Level():
@@ -276,7 +276,7 @@ class Level():
         # Player + hazard group collision 
         if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.hazards_sprites,False) and self.player.state != DYING:
             self.player.hazard_damage(100, hits_per_second=10)
-            self.bubble_list.append(BubbleMessage(self.screen, 'Ouch! Ouch!', 1000, 'spikes', self.player))
+            self.bubble_list.append(BubbleMessage(self.screen, 'Ouch! Ouch!', 1000, 0, 'spikes', self.player))
 
     def check_coll_player_projectile(self) -> None:
     # Player + projectile collision (arrows etc.) AND player's attack collision (so attacking arrows in flight for example)
@@ -311,10 +311,10 @@ class Level():
             for t_object in pygame.sprite.spritecollide(self.player,self.triggered_objects_sprites,False):
                 if any('key' in sublist for sublist in self.player_inventory): # do we have key?
                     t_object.animation.active = True
-                    self.bubble_list.append(BubbleMessage(self.screen, 'Level complete!\nCongratulations!', 3000, 'exit', self.player))
+                    self.bubble_list.append(BubbleMessage(self.screen, 'Level complete!\nCongratulations!', 3000, 0, 'exit', self.player))
                 else:
                     self.player.hit(0, -1, self.terrain_sprites)
-                    self.bubble_list.append(BubbleMessage(self.screen, 'Come back when you have a key!', 3000, 'exit', self.player))
+                    self.bubble_list.append(BubbleMessage(self.screen, 'Come back when you have a key!', 3000, 0, 'exit', self.player))
 
     # Dropped objects pickup / collision
     def check_coll_player_drops(self) -> None:
@@ -324,7 +324,7 @@ class Level():
                     self.player_inventory.append(('key', self.key_img))  # inventory of items and their animations
                     self.fx_key_pickup.play()            
                     drop.kill()
-                    self.bubble_list.append(BubbleMessage(self.screen, 'You have found a key!', 5000, 'key', self.player))
+                    self.bubble_list.append(BubbleMessage(self.screen, 'You have found a key!', 5000, 3000, 'key', self.player))
                 if drop.drop_type == 'health-potion':
                     self.fx_health_pickup.play()
                     self.player.heal(500)
