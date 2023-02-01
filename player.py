@@ -53,7 +53,9 @@ class Player(pygame.sprite.Sprite):
         self.rect = pygame.Rect(x,y, self.width, self.height)  
 
         # Hitbox rect and spriteflip
-        self.hitbox = pygame.Rect(x,y, self.width - self.X_ADJ, self.height - self.Y_ADJ)
+        x_reduction = 20   # we make the player hitbox narrower for hits and for falling
+
+        self.hitbox = pygame.Rect(x + x_reduction ,y, self.width - self.X_ADJ - x_reduction * 2, self.height - self.Y_ADJ)
         hitbox_image = pygame.Surface((self.width, self.height)).convert_alpha()
         hitbox_image.fill((0, 0, 0, 0))
 
@@ -109,9 +111,10 @@ class Player(pygame.sprite.Sprite):
                 
                 # Attack rect
                 if self.turned:
-                    x = self.hitbox.left - self.hitbox.width / 2
+                    x = self.rect.left
                 else:
                     x = self.hitbox.right
+
                 self.attack_rect = pygame.Rect(x, self.rect.top + 30, self.rect.right - self.hitbox.right, 100) 
                 self.previous_state = self.state
 
