@@ -1,4 +1,8 @@
 {
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
     "activeFile": "",
     "expandedProjectPaths": [
     ],
@@ -20,6 +24,14 @@
             "viewCenter": {
                 "x": 1162.3333333333333,
                 "y": 231.33333333333337
+            }
+        },
+        "Phflorg2.tmx": {
+            "scale": 2.2156,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 1123.6233977252214,
+                "y": 155.26268279472833
             }
         },
         "Terrain.tsx": {

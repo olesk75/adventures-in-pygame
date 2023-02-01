@@ -1,6 +1,7 @@
 import pygame
 import random
 import logging
+import math
 
 from random import randint
 from level_data import *
@@ -24,7 +25,8 @@ class Sky():
         self.bg_color = background['background_color']
     
     def update(self,bg_scroll) -> None:
-        self.bg_scroll = bg_scroll
+        self.bg_scroll += bg_scroll
+        print(self.bg_scroll)
     
     def draw(self, surface) -> None:
         surface.fill(self.bg_color)
@@ -54,7 +56,7 @@ class EnvironmentalEffects(pygame.sprite.Group):
     def _add_leaf(self) -> None:
         now = pygame.time.get_ticks() 
         if random.random() < 1/30: # making sure we've waited long enough
-            leaf = GameTileAnimation(16,16,randint(SCREEN_WIDTH/2, SCREEN_WIDTH*2), randint(0, SCREEN_HEIGHT), self.screen, self.anim['environment']['leaves'])
+            leaf = GameTileAnimation(16,16,randint(SCREEN_WIDTH/2, SCREEN_WIDTH*2), randint(0, SCREEN_HEIGHT), self.anim['environment']['leaves'])
             leaf.x_vel = random.uniform(-4, -1)
             leaf.y_vel = random.randint(1, 2)
             leaf.animation.active = True
@@ -153,3 +155,31 @@ def fade_to_color(color: pygame.color.Color) -> None:
         screen.blit(rectsurf,(0,0))
         pygame.display.update()
         
+
+def sine_wave(points=100)-> list:
+    """ Produces the points in a sine wave
+        Values range between 0 and 100 
+    """
+    point_list = [] * points
+
+    # Define the maximum amplitude of the wave
+    amplitude = 50
+
+    # Define the number of points to be plotted
+    points = 1000
+
+    # Define the start and end points along the x-axis
+    start = math.pi /2
+    end = (5 * math.pi /2) 
+
+    # Define the step size for each point along the x-axis
+    step = (end - start) / points
+
+    # Calculate the x and y coordinates for each point
+    for i in range(points):
+        x = start + i * step
+        y = amplitude * math.sin(x) + 150
+
+        point_list.append(y-100)
+
+    return point_list

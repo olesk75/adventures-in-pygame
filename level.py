@@ -114,6 +114,9 @@ class Level():
         # environmental effects (leaves, snow etc.)
         self.env_sprites = EnvironmentalEffects(level_data['environmental_effect'], self.screen)  # 'leaves' for lvl1
 
+        # hit indicator 
+        self.hit_indicator_group = pygame.sprite.GroupSingle()  # Added when player attack hits a monster
+        
 
         # player
         self.player = self.player_setup()
@@ -177,9 +180,9 @@ class Level():
                         x_size = x_size * 2 + 3
                         y_size = y_size * 2 + 3
                         if int(val) == 0:  # fire
-                            sprite = GameTileAnimation(x_size, y_size,x,y,tile_surface, self.anim['fire']['fire-hazard'])
+                            sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['fire']['fire-hazard'])
                         if int(val) == 1:  # spikes
-                            sprite = GameTileAnimation(x_size, y_size,x,y,tile_surface, self.anim['spikes']['spike-trap'])
+                            sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['spikes']['spike-trap'])
                         sprite.rect.bottom = bottom_pos
                         
                     if type == 'pickups':
@@ -188,7 +191,7 @@ class Level():
                         x_size = x_size * 2 + 3
                         y_size = y_size * 2 + 3
                         if int(val) == 0:  # health potion
-                            sprite = GameTileAnimation(x_size, y_size,x,y,tile_surface, self.anim['pickups']['health-potion'])
+                            sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['pickups']['health-potion'])
                         sprite.rect.bottom = bottom_pos
 
                     if type == 'triggered_objects':
@@ -197,7 +200,7 @@ class Level():
                         x_size = x_size * 2 + 3
                         y_size = y_size * 2 + 3
                         if int(val) == 0:  # door at end of level
-                            sprite = GameTileAnimation(x_size, y_size,x,y - 10 ,tile_surface, self.anim['doors']['end-of-level'])
+                            sprite = GameTileAnimation(x_size, y_size,x,y - 10 , self.anim['doors']['end-of-level'])
                             sprite.animation.active = False
                         sprite.rect.bottom = bottom_pos
 
@@ -240,7 +243,8 @@ class Level():
             if self.player.state == ATTACKING and monster.state != DYING and monster.state != DEAD:
                 # Check if mob hit
                 if pygame.Rect.colliderect(self.player.attack_rect, monster.hitbox): 
-                    
+                    # SPAWN HIT INDICATOR
+                    self.hit_indicator_group.add(GameTileAnimation(32, 32, monster.hitbox.centerx, monster.hitbox.centery, self.anim['effects']['hit-indicator']))
                     logging.debug(f'{monster.data.monster} killed by player attack')
                     monster.data.direction = -self.player.turned
                     self.player_score += monster.data.points_reward
@@ -440,6 +444,13 @@ class Level():
         self.player_sprites.draw(self.screen)
         if self.player.state == DEAD:
             self.player_dead = True
+
+        # hit indicator
+        self.hit_indicator_group.update(self.scroll)
+        self.hit_indicator_group.draw(self.screen)
+        if self.hit_indicator_group.sprite: 
+            if self.hit_indicator_group.sprite.animation.frame_number == self.hit_indicator_group.sprite.animation.frames - 1:
+                self.hit_indicator_group.sprite.kill()
 
         # entry and exit points
         self.player_in_out_sprites.update(self.scroll)  

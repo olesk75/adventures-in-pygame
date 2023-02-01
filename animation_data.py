@@ -33,6 +33,8 @@ fire_spell_ss = SpriteSheet(pygame.image.load('assets/spritesheets/spells/fire-s
 # Environmental effects
 leaves_ss = SpriteSheet(pygame.image.load('assets/spritesheets/env/leaf.png').convert_alpha(), 16,16, BLACK, 1)
 
+# Effects
+hit_indicator_ss = SpriteSheet(pygame.image.load('assets/spritesheets/effects/hit-star.png').convert_alpha(), 32,32, BLACK, 2)
 
 
 """ Create main animation dict """
@@ -79,7 +81,9 @@ anim = {
     },
     'environment': {
         'leaves': Animation(leaves_ss, row=0, frames=10, speed=100, repeat=True)
-    
+    },
+    'effects': {
+        'hit-indicator': Animation(hit_indicator_ss, row=0, frames=13, speed=20, repeat=False)
     }
     
 }
