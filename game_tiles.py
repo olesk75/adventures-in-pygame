@@ -24,6 +24,7 @@ class GameTileAnimation(GameTile):
 	"""
 	Customized Sprite class which allows update with scroll value, which will be triggerd by spritegroup.update(scroll)
 	Note that we do not need the surface that the parent needs to generate an image, as the animation does that for us!
+	Also note taht we can have float values for x_vel and y_vel, they only get converted to int when added to x and y pos on update
 	"""
 	def __init__(self, size_x :int, size_y :int, x :int, y :int, animation: classmethod) -> None:
 		super().__init__(size_x, size_y, x, y, pygame.Surface((0,0)))
@@ -42,11 +43,15 @@ class GameTileAnimation(GameTile):
 	def update(self, scroll) -> None:
 		# Moves the rectangle of this sprite 
 		self.rect.x += scroll
+		self.rect.x += int(self.x_vel)
+		self.rect.y += int(self.y_vel)
+		
+
 		self.image = self.animation.get_image().convert_alpha()
 
 class MovingGameTile(GameTile):
 	"""
-	Customized Sprite class which allows moving tiles which update with scroll value, which will be triggerd by spritegroup.update(scroll)
+	Customized Sprite class which allows self-moving tiles (like platforms) which update with scroll value, which will be triggerd by spritegroup.update(scroll)
 	"""
 	def __init__(self, size_x, size_y, x, y, speed, distance, surface) -> None:
 		# Basic static sprite (always contains an image and a rect)

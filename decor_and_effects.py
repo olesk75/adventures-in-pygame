@@ -26,7 +26,6 @@ class Sky():
     
     def update(self,bg_scroll) -> None:
         self.bg_scroll += bg_scroll
-        print(self.bg_scroll)
     
     def draw(self, surface) -> None:
         surface.fill(self.bg_color)
@@ -42,70 +41,96 @@ class Sky():
     # TODO: right now the parallax factor is hard coded; move to level_data.py to allow different factors for different levels
 
 class EnvironmentalEffects(pygame.sprite.Group):
+    """
+    Class for adding non-interactive environmental effects, like blowing leaves, snow, raid etc.
+    """
     def __init__(self, effect, screen) -> pygame.sprite.Group:
         super().__init__()
         from animation_data import anim
+        self.effect = effect  # 'leaves', 'snow', all found in level_data for each level
         self.anim = anim
         self.screen = screen
-        self.wind = Wind(-1)  # blowing toward the left of the screen
+        self.base_wind = -1  # blowing toward the left of the screen
+        self.gust_strength = 1
+        self.wind = Wind(self.base_wind)  
         self.fall_from_top = 0
         self.last_leaf = 0
         self.last_update = 0 
+        if self.effect == 'leaves':
+            self.inertia = 0.5  # % of wind speed to remove
         
+        self.last_run = 0
+        self.last_gust_change = 0
+        self.frequency = 10  # times per second we update the environmental effects
 
     def _add_leaf(self) -> None:
         now = pygame.time.get_ticks() 
         if random.random() < 1/30: # making sure we've waited long enough
-            leaf = GameTileAnimation(16,16,randint(SCREEN_WIDTH/2, SCREEN_WIDTH*2), randint(0, SCREEN_HEIGHT), self.anim['environment']['leaves'])
-            leaf.x_vel = random.uniform(-4, -1)
-            leaf.y_vel = random.randint(1, 2)
+            leaf = GameTileAnimation(16,16,randint(SCREEN_WIDTH, SCREEN_WIDTH*3), randint(0, SCREEN_HEIGHT/4), self.anim['environment']['leaves'])
+            leaf.x_vel = random.uniform(-4, -1)  # starting horisontal speed
+            leaf.y_vel = GRAVITY * 2
             leaf.animation.active = True
             self.add(leaf)
             self.last_leaf = now
+            
     
 
     def update(self, scroll) -> None:
-       
-        for sprite in self.sprites():
-            sprite.rect.centerx += scroll  # compensating for scrolling
-            if random.random() < 0.01:  # one in 10 times
-                sprite.y_vel = random.randint(1, 2)
+        now = pygame.time.get_ticks()
+        if now - self.last_run >  1000 / self.frequency:
+            if now - self.last_gust_change > 1000 * 10:
+                self.gust_strength = randint(1,3)  # every 10 seconds we change the wind gust speed 
+                print(f'Now gusting {self.gust_strength}')
+                self.last_gust_change = now
 
-            sprite.rect.centerx += int(sprite.x_vel)
-            sprite.rect.centery += int(sprite.y_vel)
-            if sprite.rect.centery > SCREEN_HEIGHT:
-                sprite.kill()
-            sprite.image = sprite.animation.get_image()
+            # The wind provides a list of wind speed 
+            wind_field = self.wind.update(self.gust_strength)
+
+            counter = 0
+            for sprite in self.sprites():
+                # Compensate for wind
+                list_pos = int((sprite.rect.centery / SCREEN_HEIGHT) * 100)  # position in list depending on y position of sprite
+                sprite.x_vel += self.base_wind - wind_field[list_pos]  # we add the wind component for our current height (vertical sine wave)
+
+                # Compensating for inertia which alsways tries to slow the sprite down
+                if sprite.x_vel < self.base_wind:  # always the case at first
+                    sprite.x_vel -= sprite.x_vel * self.inertia
+                if sprite.x_vel > self.base_wind:
+                    sprite.x_vel += sprite.x_vel * self.inertia
+
+                # if counter == 0:
+                #     print(f'{sprite.x_vel=}, += {(sprite.x_vel * self.inertia)=}')
+                # counter +=1
+
+
+                if sprite.x_vel > self.base_wind:
+                    sprite.x_vel -= abs(sprite.x_vel - self.base_wind) * (self.inertia / 100)
+
+                sprite.update(scroll)
+                
+                # Removing sprites that have gone off screen
+                if sprite.rect.centery > SCREEN_HEIGHT:
+                    sprite.kill()
+                sprite.image = sprite.animation.get_image()
             
-        if len(self.sprites()) < 100:
-            self._add_leaf()
+            # Here we add the leaves
+            if len(self.sprites()) < 100 and self.effect == 'leaves':
+                self._add_leaf()
+
 
 class Wind:
-    """ Defines the wind speed both overall and at various heights, using sine waves
-        Returns the added wind component to velocity in the x direction depending on height"""
-    def __init__(self, baseline) -> None:
-        self.wind_direction = baseline
-        self.wind_speed = -1
-        self.max_wind_speed = 3
-        self.last_update = 0
+    """
+    Class which simulates wind based on sine waves and returns a list of the wind direction in each vertical lines from 0 to SCREEN_HEIGHT
+    """
+    def __init__(self, base_wind) -> None:
+        self.wind_field = []
+        self.base_wind = base_wind
 
-        # Keep track of the wind speed change over time
-        self.wind_speed_change = 0.001 
+    def update(self, gust_strength) -> list:
+        # Returns a list of values from 0 to gust_strength. 0 on both ends, just_strength in the middle
+        field = [wind_point * gust_strength for wind_point in sine_wave(points=101)]  # 101 to make sure we have list indices from 0-100 (not 99), which ius easier to work with
 
-    def update_wind_speed(self) -> float:
-        now = pygame.time.get_ticks()
-        if now - self.last_update > 200:
-            # Update the wind speed
-            self.wind_speed += self.wind_speed_change
-            if self.wind_speed > self.max_wind_speed or self.wind_speed < -self.max_wind_speed:  # too much speed, so we start reducing
-                self.wind_speed_change = -self.wind_speed_change
-            self.last_update = now
-            return self.wind_speed
-
-        # Reducing down to something that works on our scale
-        print(self.wind_speed)
-        return 0
-        
+        return field      
 
 class ExpandingCircle:
     def __init__(self, x: int, y: int, color: pygame.Color, thickness: int, radius_max: int, frame_delay: int) -> None:
@@ -154,19 +179,16 @@ def fade_to_color(color: pygame.color.Color) -> None:
         rectsurf.fill(color)
         screen.blit(rectsurf,(0,0))
         pygame.display.update()
-        
+
 
 def sine_wave(points=100)-> list:
     """ Produces the points in a sine wave
-        Values range between 0 and 100 
+        Values range between 0 and 100, with max value of 1 in the middle and 0 at both ends of the list
     """
     point_list = [] * points
 
     # Define the maximum amplitude of the wave
     amplitude = 50
-
-    # Define the number of points to be plotted
-    points = 1000
 
     # Define the start and end points along the x-axis
     start = math.pi /2
@@ -180,6 +202,6 @@ def sine_wave(points=100)-> list:
         x = start + i * step
         y = amplitude * math.sin(x) + 150
 
-        point_list.append(y-100)
+        point_list.append(1-(y-100)/100)
 
     return point_list
