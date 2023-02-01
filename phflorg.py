@@ -110,8 +110,7 @@ class Game:
             self.state = GS_QUIT
             
         if keys[pygame.K_SPACE]:
-            game.create_level(game.level.current_level + 1)  # next level!
-            game.create_level(1)  # starting at level 1
+            game.create_level(self.level.current_level + 1)  # next level!
             self.faded = False
             self.state = GS_PLAYING
             fade_to_color(pygame.Color('white'))  # fade to white
