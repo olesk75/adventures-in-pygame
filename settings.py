@@ -2,10 +2,11 @@
 # Player and monster state constants
 IDLE = 0
 WALKING = 1
-ATTACKING = 2
-CASTING = 3
-DYING = 4
-DEAD = 5
+JUMPING = 2
+ATTACKING = 3
+CASTING = 4
+DYING = 5
+DEAD = 6
 
 # Game state constants
 GS_WELCOME = 0
@@ -39,4 +40,4 @@ ATTACK_SPEED = 1  # UNUSED
 PLAYER_HEALTH = 1000
 
 # Debug settings
-DEBUG_HITBOXES = False
+DEBUG_HITBOXES = True

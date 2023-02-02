@@ -28,10 +28,15 @@ class Player(pygame.sprite.Sprite):
 
         # Setting up animations
         self.animations = {
-            'idle': None,  # TODO
+            'idle': anim['player']['idle'],
             'walk': anim['player']['walk'],
             'attack': anim['player']['attack'],
             'death': anim['player']['death']
+        }
+
+        self.state = {
+            'active': IDLE,
+            'next': IDLE,
         }
         
         self.animation = self.animations['walk']  # Walking by default
@@ -82,7 +87,7 @@ class Player(pygame.sprite.Sprite):
         # Status variables
         self.turned = False  # flip sprite/animations when moving left
         self.on_ground = False  # standing on solid ground
-        self.state = WALKING  # we start walking always
+        
         self.previous_state = None  # to check if we change state for sprite scaling etc.
         self.bouncing = False  # hit by something --> small bounce in the opposite direction
         self.last_env_damage = 0  # to manage frequency of damage
@@ -99,59 +104,84 @@ class Player(pygame.sprite.Sprite):
         final_image.blit(coloured_image, (0, 0), special_flags = pygame.BLEND_MULT)
         self.image = final_image
     
-    def _manage_state_change(self) -> None:
-        """ Handles state changes - so only when we have a new a different state 
-            But also maintans a queue so that attack animations are never interrupted
+
+    def _state_engine(self) -> None:
         """
-        if self.state != self.previous_state:
-            # New attack
-            if self.state == ATTACKING:
-                self.animation = self.animations['attack']
-                self.animation.active = True
-                
-                # Attack rect
-                if self.turned:
-                    x = self.rect.left
-                else:
-                    x = self.hitbox.right
+        Manage state changes
 
-                self.attack_rect = pygame.Rect(x, self.rect.top + 30, self.rect.right - self.hitbox.right, 100) 
-                self.previous_state = self.state
+        If state['next'] is different from state['active]...
+        
+        """
+        if self.state['next'] != self.state['active']:
 
-            # Dying
-            if self.state == DYING:
-                self.animation = self.animations['death']
-                self.previous_state = self.state
-
-            # Walking, jumping or idle
-            if self.state == WALKING:  # the only other possible previous state is ATTACKING
-                if self.animation.on_last_frame:
-                    self.animation = self.animations['walk']
+            # --> Idle
+            if self.state['next'] == IDLE:
+                # If we were attacking, and now we're done with the animation (if not, we ignore for now)
+                if self.state['active'] == ATTACKING and self.animation.on_last_frame:
+                    self.state['active'] = IDLE
+                    self.animation = self.animations['idle']
+                    self.animation.frame = 0
                     self.animation.active = True
-                    self.attack_rect = None  # removing the attack rect
-                    self.previous_state = self.state
-                else: self.state = ATTACKING  # we only allow transition back to WALKING after the ATTACKING animation has finished
 
-            
+                # If we were walking, and now we're done with the animation (if not, we ignore for now)
+                if self.state['active'] == WALKING and self.animation.on_last_frame:
+                    self.state['active'] = IDLE
+                    self.animation = self.animations['idle']
+                    self.animation.frame = 0
+                    self.animation.active = True
+
+            # --> Jumping
+            if self.state['next'] == JUMPING:
+                # Jumping, like attacking, interrupts anything 
+                self.state['active'] = JUMPING
+                self.animation = self.animations['walk']
+                self.animation.frame_number = -1  # last frame of walk anim is also jump anim for stabby
+                self.animation.active = False
+
+            # --> Walking
+            if self.state['next'] == WALKING:
+                # If we were attacking, and now we're done with the animation (if not, we ignore for now)
+                if self.state['active'] == ATTACKING and self.animation.on_last_frame:
+                    self.state['active'] = WALKING
+                    self.animation = self.animations['walk']
+                    self.animation.frame = 0
+                    self.animation.active = True
+
+                # If we were idle, we start walking straight away
+                if self.state['active'] == IDLE:
+                    self.state['active'] = WALKING
+                    self.animation = self.animations['walk']
+                    self.animation.frame = 0
+                    self.animation.active = True
+
+                # If we were jumping, and we're bak on the ground, we start stright away
+                if self.state['active'] == JUMPING and self.on_ground:
+                    self.state['active'] = WALKING
+                    self.animation = self.animations['walk']
+                    self.animation.frame = 0
+                    self.animation.active = True
+    
+            # --> Attacking 
+            if self.state['next'] == ATTACKING:
+                # Attack interrupts anything
+                self.state['active'] = ATTACKING
+                self.animation = self.animations['attack']
+                self.animation.frame = 0
+                self.animation.active = True
 
 
- 
-    def check_game_over(self) -> bool:
-        """ Manage the time from player is hit and dies until the death animation is complete and GAME OVER screen shows  """
-        # print(f'self.death.frame_number ({self.death.frame_number})> self.death.frames ({self.death.frames})')  # DEBUG
-        if  self.animations['death'].on_last_frame:
-            self.state = DEAD
-            return True
-        else:
-            return False
+            # --> Dying, running through death animation until dead
+            if self.state['next'] == DYING:
+                self.animation = self.animations['death']
+                self.state['active'] = DYING
+                self.state['next'] = DEAD 
 
-    def die(self) -> None:
-        """ Starting the death animation and settings state to DYING """
-        if self.state != DYING:
-            self.state = DYING  # we start the death sequence
-            self.animation = self.animations['death']
-            self.animation.frame_number = 0  # Animation counter the death animation
-   
+            # --> Dead, of the animation has run to the end
+            if self.state['next'] == DEAD and self.animation.on_last_frame:
+                self.state['active'] = DEAD
+                
+    
+
     def get_anim_image(self) -> None:
         """ Update the image of self, which is called by SpriteGroup.draw() method 
         """
@@ -164,9 +194,10 @@ class Player(pygame.sprite.Sprite):
 
         x_adjustment = 25  # to center the player image in the sprite
 
-        if self.state == WALKING or self.state == DYING:
+        if self.state['active'] in (WALKING, IDLE, DYING, JUMPING):
             self.image.blit(anim_frame, (x_adjustment, 0))
-        if self.state == ATTACKING:
+        
+        if self.state['active'] == ATTACKING:
             # To fit the attack animation in the sprite, the character was moved a bit, compensating
             direction = 1
             if self.turned:
@@ -181,29 +212,29 @@ class Player(pygame.sprite.Sprite):
 
         if keys[pygame.K_RIGHT]:
             self.walking = 1  # right
-            self.state = WALKING
+            self.state['next'] = WALKING
             self.turned = False
 
         elif keys[pygame.K_LEFT]:
             self.walking = -1  # left
-            self.state = WALKING
+            self.state['next'] = WALKING
             self.turned = True
 
         else:
             self.walking = False
+            self.state['next'] = IDLE
 
         if keys[pygame.K_UP] and self.on_ground:
             self.vel_y = - JUMP_HEIGHT
-            self.animations['walk'].active = False
-            self.state = WALKING
+
+            self.state['next'] = JUMPING
             self.on_ground = False
             self.fx_jump.play()
 
         if keys[pygame.K_SPACE]:
-            # Updating the ready_to_attack flag 
             now = pygame.time.get_ticks()
             if now - self.last_attack > self.attack_delay:
-                self.state = ATTACKING
+                self.state['next'] = ATTACKING
                 if not self.fx_attack_channel.get_busy():  # playing sound if not all channels busy
                     self.fx_attack_channel.play(self.fx_attack)
                 self.last_attack = now
@@ -244,7 +275,7 @@ class Player(pygame.sprite.Sprite):
                 self.health_current -= damage
                 if self.health_current <= 0:
                     self.health_current = 0
-                    self.die()
+                    self.state['next'] = DYING
 
                 self.health_bar_length = int(SCREEN_WIDTH / 6 * self.health_current / 1000)
 
@@ -269,7 +300,7 @@ class Player(pygame.sprite.Sprite):
                     self.vel_x = 0
 
 
-    def move(self, platforms) -> int:
+    def actions(self, platforms) -> int:
         """ Movement as a result of keypresses as well as gravity and collision """
         dx = 0
         dy = 0
@@ -283,38 +314,32 @@ class Player(pygame.sprite.Sprite):
         # updating hitbox location to follow player sprite
         self.hitbox.center = (self.rect.centerx, self.rect.centery + 10) 
 
-        if self.state == IDLE:
-            # We change to idle animation
-            pass
-
-        # Moving left or right (also possible while attacking) and turning
-        if self.state == WALKING:
+        # WALKING: movement
+        if self.state['active'] in (WALKING, JUMPING):
             if self.walking == 1:  # right
                 dx += WALKING_SPEED
                 self.turned = False
-                if self.on_ground:  
-                    self.animation.active = True
             elif self.walking == -1:  # left
                 dx -= WALKING_SPEED
                 self.turned = True
-                if self.on_ground:
-                    self.animation.active = True
-            else:
-                #self.state = IDLE
-                self.animation.active = False  # we're idle
 
-        # After every attack, we switch back into WALKING 
-        if self.state == ATTACKING and self.animation.on_last_frame:  # reset after attack animation is complete
-                self.attack_rect = None
-                self.animation.frame_number = 0  # resetting for next animation
-                self.state = WALKING
+        # JUMPING: landed yet?
+        if self.state['active'] == JUMPING and self.on_ground:
+            self.state['next'] = IDLE
         
-        if self.state == DYING:
-            self.animation.active = True
-            if self.animation.on_last_frame:
-                self.state = DEAD
+        # ATTACKING: make rect
+        if self.state['active'] == ATTACKING:
+            if self.turned:
+                x = self.rect.left
+            else:
+                x = self.hitbox.right
+
+            self.attack_rect = pygame.Rect(x, self.rect.top + 30, self.rect.right - self.hitbox.right, 100) 
         
-        self._manage_state_change()  # manages state transitions
+        # if we are NOT attacking, remove the rectangle
+        else:
+            self.attack_rect = None         
+        
 
         # Gravity
         self.vel_y += GRAVITY
@@ -329,11 +354,6 @@ class Player(pygame.sprite.Sprite):
             dx = - self.rect.left
         if self.hitbox.right + dx > SCREEN_WIDTH:
             dx = SCREEN_WIDTH - self.rect.right
-        
-        # if self.rect.top + dy < 0:  
-        #     dy = - self.rect.top
-        #     self.vel_y = GRAVITY
-        
         
         # Check if player has reached scroll threshold to the LEFT (and we're not on the far left) + we're walking left
         if dx < 0 and self.rect.centerx <= SCROLL_THRESHOLD and self.world_x_pos > SCROLL_THRESHOLD + self.hitbox.width:
@@ -380,17 +400,20 @@ class Player(pygame.sprite.Sprite):
         self.world_x_pos += dx
 
         if DEBUG_HITBOXES:
-            pygame.draw.rect(self.screen, (128,128,128), self.hitbox, 2 )  # Player hitbox (GREY)
+           
             pygame.draw.rect(self.screen, (255,255,255), self.rect, 2 )  # Player rect (WHITE)
-            #pygame.draw.rect(self.screen, (255,0,255, 128), collision_rect, 2 )  # Ground colliosion rect (semitransparent purple)
+            pygame.draw.rect(self.screen, (255,0,255, 128), collision_rect, 2 )  # Ground colliosion rect (semitransparent purple)
+            pygame.draw.rect(self.screen, (0,255,255), self.hitbox, 2 )  # Player hitbox (YELLOW)
             if self.attack_rect:
                 pygame.draw.rect(self.screen, (255,0,0), self.attack_rect, 2 )  # attack rect (RED)
 
         return scroll
  
+
     def update(self, platforms) -> int:
         self.get_input()
-        scroll = self.move(platforms)
+        self._state_engine()
+        scroll = self.actions(platforms)
         self.get_anim_image()
         return scroll
         

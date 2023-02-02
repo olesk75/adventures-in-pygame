@@ -240,7 +240,7 @@ class Level():
     def check_player_attack(self) -> None:
         for monster in self.monsters_sprites.sprites():
             # --> We check if the player is attacking and if the attack hits a monster
-            if self.player.state == ATTACKING and monster.state != DYING and monster.state != DEAD:
+            if self.player.state['active'] == ATTACKING and monster.state != DYING and monster.state != DEAD:
                 # Check if mob hit
                 if pygame.Rect.colliderect(self.player.attack_rect, monster.hitbox): 
                     # SPAWN HIT INDICATOR
@@ -267,39 +267,38 @@ class Level():
 
     def check_player_fallen_off(self) -> None:
         if self.player.rect.top > SCREEN_HEIGHT:
-            self.player.state = DYING
-            self.player_dead = True
+            self.player.health_current = 0
             logging.debug('Oooops! Player fell off')
 
 
     def check_coll_player_hazard(self) -> None:
         # Player + hazard group collision 
-        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.hazards_sprites,False) and self.player.state != DYING:
+        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.hazards_sprites,False) and self.player.state['active'] != DYING:
             self.player.hazard_damage(100, hits_per_second=10)
             self.bubble_list.append(BubbleMessage(self.screen, 'Ouch! Ouch!', 1000, 0, 'spikes', self.player))
 
     def check_coll_player_projectile(self) -> None:
     # Player + projectile collision (arrows etc.) AND player's attack collision (so attacking arrows in flight for example)
-        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.projectile_sprites,False) and self.player.state != DYING:
+        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.projectile_sprites,False) and self.player.state['active'] != DYING:
             for projectile in pygame.sprite.spritecollide(self.player.hitbox_sprite,self.projectile_sprites,False):
                 self.player.hit(self.arrow_damage, projectile.turned, self.terrain_sprites)  # TODO: separate sprite group for solid terrain
                 projectile.kill()
         for projectile in self.projectile_sprites.sprites():
-
-            if self. player.state == ATTACKING:
+            # We can attack and destroy projectiles as well
+            if self.player.state['active'] == ATTACKING:
                 if  pygame.Rect.colliderect(self.player.attack_rect, projectile.rect):
                     # play some sound # TODO
                     projectile.kill()
 
     # Player + spell collision
     def check_coll_player_spell(self) -> None:
-        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.spell_sprites,False) and self.player.state != DYING:
+        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.spell_sprites,False) and self.player.state['active'] != DYING:
             for _ in pygame.sprite.spritecollide(self.player,self.spell_sprites,False):
                 self.player.hazard_damage(100, hits_per_second=2)
 
     # Animated objects pickup / collision
     def check_coll_player_pickup(self) -> None:
-        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.pickups_sprites,False) and self.player.state != DYING:
+        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.pickups_sprites,False) and self.player.state['active'] != DYING:
             for pickup in pygame.sprite.spritecollide(self.player,self.pickups_sprites,False):
                 # TODO: more types than just health potion
                 self.fx_health_pickup.play()
@@ -307,7 +306,7 @@ class Level():
                 pickup.kill()
 
     def check_coll_player_triggered_objects(self) -> None:
-        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.triggered_objects_sprites,False) and self.player.state != DYING:
+        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.triggered_objects_sprites,False) and self.player.state['active'] != DYING:
             for t_object in pygame.sprite.spritecollide(self.player,self.triggered_objects_sprites,False):
                 if any('key' in sublist for sublist in self.player_inventory): # do we have key?
                     t_object.animation.active = True
@@ -318,7 +317,7 @@ class Level():
 
     # Dropped objects pickup / collision
     def check_coll_player_drops(self) -> None:
-        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.drops_sprites,False) and self.player.state != DYING:
+        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.drops_sprites,False) and self.player.state['active'] != DYING:
             for drop in pygame.sprite.spritecollide(self.player.hitbox_sprite,self.drops_sprites,False):
                 if drop.drop_type == 'key':
                     self.player_inventory.append(('key', self.key_img))  # inventory of items and their animations
@@ -334,7 +333,7 @@ class Level():
     def check_coll_player_monster(self) -> None:
         # Player + mobs group collision -> stomp means kill, otherwise player damage
         monster_collisions = pygame.sprite.spritecollide(self.player.hitbox_sprite, self.monsters_sprites,False)
-        if monster_collisions and self.player.state != DYING:
+        if monster_collisions and self.player.state['active'] != DYING:
             for monster in monster_collisions:
                 if monster.state != DYING and monster.state != DEAD:  # we only deal with the dead
                     if pygame.Rect.colliderect(self.player.hitbox, monster.hitbox):  # sprite collision not enough, we now check hitboxes
@@ -396,7 +395,6 @@ class Level():
         """ 
         Runs the entire level
         """
-
         # --> UPDATE BACKGROUND <---
         self.sky.update(self.scroll)
         self.sky.draw(self.screen)
@@ -442,7 +440,7 @@ class Level():
         # player 
         self.scroll = self.player.update(self.terrain_sprites)
         self.player_sprites.draw(self.screen)
-        if self.player.state == DEAD:
+        if self.player.state['active'] == DEAD:
             self.player_dead = True
 
         # hit indicator
@@ -468,6 +466,17 @@ class Level():
         self.exp_circle2.draw(self.screen)
         self.exp_circle3.update(self.scroll)
         self.exp_circle3.draw(self.screen)
+
+        """ DEBUG ZONE """
+        if self.player.state['active'] == IDLE:
+            pygame.draw.rect(self.screen, (0,255,0), (SCREEN_WIDTH - 50,0,50,50))
+        if self.player.state['active'] == JUMPING:
+            pygame.draw.rect(self.screen, (0,255,255), (SCREEN_WIDTH - 50,0,50,50))
+        if self.player.state['active'] == ATTACKING:
+            pygame.draw.rect(self.screen, (255,0,0), (SCREEN_WIDTH - 50,0,50,50))
+        if self.player.state['active'] == WALKING:
+            pygame.draw.rect(self.screen, (0,0,255), (SCREEN_WIDTH - 50,0,50,50))
+
 
         # --> Check collisions <--
         self.check_player_attack()

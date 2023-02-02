@@ -159,16 +159,20 @@ class EnvironmentalEffects(pygame.sprite.Group):
     def _add_leaf(self) -> None:
         now = pygame.time.get_ticks() 
         if random.random() < 1/30: # making sure we've waited long enough
-            leaf = GameTileAnimation(16,16,randint(SCREEN_WIDTH, SCREEN_WIDTH*3), randint(0, SCREEN_HEIGHT/4), self.anim['environment']['leaves'])
+            leaf = GameTileAnimation(16,16,randint(SCREEN_WIDTH, SCREEN_WIDTH*3), randint(0, SCREEN_HEIGHT/4), self.anim['environment']['leaves'])  # TODO: They ALL use the SAME Animation instance, so all animate identically
             leaf.x_vel = random.uniform(-4, -1)  # starting horisontal speed
             leaf.y_vel = GRAVITY * 2
             leaf.animation.active = True
+            leaf.animation.frame_number = randint(0,leaf.animation.frames -1 )
             self.add(leaf)
+            
             self.last_leaf = now
             
     
 
     def update(self, scroll) -> None:
+        # Here we set the x_vel for each sprite to match the wind at their respective vertical position
+        # Each particle is assumed to float in the wind, minus the enertia for each category (snow less than leaves etc.)
         now = pygame.time.get_ticks()
         if now - self.last_run >  1000 / self.frequency:
             if now - self.last_gust_change > 1000 * 10:
@@ -181,7 +185,8 @@ class EnvironmentalEffects(pygame.sprite.Group):
             for sprite in self.sprites():
                 # Compensate for wind
                 list_pos = int((sprite.rect.centery / SCREEN_HEIGHT) * 100)  # position in list depending on y position of sprite
-                sprite.x_vel += self.base_wind - wind_field[list_pos]  # we add the wind component for our current height (vertical sine wave)
+                sprite.x_vel = self.base_wind - wind_field[list_pos]  # we add the wind component for our current height (vertical sine wave)
+
 
                 # Compensating for inertia which alsways tries to slow the sprite down
                 if sprite.x_vel < self.base_wind:  # always the case at first
