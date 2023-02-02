@@ -1,1 +1,0 @@
-The game creates different versions by combining these three tilesets
