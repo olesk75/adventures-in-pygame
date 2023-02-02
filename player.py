@@ -52,7 +52,7 @@ class Player(pygame.sprite.Sprite):
 
         # Manual adjustments of player rect - as we use general draw() method from SpriteGroup(), the rect will position the surface, so need to be full size
         self.X_ADJ = self.animations['walk'].ss.scale * 44
-        self.Y_ADJ = self.animations['walk'].ss.scale * 18
+        self.Y_ADJ = self.animations['walk'].ss.scale * 17
 
         # The main rect for the player sprite
         self.rect = pygame.Rect(x,y, self.width, self.height)  
@@ -130,6 +130,13 @@ class Player(pygame.sprite.Sprite):
                     self.animation.frame = 0
                     self.animation.active = True
 
+                # If we were jumping and have landed, we switch right away
+                if self.state['active'] == JUMPING and self.on_ground:
+                    self.state['active'] = IDLE
+                    self.animation = self.animations['idle']
+                    self.animation.frame = 0
+                    self.animation.active = True
+
             # --> Jumping
             if self.state['next'] == JUMPING:
                 # Jumping, like attacking, interrupts anything 
@@ -193,9 +200,10 @@ class Player(pygame.sprite.Sprite):
         self.image.fill((0, 0, 0, 0))
 
         x_adjustment = 25  # to center the player image in the sprite
+        y_adjustment = 0
 
         if self.state['active'] in (WALKING, IDLE, DYING, JUMPING):
-            self.image.blit(anim_frame, (x_adjustment, 0))
+            self.image.blit(anim_frame, (x_adjustment, y_adjustment))
         
         if self.state['active'] == ATTACKING:
             # To fit the attack animation in the sprite, the character was moved a bit, compensating
@@ -324,7 +332,7 @@ class Player(pygame.sprite.Sprite):
                 self.turned = True
 
         # JUMPING: landed yet?
-        if self.state['active'] == JUMPING and self.on_ground:
+        if self.state['active'] == JUMPING and self.vel_y == 0:
             self.state['next'] = IDLE
         
         # ATTACKING: make rect
@@ -402,7 +410,7 @@ class Player(pygame.sprite.Sprite):
         if DEBUG_HITBOXES:
            
             pygame.draw.rect(self.screen, (255,255,255), self.rect, 2 )  # Player rect (WHITE)
-            pygame.draw.rect(self.screen, (255,0,255, 128), collision_rect, 2 )  # Ground colliosion rect (semitransparent purple)
+            pygame.draw.rect(self.screen, (255,0,255), collision_rect, 2 )  # Ground colliosion rect (semitransparent purple)
             pygame.draw.rect(self.screen, (0,255,255), self.hitbox, 2 )  # Player hitbox (YELLOW)
             if self.attack_rect:
                 pygame.draw.rect(self.screen, (255,0,0), self.attack_rect, 2 )  # attack rect (RED)
