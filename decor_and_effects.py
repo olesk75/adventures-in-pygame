@@ -102,7 +102,7 @@ class BubbleMessage():
                     self.active = False
                     self.expired = True
 
-class Sky():
+class ParallaxBackground():
     """ Class for showing and scrolling a multi-level parallax background """
     def __init__(self,level,screen) -> None:
         self.screen = screen

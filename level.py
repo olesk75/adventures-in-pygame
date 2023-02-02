@@ -16,7 +16,7 @@ from game_tiles import GameTile, GameTileAnimation, MovingGameTile
 from level_data import levels, GameAudio
 from player import Player, PlayerInOut
 from monsters import Monster, Projectile, Spell, Drop
-from decor_and_effects import Sky, EnvironmentalEffects, ExpandingCircle,BubbleMessage
+from decor_and_effects import ParallaxBackground, EnvironmentalEffects, ExpandingCircle,BubbleMessage
 from monster_data import arrow_damage
 
 class Level():
@@ -102,7 +102,7 @@ class Level():
         self.key_img = pygame.image.load('assets/panel/key.png').convert_alpha()
 
         # sky
-        self.sky = Sky(self.current_level, self.screen)
+        self.background = ParallaxBackground(self.current_level, self.screen)
 
         # test expanding circle TODO: TEST TEST DEBUG
         self.exp_circle1 = ExpandingCircle(1000, 500, WHITE, 30, 300,10)
@@ -396,8 +396,8 @@ class Level():
         Runs the entire level
         """
         # --> UPDATE BACKGROUND <---
-        self.sky.update(self.scroll)
-        self.sky.draw(self.screen)
+        self.background.update(self.scroll)
+        self.background.draw(self.screen)
 
         # --> UPDATE ALL SPRITE GROUPS <---
 
@@ -476,6 +476,8 @@ class Level():
             pygame.draw.rect(self.screen, (0,0,255), (SCREEN_WIDTH - 50,0,50,50))
         if self.player.state['active'] == DYING:
             pygame.draw.rect(self.screen, (0,0,0), (SCREEN_WIDTH - 50,0,50,50))
+        if self.player.state['active'] == CASTING:
+            pygame.draw.rect(self.screen, (255,255,0), (SCREEN_WIDTH - 50,0,50,50))
 
 
         # --> Check collisions <--
