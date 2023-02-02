@@ -1,2 +1,0 @@
-Fix player jumping into platforms
-Fix player finishing attack anim before switching to anim_walk on either walk or idle
