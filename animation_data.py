@@ -19,8 +19,8 @@ player_ss_die = SpriteSheet(pygame.image.load('assets/spritesheets/player-dying.
 # Monsters
 minotaur_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/minotaur-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
 ogre_archer_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/ogre-archer-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
-skeleton_boss_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/skeleton-boss-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
-skeleton_boss_attack_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/skeleton-boss-sprites-attack.png').convert_alpha(), 64*3, 64*3, BLACK, 2)
+skeleton_boss_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/skeleton-boss-sprites.png').convert_alpha(), 64, 64, BLACK, 4)
+skeleton_boss_attack_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/skeleton-boss-sprites-attack.png').convert_alpha(), 64*3, 64*3, BLACK, 4)
 
 # Drops and animated objects
 health_potion_ss =  SpriteSheet(pygame.image.load('assets/spritesheets/objects/lifepotion.png').convert_alpha(), 16, 16, BLACK, 3)
@@ -48,7 +48,7 @@ anim = {
         'attack': Animation(stabby_ss_attack, row=0, frames=5, speed=50), 
         'death': Animation(player_ss_die, row=0, frames=6, speed=200),
         'cast': Animation(player_ss_cast, row=0, frames=7, speed=200),
-        'idle': Animation(stabby_ss_idle, row=0, frames=8, speed=75), 
+        'idle': Animation(stabby_ss_idle, row=0, frames=8, speed=50), 
     },
     'minotaur': {
         'walk': Animation(minotaur_ss, row=11, frames=9, speed=50), 

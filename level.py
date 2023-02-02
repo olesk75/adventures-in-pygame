@@ -242,7 +242,7 @@ class Level():
             # --> We check if the player is attacking and if the attack hits a monster
             if self.player.state['active'] == ATTACKING and monster.state != DYING and monster.state != DEAD:
                 # Check if mob hit
-                if pygame.Rect.colliderect(self.player.attack_rect, monster.hitbox): 
+                if pygame.Rect.colliderect(self.player.rects['attack'], monster.hitbox): 
                     # SPAWN HIT INDICATOR
                     self.hit_indicator_group.add(GameTileAnimation(32, 32, monster.hitbox.centerx, monster.hitbox.centery, self.anim['effects']['hit-indicator']))
                     logging.debug(f'{monster.data.monster} killed by player attack')
@@ -266,7 +266,7 @@ class Level():
                 self.level_complete = True
 
     def check_player_fallen_off(self) -> None:
-        if self.player.rect.top > SCREEN_HEIGHT:
+        if self.player.rects['player'].top > SCREEN_HEIGHT:
             self.player.health_current = 0
             logging.debug('Oooops! Player fell off')
 
@@ -286,7 +286,7 @@ class Level():
         for projectile in self.projectile_sprites.sprites():
             # We can attack and destroy projectiles as well
             if self.player.state['active'] == ATTACKING:
-                if  pygame.Rect.colliderect(self.player.attack_rect, projectile.rect):
+                if  pygame.Rect.colliderect(self.player.rects['attack'], projectile.rect):
                     # play some sound # TODO
                     projectile.kill()
 
@@ -336,8 +336,8 @@ class Level():
         if monster_collisions and self.player.state['active'] != DYING:
             for monster in monster_collisions:
                 if monster.state != DYING and monster.state != DEAD:  # we only deal with the dead
-                    if pygame.Rect.colliderect(self.player.hitbox, monster.hitbox):  # sprite collision not enough, we now check hitboxes
-                        if monster.rect.top < self.player.rect.bottom < monster.rect.centery and \
+                    if pygame.Rect.colliderect(self.player.rects['hitbox'], monster.hitbox):  # sprite collision not enough, we now check hitboxes
+                        if monster.rect.top < self.player.rects['player'].bottom < monster.rect.centery and \
                             self.player.vel_y >= 0 and monster.data and monster.data.boss == False:  #stomp!! Doesn't work on bosses!
                             monster.state = DYING
                             self.fx_player_stomp.play()
@@ -362,7 +362,7 @@ class Level():
                     monster.cast_anim_list = []
 
                 # --> detecting (or no longer detecting) the player and switch to/from ATTACK mode
-                if pygame.Rect.colliderect(self.player.hitbox, monster.rect_detect):
+                if pygame.Rect.colliderect(self.player.rects['hitbox'], monster.rect_detect):
                     if monster.state == WALKING:
                         monster.state_change(ATTACKING)    
                 else:  # Mob not detecting player
@@ -370,7 +370,7 @@ class Level():
                         monster.state_change(WALKING)  # if we move out of range, the mob will stop attacking
 
                 # --> attacking the player and hitting or not the player's hitbox (or launching arrow or not)                
-                if pygame.Rect.colliderect(self.player.hitbox, monster.rect_attack) and monster.state == ATTACKING:
+                if pygame.Rect.colliderect(self.player.rects['hitbox'], monster.rect_attack) and monster.state == ATTACKING:
                     if monster.data.attack_instant_damage:  
                         self.player.hit(monster.data.attack_damage, monster.turned, self.terrain_sprites)  # melee hit
                     elif now - monster.last_arrow > monster.data.attack_delay:  # launching projectile 
