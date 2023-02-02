@@ -123,21 +123,21 @@ class Player(pygame.sprite.Sprite):
                 if self.state['active'] == ATTACKING and self.animation.on_last_frame:
                     self.state['active'] = IDLE
                     self.animation = self.animations['idle']
-                    self.animation.frame = 0
+                    self.animation.frame_number = 0  # important as if we're starting a new game, the animation might be in a random state
                     self.animation.active = True
 
                 # If we were walking, and now we're done with the animation (if not, we ignore for now)
                 if self.state['active'] == WALKING and self.animation.on_last_frame:
                     self.state['active'] = IDLE
                     self.animation = self.animations['idle']
-                    self.animation.frame = 0
+                    self.animation.frame_number = 0
                     self.animation.active = True
 
                 # If we were jumping and have landed, we switch right away
                 if self.state['active'] == JUMPING and self.on_ground:
                     self.state['active'] = IDLE
                     self.animation = self.animations['idle']
-                    self.animation.frame = 0
+                    self.animation.frame_number = 0
                     self.animation.active = True
 
             # --> Jumping
@@ -154,21 +154,21 @@ class Player(pygame.sprite.Sprite):
                 if self.state['active'] == ATTACKING and self.animation.on_last_frame:
                     self.state['active'] = WALKING
                     self.animation = self.animations['walk']
-                    self.animation.frame = 0
+                    self.animation.frame_number = 0
                     self.animation.active = True
 
                 # If we were idle, we start walking straight away
                 if self.state['active'] == IDLE:
                     self.state['active'] = WALKING
                     self.animation = self.animations['walk']
-                    self.animation.frame = 0
+                    self.animation.frame_number = 0
                     self.animation.active = True
 
                 # If we were jumping, and we're bak on the ground, we start stright away
                 if self.state['active'] == JUMPING and self.on_ground:
                     self.state['active'] = WALKING
                     self.animation = self.animations['walk']
-                    self.animation.frame = 0
+                    self.animation.frame_number = 0
                     self.animation.active = True
     
             # --> Attacking 
@@ -176,7 +176,7 @@ class Player(pygame.sprite.Sprite):
                 # Attack interrupts anything
                 self.state['active'] = ATTACKING
                 self.animation = self.animations['attack']
-                self.animation.frame = 0
+                self.animation.frame_number = 0
                 self.animation.active = True
 
 
@@ -184,6 +184,7 @@ class Player(pygame.sprite.Sprite):
             if self.state['next'] == DYING:
                 self.animation = self.animations['death']
                 self.animation.active = True
+                self.animation.frame_number = 0
                 self.state['active'] = DYING
                 logging.debug('--- DYING ---')
                 
