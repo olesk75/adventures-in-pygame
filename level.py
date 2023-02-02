@@ -42,7 +42,6 @@ class Level():
         self.lvl_entry = (0,0)
         self.lvl_exit = (0,0)
 
-        self.player_dead = False
         self.player_score = 0
         self.player_inventory = []
         self.health_max = health_max
@@ -268,6 +267,7 @@ class Level():
     def check_player_fallen_off(self) -> None:
         if self.player.rects['player'].top > SCREEN_HEIGHT:
             self.player.health_current = 0
+            self.player.state['active'] = DEAD  # insta-kill! 
             logging.debug('Oooops! Player fell off')
 
 
@@ -362,7 +362,7 @@ class Level():
                     monster.cast_anim_list = []
 
                 # --> detecting (or no longer detecting) the player and switch to/from ATTACK mode
-                if pygame.Rect.colliderect(self.player.rects['hitbox'], monster.rect_detect):
+                if pygame.Rect.colliderect(self.player.rects['hitbox'], monster.rect_detect) and self.player.state['active'] not in (DYING, DEAD):
                     if monster.state == WALKING:
                         monster.state_change(ATTACKING)    
                 else:  # Mob not detecting player
@@ -440,8 +440,6 @@ class Level():
         # player 
         self.scroll = self.player.update(self.terrain_sprites)
         self.player_sprites.draw(self.screen)
-        if self.player.state['active'] == DEAD:
-            self.player_dead = True
 
         # hit indicator
         self.hit_indicator_group.update(self.scroll)
@@ -476,6 +474,8 @@ class Level():
             pygame.draw.rect(self.screen, (255,0,0), (SCREEN_WIDTH - 50,0,50,50))
         if self.player.state['active'] == WALKING:
             pygame.draw.rect(self.screen, (0,0,255), (SCREEN_WIDTH - 50,0,50,50))
+        if self.player.state['active'] == DYING:
+            pygame.draw.rect(self.screen, (0,0,0), (SCREEN_WIDTH - 50,0,50,50))
 
 
         # --> Check collisions <--

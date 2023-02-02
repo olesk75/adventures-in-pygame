@@ -47,17 +47,17 @@ class Game:
     def check_level_complete(self) -> None:
         if self.level.level_complete == True:
             self.state = GS_LEVEL_COMPLETE
-            logging.debug('Game state: LEVEL COMPLETE ')
+            logging.debug('GAME state: LEVEL COMPLETE ')
             
 
     def check_game_over(self) -> None:
         """ Check if out of health"""
-        if self.health_current == 0 or self.level.player_dead:
+        if self.level.player.state['active'] == DEAD:
             self.max_level = 1
             self.level_audio.music.stop()
 
             self.state = GS_GAME_OVER
-            logging.debug('Game state: GAME OVER ')
+            logging.debug('GAME state: GAME OVER ')
             
 
     def check_damage_effects(self) -> None:

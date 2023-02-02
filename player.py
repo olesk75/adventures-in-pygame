@@ -1,4 +1,6 @@
 import pygame
+import logging
+
 from settings import *
 from level import GameAudio
 
@@ -181,12 +183,16 @@ class Player(pygame.sprite.Sprite):
             # --> Dying, running through death animation until dead
             if self.state['next'] == DYING:
                 self.animation = self.animations['death']
+                self.animation.active = True
                 self.state['active'] = DYING
-                self.state['next'] = DEAD 
+                logging.debug('--- DYING ---')
+                
 
             # --> Dead, of the animation has run to the end
-            if self.state['next'] == DEAD and self.animation.on_last_frame:
+            if self.state['next'] == DEAD:
                 self.state['active'] = DEAD
+                logging.debug('--- DEAD ---')
+                pygame.time.wait(3000)  # we freeze the game to look at your corpse for a moment
                 
     
 
@@ -219,34 +225,35 @@ class Player(pygame.sprite.Sprite):
         """ Registering keypresses and triggering state changes """
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_RIGHT]:
-            self.walking = 1  # right
-            self.state['next'] = WALKING
-            self.turned = False
+        if self.state['active'] not in (DYING, DEAD):  # we only do this if we're still alive
+            if keys[pygame.K_RIGHT]:
+                self.walking = 1  # right
+                self.state['next'] = WALKING
+                self.turned = False
 
-        elif keys[pygame.K_LEFT]:
-            self.walking = -1  # left
-            self.state['next'] = WALKING
-            self.turned = True
+            elif keys[pygame.K_LEFT]:
+                self.walking = -1  # left
+                self.state['next'] = WALKING
+                self.turned = True
 
-        else:
-            self.walking = False
-            self.state['next'] = IDLE
+            else:
+                self.walking = False
+                self.state['next'] = IDLE
 
-        if keys[pygame.K_UP] and self.on_ground:
-            self.vel_y = - JUMP_HEIGHT
+            if keys[pygame.K_UP] and self.on_ground:
+                self.vel_y = - JUMP_HEIGHT
 
-            self.state['next'] = JUMPING
-            self.on_ground = False
-            self.fx_jump.play()
+                self.state['next'] = JUMPING
+                self.on_ground = False
+                self.fx_jump.play()
 
-        if keys[pygame.K_SPACE]:
-            now = pygame.time.get_ticks()
-            if now - self.last_attack > self.attack_delay:
-                self.state['next'] = ATTACKING
-                if not self.fx_attack_channel.get_busy():  # playing sound if not all channels busy
-                    self.fx_attack_channel.play(self.fx_attack)
-                self.last_attack = now
+            if keys[pygame.K_SPACE]:
+                now = pygame.time.get_ticks()
+                if now - self.last_attack > self.attack_delay:
+                    self.state['next'] = ATTACKING
+                    if not self.fx_attack_channel.get_busy():  # playing sound if not all channels busy
+                        self.fx_attack_channel.play(self.fx_attack)
+                    self.last_attack = now
                 
         if keys[pygame.K_ESCAPE]:
             pygame.quit()
@@ -260,10 +267,13 @@ class Player(pygame.sprite.Sprite):
             # Adjust health and bars
             self.health_current -= damage
             if self.health_current <= 0:
-                self.health_current = 0
-                self.die()
+                self.health_current = 0                                    
+                self.state['next'] = DYING
+                self._state_engine()  # we call the state engine to get an out-of-turn state update
+
             self.health_bar_length = int(SCREEN_WIDTH / 6 * self.health_current / 1000)
             self.last_env_damage = now
+
 
     def heal(self, damage) -> None:
         """ Player is being healed """
@@ -288,25 +298,28 @@ class Player(pygame.sprite.Sprite):
 
                 self.health_bar_length = int(SCREEN_WIDTH / 6 * self.health_current / 1000)
 
-            direction = 1
-            if turned:
-                direction = -1
+                self._state_engine()  # we call the state engine to get an out-of-turn state update
 
-            # Bounce back
-            x_bounce = 5 * direction
-            y_bounce = -15
-            self.on_ground = False
+            if self.state['next'] != DYING:  # if we just got killed we skip the bounce
+                direction = 1
+                if turned:
+                    direction = -1
 
-            if not self.bouncing:
-                self.vel_x = x_bounce
-                self.vel_y = y_bounce
-                self.bouncing = True
+                # Bounce back
+                x_bounce = 5 * direction
+                y_bounce = -15
+                self.on_ground = False
 
-            # Prevent us getting bounced inside platforms
-            for platform in platforms:
-                if platform.rect.colliderect(self.rects['hitbox'].x + x_bounce, (self.rects['hitbox'].y + y_bounce) - 200, self.width - self.X_ADJ, self.height - self.Y_ADJ):
-                    x_bounce = 0
-                    self.vel_x = 0
+                if not self.bouncing:
+                    self.vel_x = x_bounce
+                    self.vel_y = y_bounce
+                    self.bouncing = True
+
+                # Prevent us getting bounced inside platforms
+                for platform in platforms:
+                    if platform.rect.colliderect(self.rects['hitbox'].x + x_bounce, (self.rects['hitbox'].y + y_bounce) - 200, self.width - self.X_ADJ, self.height - self.Y_ADJ):
+                        x_bounce = 0
+                        self.vel_x = 0
 
 
     def actions(self, platforms) -> int:
@@ -316,12 +329,20 @@ class Player(pygame.sprite.Sprite):
         scroll = 0
         
         # If we've been hit, we're invincible - check if it's time to reset
-        if self.invincible:
+        if self.invincible and self.state['active'] not in (DYING, DEAD):
             if pygame.time.get_ticks() - self.last_damage > self.invincibility_duration:
                 self.invincible = False
 
+
         # updating hitbox location to follow player sprite
         self.rects['hitbox'].center = (self.rects['player'].centerx, self.rects['player'].centery + 10) 
+
+        # DYING
+        if self.state['active'] == DYING:
+            self.bouncing = False
+            self.invincible = True  # prevents monsters triggering events on our corpse
+            if self.animation.on_last_frame:
+                self.state['next'] = DEAD
 
         # WALKING, JUMPING and ATTACKING: player still moves (even if attacking )
         if self.state['active'] in (WALKING, JUMPING, ATTACKING):  
@@ -409,12 +430,12 @@ class Player(pygame.sprite.Sprite):
 
         if DEBUG_HITBOXES:
            
-            pygame.draw.rect(self.screen, (255,255,255), self.rects['player'], 2 )  # Player rect (WHITE)
-            pygame.draw.rect(self.screen, (255,0,255), self.rects['collide'], 2 )  # Ground colliosion rect (semitransparent purple)
-            pygame.draw.rect(self.screen, (0,255,255), self.rects['hitbox'], 2 )  # Player hitbox (YELLOW)
+            pygame.draw.rect(self.screen, (255,255,255,255), self.rects['player'], 2 )  # Player rect (WHITE)
+            pygame.draw.rect(self.screen, (0,0,255,255), self.rects['collide'], 2 )  # Ground colliosion rect (GREEN)
+            pygame.draw.rect(self.screen, (0,255,0,255), self.rects['hitbox'], 2 )  # Player hitbox (BLUE)
             if self.rects['attack']:
-                pygame.draw.rect(self.screen, (255,0,0), self.rects['attack'], 2 )  # attack rect (RED)
-
+                pygame.draw.rect(self.screen, (255,0,0,255), self.rects['attack'], 2 )  # attack rect (RED)
+            
         return scroll
  
 

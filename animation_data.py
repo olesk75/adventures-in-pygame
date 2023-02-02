@@ -5,16 +5,12 @@ from animation import Animation
 BLACK = (0,0,0)
 
 """ Loading sprite sheets """
-# Player
+# Player (I call him Stabby, as he ... stabs a lot)
 stabby_ss_walk = SpriteSheet(pygame.image.load('assets/spritesheets/stabby-walking.png').convert_alpha(), 32, 32, pygame.Color('#969696'), 4)
 stabby_ss_idle = SpriteSheet(pygame.image.load('assets/spritesheets/stabby-idle.png').convert_alpha(), 32, 32, pygame.Color('#969696'), 4)
 stabby_ss_attack = SpriteSheet(pygame.image.load('assets/spritesheets/stabby-attack.png').convert_alpha(), 32, 32, pygame.Color('#969696'), 4)
-
-
-player_ss_attack = SpriteSheet(pygame.image.load('assets/spritesheets/player-attacking.png').convert_alpha(), 64, 64, BLACK, 2)
-player_ss_cast = SpriteSheet(pygame.image.load('assets/spritesheets/player-casting.png').convert_alpha(), 64, 64, BLACK, 2)
-player_ss_die = SpriteSheet(pygame.image.load('assets/spritesheets/player-dying.png').convert_alpha(), 64, 64, BLACK, 2)
-
+stabby_ss_death = SpriteSheet(pygame.image.load('assets/spritesheets/stabby-death.png').convert_alpha(), 32, 32, pygame.Color('#969696'), 4)
+stabby_ss_cast = SpriteSheet(pygame.image.load('assets/spritesheets/stabby-casting-placeholder.png').convert_alpha(), 64, 64, BLACK, 2)
 
 # Monsters
 minotaur_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/minotaur-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
@@ -46,8 +42,8 @@ anim = {
     'player': {
         'walk': Animation(stabby_ss_walk, row=0, frames=8, speed=75), 
         'attack': Animation(stabby_ss_attack, row=0, frames=5, speed=50), 
-        'death': Animation(player_ss_die, row=0, frames=6, speed=200),
-        'cast': Animation(player_ss_cast, row=0, frames=7, speed=200),
+        'death': Animation(stabby_ss_death, row=0, frames=8, speed=150, repeat=False),
+        'cast': Animation(stabby_ss_cast, row=0, frames=8, speed=200),
         'idle': Animation(stabby_ss_idle, row=0, frames=8, speed=50), 
     },
     'minotaur': {
