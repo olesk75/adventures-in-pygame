@@ -280,8 +280,9 @@ class Player(pygame.sprite.Sprite):
         if self.state['active'] == JUMPING and self.vel_y == 0:
             self.state['next'] = IDLE
 
+        # STOMPING
         if self.state['active'] == STOMPING and self.vel_y > 0:
-            dy += STOMP_SPEED  # added straight to position, not going via velocity
+            dy = STOMP_SPEED  # added straight to position, not going via velocity
 
         
         # ATTACKING: make rect
@@ -323,43 +324,36 @@ class Player(pygame.sprite.Sprite):
         if dx > 0 and self.rects['player'].centerx >= SCREEN_WIDTH - SCROLL_THRESHOLD and self.world_x_pos < TILE_SIZE * MAX_COLS - SCROLL_THRESHOLD:
             scroll = -dx  # We scroll right by the opposite of the player's x speed
 
+
+        # Creating a collision rect to test if we're falling down into, or jumping up into, platforms (if they are solid)
+        self.rects['collide'] = self.rects['hitbox'].copy() 
+
+        y_margin = 3
+        self.rects['collide'].centery += dy + y_margin # basically the rect is where we'll be after updating our y-position (the number adjust where we end up resting)
+        
         # Checking vertical collision with terrain (falling)
         for platform in platforms:
-            # collision in the y direction only, so instead of using self.rects['hitobx'] directly, we create
-            # this temporaty rectangle with dy added for where the rectange _would_ be after the move (or we'd end up inside the platform)
-            self.rects['collide'] = self.rects['hitbox'].copy() 
-            self.rects['collide'].centery += dy + 1  # the +1 is really just to be able to see it
-            
-            if platform.rect.colliderect(self.rects['collide']):
+            if platform.rect.colliderect(self.rects['collide']) and platform.solid == True:  # player has collided with a solid platform
+                if platform.rect.top >= self.rects['hitbox'].bottom:  # we are standing on the platform
+                    dy = 0
+                    self.vel_y = 0
+                    self.on_ground = True
+                    self.bouncing = False
+                
+                    if platform.moving == True:  # the platform we're standing on moves, and moves us
+                        self.rect.centerx += platform.dist_player_pushed
+                        platform.dist_player_pushed = 0     
 
-                height = (self.rects['collide'].bottom - platform.rect.top)  # player height over terrain (we use center to overlap player with terrain slightly)
-                if height > 0 and platform.solid == True:
-                        if self.state == STOMPING:
-                            # To account for STOMPING, we catch the player exactly at the platform top
-                            self.rects['player'].bottom = platform.rect.top
-                            if height < STOMP_SPEED:
-                                self.dy = 0
-                                self.on_ground = True
-                                self.vel_y = 0
-                                self.state['next'] = IDLE
-
-                        elif self.vel_y > 0:  # just falling normally
-                            dy = 0
-                            self.on_ground = True
-                            self.vel_y = 0
-                            self.bouncing = False
+                if platform.rect.bottom <= self.rects['hitbox'].top + y_margin:  # we bumped into a platform from below 
+                    dy = 0
+                    self.vel_y = GRAVITY
+                    self.bouncing = False
                     
-                        if platform.moving == True:  # We add the travel of the platform to the x pos of the player
-                            self.rect.centerx += platform.dist_player_pushed
-                            platform.dist_player_pushed = 0     
-
-                else:   # we're below the platform, about to bump our head, so resetting vel_y to falling
-                    if platform.solid == True:
-                        self.vel_y = GRAVITY
-            
-            
-            # Checking horisontal collision - walking into terrain
-            if platform.rect.colliderect(self.rects['hitbox'].centerx + dx , self.rects['hitbox'].y, self.rects['hitbox'].width, self.rects['hitbox'].height):
+            # Checking horisontal collision - walking or getting bumped into terrain
+            size_buffer = 50
+            collider_rect = pygame.rect.Rect(0, 0, self.rects['hitbox'].width + size_buffer, self.rects['hitbox'].height)
+            collider_rect.center = (self.rects['hitbox'].centerx + dx, self.rects['hitbox'].centery)
+            if platform.rect.colliderect(collider_rect):
                 dx = 0
 
 
@@ -373,6 +367,7 @@ class Player(pygame.sprite.Sprite):
            
             pygame.draw.rect(self.screen, (255,255,255,255), self.rects['player'], 2 )  # Player rect (WHITE)
             pygame.draw.rect(self.screen, (0,0,255,255), self.rects['collide'], 2 )  # Ground colliosion rect (GREEN)
+            pygame.draw.rect(self.screen, (0,0,255,255), collider_rect, 2 )  # Ground colliosion rect (GREEN)
             pygame.draw.rect(self.screen, (0,255,0,255), self.rects['hitbox'], 2 )  # Player hitbox (BLUE)
             if self.rects['attack']:
                 pygame.draw.rect(self.screen, (255,0,0,255), self.rects['attack'], 2 )  # attack rect (RED)
