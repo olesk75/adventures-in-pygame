@@ -51,7 +51,7 @@ class Player(pygame.sprite.Sprite):
             'collide': pygame.Rect,  # the rect for testing collisions with 
         }
         
-        self.animation = self.animations['walk']  # Walking by default
+        self.animation = self.animations['idle']  # Idle by default
         self.image = self.animation.get_image()
         
         # Convert from original resolution to game resolution
@@ -62,16 +62,21 @@ class Player(pygame.sprite.Sprite):
         self.vel_y = 0  # jumping or falling
         self.walking = False
 
-        
-
         # The main rect for the player sprite
         self.rects['player'] = pygame.Rect(x,y, self.width, self.height)  
 
         # Manual adjustments of hitbox rect - as we use general draw() method from SpriteGroup(), the rect will position the surface, so need to be full size
-        self.X_ADJ = self.animations['walk'].ss.scale * 44
-        self.Y_ADJ = self.animations['walk'].ss.scale * 10
-        x_reduction = 20   # we make the player hitbox narrower for hits and for falling
-        self.rects['hitbox'] = pygame.Rect(x + x_reduction ,y, self.width - self.X_ADJ - x_reduction * 2, self.height - self.Y_ADJ)
+        # self.X_ADJ = self.animations['walk'].ss.scale * 44
+        # self.Y_ADJ = self.animations['walk'].ss.scale * 10
+        x_reduction = 150  # making the hitbox narrower
+        y_reduction = 28  # making the hitbox shorter to better fit player
+
+
+        self.rects['hitbox'] = pygame.Rect(0, 0, self.width - x_reduction, self.height - y_reduction)  # we ignore the x and y and center in next line instead
+        self.rects['hitbox'].center = self.rects['player'].center
+
+        #self.rects['hitbox'] = pygame.Rect(x + x_reduction ,y, \
+        #                                   self.width - x_reduction * 2, self.height - y_reduction)# - self.Y_ADJ)
 
        
         # To do efficient sprite collision check against monster groups, the hitbox need to be a full Sprite, not just a rect, with an image
@@ -153,6 +158,13 @@ class Player(pygame.sprite.Sprite):
                     self.animation.frame_number = 0
                     self.animation.active = True
 
+                # If we were stomping and have landed, we switch right away
+                if self.state['active'] == STOMPING and self.on_ground:
+                    self.state['active'] = IDLE
+                    self.animation = self.animations['idle']
+                    self.animation.frame_number = 0
+                    self.animation.active = True
+
             # --> Jumping
             if self.state['next'] == JUMPING:
                 # Jumping, like attacking, interrupts anything 
@@ -189,6 +201,14 @@ class Player(pygame.sprite.Sprite):
                 # Attack interrupts anything
                 self.state['active'] = ATTACKING
                 self.animation = self.animations['attack']
+                self.animation.frame_number = 0
+                self.animation.active = True
+
+            # --> Stomp 
+            if self.state['next'] == STOMPING:
+                # Attack interrupts anything
+                self.state['active'] = STOMPING
+                self.animation = self.animations['stomp']
                 self.animation.frame_number = 0
                 self.animation.active = True
 
@@ -238,7 +258,7 @@ class Player(pygame.sprite.Sprite):
 
 
         # updating hitbox location to follow player sprite
-        self.rects['hitbox'].center = (self.rects['player'].centerx, self.rects['player'].centery + 10) 
+        self.rects['hitbox'].center = (self.rects['player'].centerx, self.rects['player'].centery) 
 
         # DYING
         if self.state['active'] == DYING:
@@ -259,6 +279,10 @@ class Player(pygame.sprite.Sprite):
         # JUMPING: landed yet?
         if self.state['active'] == JUMPING and self.vel_y == 0:
             self.state['next'] = IDLE
+
+        if self.state['active'] == STOMPING and self.vel_y > 0:
+            dy += STOMP_SPEED  # added straight to position, not going via velocity
+
         
         # ATTACKING: make rect
         if self.state['active'] == ATTACKING:
@@ -274,9 +298,8 @@ class Player(pygame.sprite.Sprite):
             self.rects['attack'] = None
 
         # CASTING - returning to idle after one run of animation
-        if self.state['active'] == CASTING:
-            if self.animation.on_last_frame:
-                self.state['next'] = IDLE
+        if self.state['active'] == CASTING and self.animation.on_last_frame:
+            self.state['next'] = IDLE
 
         # Gravity
         self.vel_y += GRAVITY
@@ -305,27 +328,38 @@ class Player(pygame.sprite.Sprite):
             # collision in the y direction only, so instead of using self.rects['hitobx'] directly, we create
             # this temporaty rectangle with dy added for where the rectange _would_ be after the move (or we'd end up inside the platform)
             self.rects['collide'] = self.rects['hitbox'].copy() 
-            self.rects['collide'].centery += dy
+            self.rects['collide'].centery += dy + 1  # the +1 is really just to be able to see it
             
             if platform.rect.colliderect(self.rects['collide']):
-                if self.rects['hitbox'].bottom < platform.rect.centery:  # Is player above platform?
-                    if platform.solid == True:
-                        if self.vel_y > 0:  # Is player falling?
+
+                height = (self.rects['collide'].bottom - platform.rect.top)  # player height over terrain (we use center to overlap player with terrain slightly)
+                if height > 0 and platform.solid == True:
+                        if self.state == STOMPING:
+                            # To account for STOMPING, we catch the player exactly at the platform top
+                            self.rects['player'].bottom = platform.rect.top
+                            if height < STOMP_SPEED:
+                                self.dy = 0
+                                self.on_ground = True
+                                self.vel_y = 0
+                                self.state['next'] = IDLE
+
+                        elif self.vel_y > 0:  # just falling normally
                             dy = 0
                             self.on_ground = True
                             self.vel_y = 0
                             self.bouncing = False
-                    if platform.moving == True:  # We add the travel of the platform to the x pos of the player
-                        self.rect.centerx += platform.dist_player_pushed
-                        platform.dist_player_pushed = 0     
+                    
+                        if platform.moving == True:  # We add the travel of the platform to the x pos of the player
+                            self.rect.centerx += platform.dist_player_pushed
+                            platform.dist_player_pushed = 0     
 
-                else:   # we're below the platform, abou to bump our head, so resetting vel_y to falling
+                else:   # we're below the platform, about to bump our head, so resetting vel_y to falling
                     if platform.solid == True:
-                        self.vel_y = 1
+                        self.vel_y = GRAVITY
             
             
             # Checking horisontal collision - walking into terrain
-            if platform.rect.colliderect(self.rects['hitbox'].centerx + dx * 5, self.rects['hitbox'].y, self.width - self.X_ADJ, self.height - self.Y_ADJ):
+            if platform.rect.colliderect(self.rects['hitbox'].centerx + dx , self.rects['hitbox'].y, self.rects['hitbox'].width, self.rects['hitbox'].height):
                 dx = 0
 
 
@@ -389,6 +423,11 @@ class Player(pygame.sprite.Sprite):
                 self.state['next'] = JUMPING
                 self.on_ground = False
                 self.fx_jump.play()
+
+            if keys[pygame.K_DOWN] and not self.on_ground:
+                self.vel_y = 3
+                self.state['next'] = STOMPING
+                # self.fx_stomp.play()
 
             if keys[pygame.K_SPACE]:
                 now = pygame.time.get_ticks()
@@ -468,7 +507,7 @@ class Player(pygame.sprite.Sprite):
 
                 # Prevent us getting bounced inside platforms
                 for platform in platforms:
-                    if platform.rect.colliderect(self.rects['hitbox'].x + x_bounce, (self.rects['hitbox'].y + y_bounce) - 200, self.width - self.X_ADJ, self.height - self.Y_ADJ):
+                    if platform.rect.colliderect(self.rects['hitbox'].x + x_bounce, (self.rects['hitbox'].y + y_bounce), self.rects['hitbox'].width , self.rects['hitbox'].height):
                         x_bounce = 0
                         self.vel_x = 0
 

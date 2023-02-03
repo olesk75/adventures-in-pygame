@@ -475,7 +475,6 @@ class Level():
         if self.player.state['active'] == CASTING:
             pygame.draw.rect(self.screen, (255,255,0), (SCREEN_WIDTH - 50,0,50,50))
 
-
         # --> Check collisions <--
         self.check_player_attack()
         self.check_player_win()
