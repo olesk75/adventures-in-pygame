@@ -116,6 +116,14 @@ class ParallaxBackground():
         self.bg_further = pygame.image.load(background['further']).convert_alpha()
         self.bg_clouds = pygame.image.load(background['clouds']).convert_alpha()
         self.bg_color = background['background_color']
+
+        self.y_adjust = {
+            'near': background['y_adjust'][0],
+            'medium': background['y_adjust'][1],
+            'far': background['y_adjust'][2],
+            'further': background['y_adjust'][3],
+            'bg': background['y_adjust'][4],
+        }
     
     def update(self,bg_scroll) -> None:
         self.bg_scroll += bg_scroll
@@ -125,11 +133,11 @@ class ParallaxBackground():
         width = self.bg_clouds.get_width()
         
         for x in range(LEVEL_WIDTH + 300):
-            surface.blit(self.bg_clouds, ((x * width) + self.bg_scroll * 0.4, 0))
-            surface.blit(self.bg_further, ((x * width) + self.bg_scroll * 0.5, SCREEN_HEIGHT - self.bg_further.get_height() - 450))
-            surface.blit(self.bg_far, ((x * width) + self.bg_scroll * 0.6, SCREEN_HEIGHT - self.bg_far.get_height() - 300))
-            surface.blit(self.bg_medium, ((x * width) + self.bg_scroll * 0.7, SCREEN_HEIGHT - self.bg_medium.get_height() - 150))
-            surface.blit(self.bg_near, ((x * width) + self.bg_scroll * 0.8, SCREEN_HEIGHT - self.bg_near.get_height()))
+            surface.blit(self.bg_clouds, ((x * width) + self.bg_scroll * 0.4, 0 - self.y_adjust['bg']))
+            surface.blit(self.bg_further, ((x * width) + self.bg_scroll * 0.5, SCREEN_HEIGHT - self.bg_further.get_height() - self.y_adjust['further']))
+            surface.blit(self.bg_far, ((x * width) + self.bg_scroll * 0.6, SCREEN_HEIGHT - self.bg_far.get_height() - self.y_adjust['far']))
+            surface.blit(self.bg_medium, ((x * width) + self.bg_scroll * 0.7, SCREEN_HEIGHT - self.bg_medium.get_height() - self.y_adjust['medium']))
+            surface.blit(self.bg_near, ((x * width) + self.bg_scroll * 0.8, SCREEN_HEIGHT - self.bg_near.get_height() - self.y_adjust['near']))
 
     # TODO: right now the parallax factor is hard coded; move to level_data.py to allow different factors for different levels
 

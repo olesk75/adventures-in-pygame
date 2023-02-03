@@ -16,7 +16,7 @@ from game_tiles import GameTile, GameTileAnimation, MovingGameTile
 from level_data import levels, GameAudio
 from player import Player, PlayerInOut
 from monsters import Monster, Projectile, Spell, Drop
-from decor_and_effects import ParallaxBackground, EnvironmentalEffects, ExpandingCircle,BubbleMessage
+from decor_and_effects import ParallaxBackground, EnvironmentalEffects,BubbleMessage
 from monster_data import arrow_damage
 
 class Level():
@@ -103,12 +103,6 @@ class Level():
 
         # sky
         self.background = ParallaxBackground(self.current_level, self.screen)
-
-        # test expanding circle TODO: TEST TEST DEBUG
-        self.exp_circle1 = ExpandingCircle(1000, 500, WHITE, 30, 300,10)
-        self.exp_circle2 = ExpandingCircle(1100, 450, WHITE, 30, 200,10)
-        self.exp_circle3 = ExpandingCircle(800, 600, WHITE, 30, 100,10)
-
 
         # environmental effects (leaves, snow etc.)
         self.env_sprites = EnvironmentalEffects(level_data['environmental_effect'], self.screen)  # 'leaves' for lvl1
@@ -457,13 +451,15 @@ class Level():
         self.env_sprites.draw(self.screen)
 
         """ DEMO ZONE """
-        # TEST-CIRCLES
-        self.exp_circle1.update(self.scroll)
-        self.exp_circle1.draw(self.screen)
-        self.exp_circle2.update(self.scroll)
-        self.exp_circle2.draw(self.screen)
-        self.exp_circle3.update(self.scroll)
-        self.exp_circle3.draw(self.screen)
+        # Testing player casting
+        if len(self.player.cast_active):
+            for cast in self.player.cast_active:
+                cast.update(self.scroll)
+                cast.draw(self.screen)
+                if cast.done:
+                    self.player.cast_active.remove(cast)
+                    print(self.player.cast_active)
+                
 
         """ DEBUG ZONE """
         if self.player.state['active'] == IDLE:

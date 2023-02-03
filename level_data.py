@@ -21,6 +21,7 @@ level_0 = {
         'far': 'assets/backgrounds/lvl0/far.png',
         'clouds': 'assets/backgrounds/lvl0/clouds.png',
         'background_color': (130, 181, 255),
+        'y_adjust': [0,150,400,450,0]
     }
 }
 
@@ -40,6 +41,7 @@ level_1 = {
         'far': 'assets/backgrounds/lvl1/far.png',
         'clouds': 'assets/backgrounds/lvl1/clouds.png',
         'background_color': (130, 181, 210),
+        'y_adjust': [0,150,400,450,0]
     }
 }
 
@@ -55,10 +57,11 @@ level_2 = {
     'background': {
         'near': 'assets/backgrounds/lvl2/near.png',
         'medium': 'assets/backgrounds/lvl2/medium.png',
-        'further': 'assets/backgrounds/lvl2/medium.png',
+        'further': 'assets/backgrounds/lvl2/further.png',
         'far': 'assets/backgrounds/lvl2/far.png',
         'clouds': 'assets/backgrounds/lvl2/clouds.png',
         'background_color': (171, 106, 140),
+        'y_adjust': [0,0,0,0,0]
     }
 }
 
@@ -100,4 +103,3 @@ class GameAudio():
             self.music = pygame.mixer.music
             self.music.load("assets/music/Hidden-Agenda.mp3")
             pygame.mixer.music.set_volume(0.3)
-
