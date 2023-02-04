@@ -54,6 +54,8 @@ class Player(pygame.sprite.Sprite):
         self.animation = self.animations['idle']  # Idle by default
         self.image = self.animation.get_image()
         self.stomp_trigger = False
+        self.stomp_trigger_lock = False  # we lock it after trigger to avoid duplicate triggers
+        self.stomp_start_timer = 0  # we freeze for a second after a stomp (invulnerable)
         
         # Convert from original resolution to game resolution
         self.width = int(self.animations['walk'].ss.x_dim * self.animations['walk'].ss.scale * 1.4 )  # we make the sprite a bit wider so we can encapsulate the attack anim without resizing
@@ -155,14 +157,23 @@ class Player(pygame.sprite.Sprite):
                     self.animation.frame_number = 0
                     self.animation.active = True
 
-                # If we were stomping and have landed, we switch right away and trigger effect
+                # If we were stomping and have landed, we trigger effect right away, but we stay in state for one second
                 if self.state['active'] == STOMPING and self.on_ground:
-                    self.state['active'] = IDLE
-                    self.animation = self.animations['idle']
-                    self.animation.frame_number = 0
-                    self.animation.active = True
-                    self.stomp_trigger = True
-                    self.invincible = True
+                    now = pygame.time.get_ticks()
+                    if now - self.stomp_start_timer > 1000 and self.stomp_trigger_lock == True:
+                        self.state['active'] = IDLE
+                        self.animation = self.animations['idle']
+                        self.animation.frame_number = 0
+                        self.animation.active = True
+                        self.stomp_trigger_lock = False  # we unlock triggering the effect again, as we're now changing state
+                    else:
+                        if not self.stomp_trigger_lock:  # before 1000ms has passed, we trigger the effect and lock it
+                            self.stomp_trigger = True
+                            self.stomp_trigger_lock = True
+                            self.stomp_start_timer = now
+
+
+
 
 
             # --> Jumping

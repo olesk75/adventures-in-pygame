@@ -9,6 +9,7 @@ BLACK = (0,0,0)
 stabby_ss_walk = SpriteSheet(pygame.image.load('assets/spritesheets/stabby-walking.png').convert_alpha(), 32, 32, pygame.Color('#969696'), 4)
 stabby_ss_idle = SpriteSheet(pygame.image.load('assets/spritesheets/stabby-idle.png').convert_alpha(), 32, 32, pygame.Color('#969696'), 4)
 stabby_ss_attack = SpriteSheet(pygame.image.load('assets/spritesheets/stabby-attack.png').convert_alpha(), 32, 32, pygame.Color('#969696'), 4)
+stabby_ss_stomp = SpriteSheet(pygame.image.load('assets/spritesheets/stabby-stomp.png').convert_alpha(), 32, 32, pygame.Color('#969696'), 4)
 stabby_ss_death = SpriteSheet(pygame.image.load('assets/spritesheets/stabby-death.png').convert_alpha(), 32, 32, pygame.Color('#969696'), 4)
 stabby_ss_cast = SpriteSheet(pygame.image.load('assets/spritesheets/stabby-casting.png').convert_alpha(), 32, 32, pygame.Color('#969696'), 4)
 
@@ -46,7 +47,7 @@ anim = {
         'death': Animation(stabby_ss_death, row=0, frames=8, speed=150, repeat=False),
         'cast': Animation(stabby_ss_cast, row=0, frames=8, speed=100, repeat=False),
         'idle': Animation(stabby_ss_idle, row=0, frames=8, speed=50), 
-        'stomp': Animation(stabby_ss_idle, row=0, frames=8, speed=50, repeat=False), 
+        'stomp': Animation(stabby_ss_stomp, row=0, frames=5, speed=30, repeat=False), 
     },
     'minotaur': {
         'walk': Animation(brenda_ss_walk, row=0, frames=8, speed=100), 

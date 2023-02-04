@@ -356,7 +356,7 @@ class Level():
     def check_coll_player_monster(self) -> None:
         # Player + mobs group collision
         monster_collisions = pygame.sprite.spritecollide(self.player.hitbox_sprite, self.monsters_sprites,False)
-        if monster_collisions and self.player.state['active'] != DYING:
+        if monster_collisions and self.player.state['active'] not in (DYING, STOMPING):
             for monster in monster_collisions:
                 if monster.state != DYING and monster.state != DEAD:  # we only deal with the living
                     if pygame.Rect.colliderect(self.player.rects['hitbox'], monster.hitbox):  # sprite collision not enough, we now check hitboxes
@@ -388,7 +388,7 @@ class Level():
                         monster.state_change(WALKING)  # if we move out of range, the mob will stop attacking
 
                 # --> attacking the player and hitting or not the player's hitbox (or launching arrow or not)                
-                if pygame.Rect.colliderect(self.player.rects['hitbox'], monster.rect_attack) and monster.state == ATTACKING:
+                if pygame.Rect.colliderect(self.player.rects['hitbox'], monster.rect_attack) and monster.state == ATTACKING and self.player.state['active'] != STOMPING:
                     if monster.data.attack_instant_damage:  
                         self.player.hit(monster.data.attack_damage, monster.turned, self.terrain_sprites)  # melee hit
                     elif now - monster.last_arrow > monster.data.attack_delay:  # launching projectile 
@@ -506,6 +506,8 @@ class Level():
             pygame.draw.rect(self.screen, (0,0,0), (SCREEN_WIDTH - 50,0,50,50))
         if self.player.state['active'] == CASTING:
             pygame.draw.rect(self.screen, (255,255,0), (SCREEN_WIDTH - 50,0,50,50))
+        if self.player.state['active'] == STOMPING:
+            pygame.draw.rect(self.screen, (255,0,255), (SCREEN_WIDTH - 50,0,50,50))
 
         # --> Check collisions <--
         self.check_player_attack()
