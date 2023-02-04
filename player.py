@@ -72,14 +72,9 @@ class Player(pygame.sprite.Sprite):
         x_reduction = 150  # making the hitbox narrower
         y_reduction = 28  # making the hitbox shorter to better fit player
 
-
         self.rects['hitbox'] = pygame.Rect(0, 0, self.width - x_reduction, self.height - y_reduction)  # we ignore the x and y and center in next line instead
         self.rects['hitbox'].center = self.rects['player'].center
 
-        #self.rects['hitbox'] = pygame.Rect(x + x_reduction ,y, \
-        #                                   self.width - x_reduction * 2, self.height - y_reduction)# - self.Y_ADJ)
-
-       
         # To do efficient sprite collision check against monster groups, the hitbox need to be a full Sprite, not just a rect, with an image
         self.hitbox_sprite = pygame.sprite.Sprite()
         hitbox_image = pygame.Surface((self.width, self.height)).convert_alpha()
@@ -93,6 +88,7 @@ class Player(pygame.sprite.Sprite):
         self.fx_jump = sounds.player['jump']
         self.fx_die = sounds.player['die']
         self.fx_hit = sounds.player['hit']
+        self.fx_stomp = sounds.player['stomp']
         self.fx_attack.set_volume(0.5)
         self.fx_jump.set_volume(0.5)
         self.fx_die.set_volume(0.5)
@@ -451,7 +447,7 @@ class Player(pygame.sprite.Sprite):
             if keys[pygame.K_DOWN] and not self.on_ground:
                 self.vel_y = 3
                 self.state['next'] = STOMPING
-                # self.fx_stomp.play()
+                self.fx_stomp.play()
 
             if keys[pygame.K_SPACE]:
                 now = pygame.time.get_ticks()

@@ -266,7 +266,7 @@ class LightEffect1(pygame.sprite.Sprite):
         super().__init__()
         self.x = x
         self.y = y
-        self.steps_total = 25  # now: 1 step per segment
+        self.steps_total = 50  # now: 1 step per segment
         self.steps_in = 0  # keeping track of progress towards self.steps_total
         self.step_direction = 1
         self.last_run = 0 
@@ -276,7 +276,7 @@ class LightEffect1(pygame.sprite.Sprite):
         
         self.line_numbers = 50
         self.line_width = 4
-        self.line_max_height = 100
+        self.line_max_height = 200
         self.line_seg_height = 4
         self.max_segments = self.line_max_height // self.line_seg_height
 
@@ -293,10 +293,10 @@ class LightEffect1(pygame.sprite.Sprite):
             self.line_height = randint(self.line_max_height//3, self.line_max_height)
             self.line_x = self.start_x + column * self.line_width
             color_segments  = int((self.line_height / self.line_seg_height) // 4) # how may segments in each color
-            padding = self.max_segments - color_segments * 4
+            padding = self.max_segments - color_segments * 4 + 4  # the last 4 is just to wipe any remaining non-black pixels when moving down
 
             # We add the segments in reverse order, so we start with the top
-            segment_list = [pygame.Color('#000000')] * (padding +1) + [pygame.Color('#df7126')] * color_segments + [pygame.Color('#fbf236') ] * color_segments \
+            segment_list = [pygame.Color('#000000')] * padding + [pygame.Color('#df7126')] * color_segments + [pygame.Color('#fbf236') ] * color_segments \
                             + [pygame.Color('#fffa8c')] * color_segments + [pygame.Color('#ffffff')] * color_segments 
             
             self.firelines.append(segment_list)
@@ -315,7 +315,7 @@ class LightEffect1(pygame.sprite.Sprite):
  
             self.image.blit(self.working_image, (0,self.line_max_height - self.steps_in * self.line_seg_height))
 
-            self.steps_in += 2 * self.step_direction  # this is the progress counter, updates 
+            self.steps_in += 4 * self.step_direction  # this is the progress counter, updates 
 
             if self.steps_in >= self.steps_total:
                 self.step_direction = -1
@@ -327,7 +327,7 @@ class LightEffect1(pygame.sprite.Sprite):
             self.image.set_alpha(128)
             # We use the super draw method, so rect needs to be updated
             self.rect.centerx = self.x
-            self.rect.centery = self.y            
+            self.rect.centery = self.y - 50
 
 
 """
