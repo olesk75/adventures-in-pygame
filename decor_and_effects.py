@@ -324,6 +324,7 @@ class LightEffect1(pygame.sprite.Sprite):
             self.last_run = now  
 
             self.image.set_colorkey(BLACK)
+            self.image.set_alpha(128)
             # We use the super draw method, so rect needs to be updated
             self.rect.centerx = self.x
             self.rect.centery = self.y            

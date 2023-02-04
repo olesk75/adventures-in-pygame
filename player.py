@@ -208,7 +208,7 @@ class Player(pygame.sprite.Sprite):
                 self.animation.frame_number = 0
                 self.animation.active = True
 
-            # --> Stomp 
+            # --> Stomping
             if self.state['next'] == STOMPING:
                 # Attack interrupts anything
                 self.state['active'] = STOMPING
@@ -286,12 +286,11 @@ class Player(pygame.sprite.Sprite):
 
         # STOMPING
         if self.state['active'] == STOMPING:
-            self.invincible = True
             if self.vel_y > 0:  # we're still airborne
                 dy = STOMP_SPEED  # added straight to position, not going via velocity
                 # if self.animation.on_last_frame:
                     # self.screen.blit(self.get_anim_shadow_image(), self.rect.centerx, self.rect.centery - dy)
-            if self.vel_y == 0:
+            if self.on_ground:
                 self.state['next'] = IDLE
         
 
@@ -315,7 +314,8 @@ class Player(pygame.sprite.Sprite):
 
         # Gravity
         self.vel_y += GRAVITY
-        dy += self.vel_y
+        if dy < STOMP_SPEED:  # we use the STOMP_SPEED as a speed limit
+            dy += self.vel_y
 
         # Bounce (in x-direction, y is handled by gravity)
         if self.bouncing:
@@ -338,9 +338,7 @@ class Player(pygame.sprite.Sprite):
 
         # Creating a collision rect to test if we're falling down into, or jumping up into, platforms (if they are solid)
         self.rects['collide'] = self.rects['hitbox'].copy() 
-
-        y_margin = 3
-        self.rects['collide'].centery += dy + y_margin # basically the rect is where we'll be after updating our y-position (the number adjust where we end up resting)
+        self.rects['collide'].centery += dy # basically the rect is where we'll be after updating our y-position (the number adjust where we end up resting)
         
         # Checking vertical collision with terrain (falling)
         for platform in platforms:
@@ -355,7 +353,7 @@ class Player(pygame.sprite.Sprite):
                         self.rect.centerx += platform.dist_player_pushed
                         platform.dist_player_pushed = 0     
 
-                if platform.rect.bottom <= self.rects['hitbox'].top + y_margin:  # we bumped into a platform from below 
+                if platform.rect.bottom <= self.rects['hitbox'].top:  # we bumped into a platform from below 
                     dy = 0
                     self.vel_y = GRAVITY
                     self.bouncing = False
