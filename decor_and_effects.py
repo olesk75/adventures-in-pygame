@@ -268,8 +268,9 @@ class LightEffect1(pygame.sprite.Sprite):
         self.y = y
         self.steps_total = 25  # now: 1 step per segment
         self.steps_in = 0  # keeping track of progress towards self.steps_total
+        self.step_direction = 1
         self.last_run = 0 
-        self.step_delay = 10
+        self.step_delay = 1
 
         self.done = False
         
@@ -296,7 +297,7 @@ class LightEffect1(pygame.sprite.Sprite):
             padding = self.max_segments - color_segments * 4
 
             # We add the segments in reverse order, so we start with the top
-            segment_list = [None] * padding + [pygame.Color('#df7126')] * color_segments + [pygame.Color('#fbf236') ] * color_segments \
+            segment_list = [pygame.Color('#000000')] * padding + [pygame.Color('#df7126')] * color_segments + [pygame.Color('#fbf236') ] * color_segments \
                             + [pygame.Color('#fffa8c')] * color_segments + [pygame.Color('#ffffff')] * color_segments 
             
             self.firelines.append(segment_list)
@@ -311,15 +312,16 @@ class LightEffect1(pygame.sprite.Sprite):
  
             step = 0
             for step in range (self.steps_in):
-                for count, line in enumerate(self.firelines):  
-                    if (line[step]) != None:
-                        image_x =  count * self.line_width
-                        image_y = self.line_max_height - self.steps_in * self.line_seg_height + step * self.line_seg_height 
-                        pygame.draw.rect(self.image, line[step], (image_x, image_y, self.line_width, self.line_seg_height))
+                for count, line in enumerate(self.firelines):     
+                    image_x =  count * self.line_width
+                    image_y = self.line_max_height - self.steps_in * self.line_seg_height + step * self.line_seg_height 
+                    pygame.draw.rect(self.image, line[step], (image_x, image_y, self.line_width, self.line_seg_height))
                 step += 1  #  we do all steps up to self.steps_in every time, so 1 the first, 1 and 2 the second, 1, 2 and 3 the third etc.
             
-            self.steps_in += 1  # this is the progress counter, updates 
-            if self.steps_in == self.steps_total:
+            self.steps_in += self.step_direction  # this is the progress counter, updates 
+            if self.steps_in >= self.steps_total:
+                self.step_direction = -1
+            if self.step_direction == -1 and self.steps_in == 0:
                 self.done = True
             self.last_run = now  
 
