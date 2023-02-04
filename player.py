@@ -344,7 +344,7 @@ class Player(pygame.sprite.Sprite):
         for platform in platforms:
             if platform.rect.colliderect(self.rects['collide']) and platform.solid == True:  # player has collided with a solid platform
                 if platform.rect.top >= self.rects['hitbox'].bottom:  # we are standing on the platform
-                    dy = 0
+                    dy = platform.rect.top - self.rects['hitbox'].bottom  # the last y movement will cover the difference
                     self.vel_y = 0
                     self.on_ground = True
                     self.bouncing = False
