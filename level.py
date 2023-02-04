@@ -347,7 +347,10 @@ class Level():
             stomp_collision = pygame.sprite.spritecollide(self.stomp_effects.sprite, self.monsters_sprites,False)
             if stomp_collision:
                 for monster in stomp_collision:
-                    monster.state = DYING
+                    if monster.state not in (DYING, DEAD):
+                        if pygame.Rect.colliderect(self.stomp_effects.sprite.rect, monster.hitbox): 
+                            monster.state = DYING
+
 
 
     def check_coll_player_monster(self) -> None:
