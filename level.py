@@ -215,6 +215,8 @@ class Level():
                             sprite = Monster(x,y,tile_surface, 'skeleton-boss')
                         if int(val) == 3:  # elven-caster
                             sprite = Monster(x,y,tile_surface, 'elven-caster')
+                        if int(val) == 4:  # elven-caster
+                            sprite = Monster(x,y,tile_surface, 'beholder')
                         
                     if type == 'player':
                         _ = player_tile_list[int(val)]  # we don't draw the tiles, only used in map editor

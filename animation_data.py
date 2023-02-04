@@ -19,6 +19,7 @@ minotaur_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/minota
 ogre_archer_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/ogre-archer-sprites.png').convert_alpha(), 64, 64, BLACK, 2)
 skeleton_boss_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/skeleton-boss-sprites.png').convert_alpha(), 64, 64, BLACK, 4)
 skeleton_boss_attack_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/skeleton-boss-sprites-attack.png').convert_alpha(), 64*3, 64*3, BLACK, 4)
+beholder_ss_walk = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/beholder-walking.png').convert_alpha(), 32, 32, pygame.Color('#3e3c40'), 4)
 
 # Drops and animated objects
 health_potion_ss =  SpriteSheet(pygame.image.load('assets/spritesheets/objects/lifepotion.png').convert_alpha(), 32, 32, BLACK, 3)
@@ -66,6 +67,12 @@ anim = {
         'attack': Animation(skeleton_boss_attack_ss, row=3, frames=8, speed=75), 
         'death': Animation(skeleton_boss_ss, row=20, frames=6, speed=75), 
         'cast': Animation(skeleton_boss_ss, row=2, frames=7, speed=100)
+    },
+    'beholder': {
+        'walk': Animation(beholder_ss_walk, row=0, frames=8, speed=100), 
+        'attack': Animation(beholder_ss_walk, row=0, frames=8, speed=75),
+        'death': Animation(beholder_ss_walk, row=0, frames=8, speed=100),
+        'cast': None
     },
     'fire': {
         'fire-spell': Animation(fire_spell_ss, row=0, frames=17, speed=100),

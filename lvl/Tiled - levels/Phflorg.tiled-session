@@ -28,10 +28,10 @@
         },
         "Phflorg2.tmx": {
             "scale": 2.2156,
-            "selectedLayer": 5,
+            "selectedLayer": 10,
             "viewCenter": {
-                "x": 1123.6233977252214,
-                "y": 155.26268279472833
+                "x": 1122.720707708973,
+                "y": 154.35999277847998
             }
         },
         "Terrain.tsx": {
@@ -42,6 +42,7 @@
         }
     },
     "last.exportedFilePath": "/home/olesk/Nextcloud/CODE/Python/adventures-in-pygame/lvl/2",
+    "last.imagePath": "/home/olesk/Nextcloud/CODE/Python/adventures-in-pygame/assets/tile/monsters",
     "map.lastUsedExportFilter": "All Files (*)",
     "openFiles": [
     ],
