@@ -53,6 +53,7 @@ class Player(pygame.sprite.Sprite):
         
         self.animation = self.animations['idle']  # Idle by default
         self.image = self.animation.get_image()
+        self.stomp_trigger = False
         
         # Convert from original resolution to game resolution
         self.width = int(self.animations['walk'].ss.x_dim * self.animations['walk'].ss.scale * 1.4 )  # we make the sprite a bit wider so we can encapsulate the attack anim without resizing
@@ -158,12 +159,15 @@ class Player(pygame.sprite.Sprite):
                     self.animation.frame_number = 0
                     self.animation.active = True
 
-                # If we were stomping and have landed, we switch right away
+                # If we were stomping and have landed, we switch right away and trigger effect
                 if self.state['active'] == STOMPING and self.on_ground:
                     self.state['active'] = IDLE
                     self.animation = self.animations['idle']
                     self.animation.frame_number = 0
                     self.animation.active = True
+                    self.stomp_trigger = True
+                    self.invincible = True
+
 
             # --> Jumping
             if self.state['next'] == JUMPING:
@@ -281,8 +285,15 @@ class Player(pygame.sprite.Sprite):
             self.state['next'] = IDLE
 
         # STOMPING
-        if self.state['active'] == STOMPING and self.vel_y > 0:
-            dy = STOMP_SPEED  # added straight to position, not going via velocity
+        if self.state['active'] == STOMPING:
+            self.invincible = True
+            if self.vel_y > 0:  # we're still airborne
+                dy = STOMP_SPEED  # added straight to position, not going via velocity
+                # if self.animation.on_last_frame:
+                    # self.screen.blit(self.get_anim_shadow_image(), self.rect.centerx, self.rect.centery - dy)
+            if self.vel_y == 0:
+                self.state['next'] = IDLE
+        
 
         
         # ATTACKING: make rect
@@ -350,7 +361,7 @@ class Player(pygame.sprite.Sprite):
                     self.bouncing = False
                     
             # Checking horisontal collision - walking or getting bumped into terrain
-            size_buffer = 50
+            size_buffer = 10  # this is problematic if it gets too big, as it creates conflicts in narrow spaces
             collider_rect = pygame.rect.Rect(0, 0, self.rects['hitbox'].width + size_buffer, self.rects['hitbox'].height)
             collider_rect.center = (self.rects['hitbox'].centerx + dx, self.rects['hitbox'].centery)
             if platform.rect.colliderect(collider_rect):
@@ -376,7 +387,8 @@ class Player(pygame.sprite.Sprite):
     
 
     def get_anim_image(self) -> None:
-        """ Update the image of self, which is called by SpriteGroup.draw() method 
+        """ 
+        Update the image of self, which is called by SpriteGroup.draw() method 
         """
         # Once animation points to the correct state animation, we have our image
         anim_frame = self.animation.get_image().convert_alpha()
@@ -387,9 +399,28 @@ class Player(pygame.sprite.Sprite):
 
         x_adjustment = 25  # to center the player image in the sprite
         y_adjustment = 0
-
         
         self.image.blit(anim_frame, (x_adjustment, y_adjustment))
+
+    def get_anim_shadow_image(self) -> pygame.Surface:
+        """ 
+        Gets an image of self to show as a ghost during stomps
+        """
+        # Once animation points to the correct state animation, we have our image
+        anim_frame = self.animation.get_image().convert_alpha()
+        anim_frame = pygame.transform.flip( anim_frame, self.turned, False)
+        
+        shadow_image = pygame.Surface((self.width, self.height)).convert_alpha()
+        shadow_image.fill((0, 0, 0, 0))
+
+        x_adjustment = 25  # to center the player image in the sprite
+        y_adjustment = 0
+        
+        shadow_image.blit(anim_frame, (x_adjustment, y_adjustment))
+        shadow_image.set_alpha(128)
+
+        return shadow_image
+    
         
 
 

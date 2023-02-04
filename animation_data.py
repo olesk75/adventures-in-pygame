@@ -46,7 +46,7 @@ anim = {
         'death': Animation(stabby_ss_death, row=0, frames=8, speed=150, repeat=False),
         'cast': Animation(stabby_ss_cast, row=0, frames=8, speed=100, repeat=False),
         'idle': Animation(stabby_ss_idle, row=0, frames=8, speed=50), 
-        'stomp': Animation(stabby_ss_idle, row=0, frames=8, speed=50), 
+        'stomp': Animation(stabby_ss_idle, row=0, frames=8, speed=50, repeat=False), 
     },
     'minotaur': {
         'walk': Animation(brenda_ss_walk, row=0, frames=8, speed=100), 

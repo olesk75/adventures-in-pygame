@@ -16,7 +16,7 @@ from game_tiles import GameTile, GameTileAnimation, MovingGameTile
 from level_data import levels, GameAudio
 from player import Player, PlayerInOut
 from monsters import Monster, Projectile, Spell, Drop
-from decor_and_effects import ParallaxBackground, EnvironmentalEffects,BubbleMessage
+from decor_and_effects import ParallaxBackground, EnvironmentalEffects,BubbleMessage,LightEffect1
 from monster_data import arrow_damage
 
 class Level():
@@ -24,6 +24,8 @@ class Level():
         logging.basicConfig(level=logging.DEBUG)
         self.last_log = ''  # we do this to only log when something _new_ happens
 
+        # TESTING
+        self.runoncetestflag = False
 
         from animation_data import anim  # we do this late, as we need to have display() up first
         self.anim = anim
@@ -36,6 +38,8 @@ class Level():
         self.current_x = None
 
         self.arrow_damage = arrow_damage
+
+        self.last_stomp = 0  # used to time player's stomp shadows (effect)
         
         # tile data for current level
         level_data = levels[self.current_level]
@@ -106,6 +110,10 @@ class Level():
 
         # environmental effects (leaves, snow etc.)
         self.env_sprites = EnvironmentalEffects(level_data['environmental_effect'], self.screen)  # 'leaves' for lvl1
+
+        # stomp self image shadows and effect
+        self.stomp_shadows = pygame.sprite.Group()
+        self.stomp_effects = pygame.sprite.GroupSingle()  # only one stomp effect at a time
 
         # hit indicator 
         self.hit_indicator_group = pygame.sprite.GroupSingle()  # Added when player attack hits a monster
@@ -226,6 +234,15 @@ class Level():
         player = Player(self.lvl_entry[0], self.lvl_entry[0], self.screen, self.health_max)
         return player
 
+
+    def check_player_stomp(self) -> None:
+        if self.player.stomp_trigger == True and self.player.vel_y == 0:
+            self.stomp_effects.add(LightEffect1(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery + 10))
+            self.player.stomp_trigger = False
+        for sprite in self.stomp_effects.sprites():
+            if sprite.done == True:
+                sprite.kill()
+
     # --> CHECK ALL COLLISIONS <--
     # Note: use pygame.sprite.spritecollide() for sprite against group with low precision
     #       use pygame.Rect.colliderect() to compare two rects (high precision hitboxes intead of sprite)
@@ -324,19 +341,23 @@ class Level():
                 logging.debug(f'PICKUP: {drop.drop_type}')
                 logging.debug(f'Inventory: {self.player_inventory}')   
 
+    def check_coll_stomp_monster(self) -> None:
+        # Mobs caught in stomp blast effect
+        if self.stomp_effects.sprite:
+            stomp_collision = pygame.sprite.spritecollide(self.stomp_effects.sprite, self.monsters_sprites,False)
+            if stomp_collision:
+                for monster in stomp_collision:
+                    monster.state = DYING
+
+
     def check_coll_player_monster(self) -> None:
-        # Player + mobs group collision -> stomp means kill, otherwise player damage
+        # Player + mobs group collision
         monster_collisions = pygame.sprite.spritecollide(self.player.hitbox_sprite, self.monsters_sprites,False)
         if monster_collisions and self.player.state['active'] != DYING:
             for monster in monster_collisions:
-                if monster.state != DYING and monster.state != DEAD:  # we only deal with the dead
+                if monster.state != DYING and monster.state != DEAD:  # we only deal with the living
                     if pygame.Rect.colliderect(self.player.rects['hitbox'], monster.hitbox):  # sprite collision not enough, we now check hitboxes
-                        if monster.rect.top < self.player.rects['player'].bottom < monster.rect.centery and \
-                            self.player.vel_y >= 0 and monster.data and monster.data.boss == False:  #stomp!! Doesn't work on bosses!
-                            monster.state = DYING
-                            self.fx_player_stomp.play()
-                            self.player.vel_y = -10
-                        elif monster.state != DYING:  # check to avoid repeat damage
+                       if monster.state not in (DYING, STOMPING):  # check to avoid repeat damage
                             # Player gets bumped _away_ from mob:
                             self.player.hit(100, monster.turned, self.terrain_sprites)  # bump player _away_ from monster
 
@@ -431,6 +452,14 @@ class Level():
         self.monsters_sprites.update(self.scroll, self.terrain_sprites, self.player)
         self.monsters_sprites.draw(self.screen)
 
+        # stomp shadows
+        self.stomp_shadows.update(self.scroll)
+        self.stomp_shadows.draw(self.screen)
+
+        # stomp effect
+        self.stomp_effects.update(self.scroll)
+        self.stomp_effects.draw(self.screen)        
+
         # player 
         self.scroll = self.player.update(self.terrain_sprites)
         self.player_sprites.draw(self.screen)
@@ -459,7 +488,7 @@ class Level():
                 if cast.done:
                     self.player.cast_active.remove(cast)
                     print(self.player.cast_active)
-                
+
 
         """ DEBUG ZONE """
         if self.player.state['active'] == IDLE:
@@ -477,6 +506,7 @@ class Level():
 
         # --> Check collisions <--
         self.check_player_attack()
+        self.check_player_stomp()
         self.check_player_win()
         self.check_coll_player_hazard()
         self.check_coll_player_projectile()
@@ -484,6 +514,7 @@ class Level():
         self.check_coll_player_pickup()
         self.check_coll_player_triggered_objects()
         self.check_coll_player_drops()
+        self.check_coll_stomp_monster()  # we need this to be called before player/monster collision check
         self.check_coll_player_monster()
         self.check_monsters()  # this check mob detection + attack as well as player attack against all mobs
         self.check_player_fallen_off()
