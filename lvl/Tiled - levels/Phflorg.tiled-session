@@ -3,53 +3,97 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "Phflorg1.tmx",
     "expandedProjectPaths": [
+        "."
     ],
     "fileStates": {
         "Decorations.tsx": {
-            "dynamicWrapping": true
+            "dynamicWrapping": true,
+            "scaleInDock": 1
+        },
+        "Hazards.tsx": {
+            "scaleInDock": 1
         },
         "Monsters.tsx": {
-            "dynamicWrapping": true
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "Phflorg0.tmx": {
             "scale": 2.6624,
             "selectedLayer": 9,
             "viewCenter": {
-                "x": 1039.8512620192307,
-                "y": 357.57211538461536
+                "x": 2267.690805288462,
+                "y": 256.34765625
             }
         },
+        "Phflorg0.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 5.7984,
+            "scaleInEditor": 1
+        },
         "Phflorg1.tmx": {
-            "scale": 1.5,
-            "selectedLayer": 0,
+            "scale": 4.4,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 1162.3333333333333,
-                "y": 231.33333333333337
+                "x": 484.8863636363636,
+                "y": 487.72727272727275
             }
+        },
+        "Phflorg1.tsx": {
+            "scaleInDock": 1.5,
+            "scaleInEditor": 1
         },
         "Phflorg2.tmx": {
             "scale": 2.2156,
             "selectedLayer": 10,
             "viewCenter": {
-                "x": 1122.720707708973,
-                "y": 154.35999277847998
+                "x": 2399.575735692363,
+                "y": 495.8024914244449
             }
         },
+        "Pickups.tsx": {
+            "scaleInDock": 1
+        },
+        "Player.tsx": {
+            "scaleInDock": 1
+        },
+        "Terrain SS.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 7.2796,
+            "scaleInEditor": 13.3132
+        },
         "Terrain.tsx": {
-            "dynamicWrapping": false
+            "dynamicWrapping": false,
+            "scaleInDock": 6.0658
         },
         "Trigger objects.tsx": {
-            "dynamicWrapping": true
+            "dynamicWrapping": true,
+            "scaleInDock": 1.5
         }
     },
     "last.exportedFilePath": "/home/olesk/Nextcloud/CODE/Python/adventures-in-pygame/lvl/2",
-    "last.imagePath": "/home/olesk/Nextcloud/CODE/Python/adventures-in-pygame/assets/tile/monsters",
+    "last.imagePath": "/home/olesk/Nextcloud/CODE/Python/adventures-in-pygame/assets/spritesheets/tiles",
     "map.lastUsedExportFilter": "All Files (*)",
     "openFiles": [
+        "Phflorg1.tmx",
+        "Phflorg0.tmx",
+        "Phflorg0.tsx",
+        "Phflorg1.tsx",
+        "Phflorg2.tmx",
+        "Monsters.tsx",
+        "Terrain SS.tsx"
     ],
     "project": "Phflorg.tiled-project",
     "recentFiles": [
-    ]
+        "Terrain SS.tsx",
+        "Monsters.tsx",
+        "Phflorg2.tmx",
+        "Phflorg1.tsx",
+        "Phflorg0.tsx",
+        "Phflorg0.tmx",
+        "Phflorg1.tmx"
+    ],
+    "tileset.lastUsedFormat": "tsx"
 }

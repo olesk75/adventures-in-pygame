@@ -39,7 +39,7 @@ OBJECT_TYPES = 9
 WALKING_SPEED = 5
 ATTACK_SPEED = 1  # UNUSED
 PLAYER_HEALTH = 1000
-PLAYER_STOMP = 10  # monsters to kill before stop recharges
+PLAYER_STOMP = 5  # monsters to kill before stop recharges
 STOMP_SPEED = 50
 
 # Debug settings

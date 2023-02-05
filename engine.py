@@ -49,10 +49,26 @@ def import_tile_graphics(path :str) -> list:
 
     for filename in tile_files:  # read tile files sorted by name
         tiles.append(pygame.image.load(filename).convert_alpha())
+   
     return tiles
 
 
+# --- Reads all tiles of a certain category, in numerical order, and returns list
+def import_tile_sheet_graphics(ss_file :str) -> list:
+    tiles = []
 
+    from animation import SpriteSheet
+
+    transparency = pygame.Color('#595652')
+    tiles_terrain_ss = SpriteSheet(pygame.image.load(ss_file).convert_alpha(), 32, 32, transparency, 1)
+
+    ss_tiles = 12  # number of tiles in the tileset
+
+    for frame_number in range(ss_tiles):
+        tiles.append(tiles_terrain_ss.get_image(0, frame_number))  # row 0, as it's all in one row
+
+    print(tiles)
+    return tiles
 
 
 

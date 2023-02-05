@@ -220,6 +220,10 @@ class GamePanel():
         self.screen.blit(stomp_bar_frame, (SCREEN_WIDTH - stomp_bar_length -20,40))
         ORANGE = pygame.Color('#f7b449')
 
+
+        if current_stomp > PLAYER_STOMP:  # max
+            current_stomp = PLAYER_STOMP
+
         stomp_bar_length = (stomp_bar_length /PLAYER_STOMP) * current_stomp
         stomp_bar = pygame.Surface((stomp_bar_length,16), pygame.SRCALPHA)
         stomp_bar.fill(ORANGE)

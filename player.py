@@ -271,6 +271,10 @@ class Player(pygame.sprite.Sprite):
             if pygame.time.get_ticks() - self.last_damage > self.invincibility_duration:
                 self.invincible = False
 
+        # Making sure stomp is limited
+        if self.stomp_counter > PLAYER_STOMP:
+            self.stomp_counter = PLAYER_STOMP
+
 
         # updating hitbox location to follow player sprite
         self.rects['hitbox'].center = (self.rects['player'].centerx, self.rects['player'].centery) 

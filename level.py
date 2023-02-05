@@ -11,7 +11,7 @@ import logging
 
 from settings import *
 
-from engine import import_csv_layout, import_tile_graphics
+from engine import import_csv_layout, import_tile_graphics, import_tile_sheet_graphics
 from game_tiles import GameTile, GameTileAnimation, MovingGameTile
 from level_data import levels, GameAudio
 from player import Player, PlayerInOut
@@ -124,12 +124,13 @@ class Level():
         self.player_sprites = pygame.sprite.GroupSingle()
         self.player_sprites.add(self.player)
 
+    
 
     def create_tile_group(self,layout,type) -> pygame.sprite.Group:
         sprite_group = pygame.sprite.Group()
 
-        # Import all the tile PNGs 
-        terrain_tile_list = import_tile_graphics('assets/tile/terrain/*.png')
+        # Import all the tile PNGs  TODO: they all get loaded MANY times as this functio is being called!
+        terrain_tile_list = import_tile_sheet_graphics('assets/spritesheets/tiles/terrain_tilest-sheet.png')
         decorations_tile_list = import_tile_graphics('assets/tile/decorations/*.png')
         hazards_tile_list = import_tile_graphics('assets/tile/hazards/*.png')
         pickups_tile_list = import_tile_graphics('assets/tile/pickups/*.png')
@@ -153,8 +154,8 @@ class Level():
 
                         tile_surface = terrain_tile_list[int(val)]
                         (x_size, y_size) = tile_surface.get_size()
-                        # As we need to scale sprites mostly 64x64px into our screen size, we need the following calculation:
-                        # The allows us non-rectangular sprites, as long as they are a multiple of 64 in both directions
+                        # As we need to scale sprites mostly 32x32px into our screen size, we need the following calculation:
+                        # The allows us non-rectangular sprites, as long as they are a multiple of 32 in both directions
                         x_size = x_size * 2 + 3
                         y_size = y_size * 2 + 3
                         distance = 150
