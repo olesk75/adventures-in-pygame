@@ -3,7 +3,7 @@ import logging
 
 from settings import *
 from level import GameAudio
-from decor_and_effects import ExpandingCircle
+from decor_and_effects import ExpandingCircle, SpeedLines
 
 
 # Player class
@@ -26,6 +26,8 @@ class Player(pygame.sprite.Sprite):
         self.invincible = False
         self.invincibility_duration = 500
         self.last_damage = 0
+
+        self.stomp_counter = 0  # used to leave behind ghostly images of player on every n'th iteration
 
         from animation_data import anim
 
@@ -222,6 +224,9 @@ class Player(pygame.sprite.Sprite):
                 self.animation = self.animations['stomp']
                 self.animation.frame_number = 0
                 self.animation.active = True
+                self.stomp_counter = 0  # we use this to dra effects over the player as he comes down
+                stomp_streaks = SpeedLines(self.hitbox_sprite.rect)
+                self.cast_active.append(stomp_streaks)
 
             # --> Casting 
             if self.state['next'] == CASTING:
@@ -295,8 +300,19 @@ class Player(pygame.sprite.Sprite):
         if self.state['active'] == STOMPING:
             if self.vel_y > 0:  # we're still airborne
                 dy = STOMP_SPEED  # added straight to position, not going via velocity
-                # if self.animation.on_last_frame:
-                    # self.screen.blit(self.get_anim_shadow_image(), self.rect.centerx, self.rect.centery - dy)
+
+            if not self.on_ground:
+                x = self.hitbox_sprite.rect.left
+                y = self.hitbox_sprite.rect.top
+
+
+
+                # TODO: fix: we need to make it linger -> make sprites instead and add to sprite group
+                height = self.stomp_counter 
+                width = 20
+                pygame.draw.rect(self.screen, (255,255,255,255), (x, y, width, height), 2 )  # Player rect (WHITE)
+                self.stomp_counter += 1
+
             if self.on_ground:
                 self.state['next'] = IDLE
         
@@ -406,28 +422,6 @@ class Player(pygame.sprite.Sprite):
         y_adjustment = 0
         
         self.image.blit(anim_frame, (x_adjustment, y_adjustment))
-
-    def get_anim_shadow_image(self) -> pygame.Surface:
-        """ 
-        Gets an image of self to show as a ghost during stomps
-        """
-        # Once animation points to the correct state animation, we have our image
-        anim_frame = self.animation.get_image().convert_alpha()
-        anim_frame = pygame.transform.flip( anim_frame, self.turned, False)
-        
-        shadow_image = pygame.Surface((self.width, self.height)).convert_alpha()
-        shadow_image.fill((0, 0, 0, 0))
-
-        x_adjustment = 25  # to center the player image in the sprite
-        y_adjustment = 0
-        
-        shadow_image.blit(anim_frame, (x_adjustment, y_adjustment))
-        shadow_image.set_alpha(128)
-
-        return shadow_image
-    
-        
-
 
     def get_input(self) -> None:
         """ Registering keypresses and triggering state changes """

@@ -402,6 +402,46 @@ class ExpandingCircle:
         if not self.done:
             pygame.draw.circle(screen, (self.color), (self.x,self.y), self.radius, width=self.width)
 
+class SpeedLines:
+    def __init__(self, rect: pygame.rect.Rect, frame_delay: int=100) -> None:
+        self.rect = rect
+        self.x_start = self.rect.left
+        self.y_start = self.rect.top
+        self.max_width = self.rect.width
+        self.height = 0
+
+        self.previous_y = 0
+
+        self.margin = 5
+
+        self.frame_delay = frame_delay
+        self.color = WHITE
+
+        self.last_update = 0  # for timing
+        self.done = False
+
+    def update(self, scroll) -> None:
+        self.x_start += scroll
+        self.new_y_pos = self.rect.top
+        if self.previous_y == self.new_y_pos:  # the eagle has landed
+            self.done = True
+            print(self.new_y_pos - self.y_start)
+        self.previous_y = self.new_y_pos
+
+        now = pygame.time.get_ticks()
+        if now - self.last_update > self.frame_delay:
+            self.height = self.new_y_pos - self.y_start 
+            if self.height > self.margin:
+                self.height -= self.margin
+
+    def draw(self, screen) -> None:
+        width = 4
+        if not self.done and self.height > 10:
+            for n in range (self.max_width // width):
+                height = randint(0, self.height)
+                pygame.draw.rect(screen, WHITE, ((self.x_start + width * n, self.new_y_pos - height), (width, height)))
+
+
 class LightEffect1(pygame.sprite.Sprite):
     """
     Class which gives light effect consisting of vertical lines shooting up from the ground
