@@ -248,9 +248,14 @@ class Monster(pygame.sprite.Sprite):
             elif new_state == DYING:
                     self.animation = self.animations['death']
                     self.animation.active = True
+                    self.animation.frame_number = 0
                     self.rect_attack = pygame.Rect(0,0,0,0)
                     self.rect_detect = pygame.Rect(0,0,0,0)
                     self.hitbox = pygame.Rect(0,0,0,0)
+
+            elif new_state == DEAD:
+                    self.animation.active = False
+                    self.animation.frame_number = 0  # make ready for next death from same monster, as we reuse the same animation instance
 
                     #self.vel_y = -5
 
@@ -311,7 +316,7 @@ class Monster(pygame.sprite.Sprite):
         if self.state != DEAD:
             self.create_rects()
             self._check_platform_collision(dx, dy, platforms_sprite_group)
-        else:
+        if self.state in (DEAD,DYING):
             self.rect_attack = None
             self.rect_detect = None
             self.hitbox = None

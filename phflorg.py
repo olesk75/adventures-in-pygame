@@ -5,8 +5,7 @@ import logging
 from settings import * 
 from level import Level
 from level_data import GameAudio
-from engine import GamePanel
-from decor_and_effects import fade_to_color
+from decor_and_effects import GamePanel, fade_to_color
 
 
 FPS = 60
