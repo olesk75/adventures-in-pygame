@@ -370,8 +370,6 @@ class Level():
         # Monsters can be up to several things, which we check for here
         now = pygame.time.get_ticks()
         for monster in self.monsters_sprites.sprites():
-            if monster.state == DEAD:
-                monster.kill()
             if monster.state != DYING and monster.state != DEAD:  # only dealing with the living
                 #  --> casting spells=
                 if monster.cast_anim_list:

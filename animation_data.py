@@ -41,7 +41,8 @@ leaves_ss = SpriteSheet(pygame.image.load('assets/spritesheets/env/leaf.png').co
 hit_indicator_ss = SpriteSheet(pygame.image.load('assets/spritesheets/effects/hit-star.png').convert_alpha(), 32,32, BLACK, 2)
 
 # Decor
-heart_ss = SpriteSheet(pygame.image.load('assets/spritesheets/decor/heart-beating.png').convert_alpha(), 16, 16, BLACK, 2)
+heart_ss = SpriteSheet(pygame.image.load('assets/spritesheets/decor/heart-beating.png').convert_alpha(), 16, 16, pygame.Color('#969696'), 2)
+stomp_ss = SpriteSheet(pygame.image.load('assets/spritesheets/decor/boot-stomping.png').convert_alpha(), 16, 16, pygame.Color('#969696'), 2)
 
 
 """ Create main animation dict """
@@ -100,7 +101,8 @@ anim = {
         'hit-indicator': Animation(hit_indicator_ss, row=0, frames=13, speed=20, repeat=False)
     },
     'decor': {
-        'beating-heart': Animation(heart_ss, frames=8, speed=50)
+        'beating-heart': Animation(heart_ss, frames=8, speed=50),
+        'stomping-foot': Animation(stomp_ss, frames=8, speed=50)
     }
     
 }

@@ -111,6 +111,8 @@ class GamePanel():
         from animation_data import anim
         self.heart_anim = anim['decor']['beating-heart']
         self.heart_anim.active = False
+        self.stomp_anim = anim['decor']['stomping-foot']
+        self.heart_anim.active = False
 
         self.screen = screen
         self.window_size = pygame.display.get_window_size()# screen.get_window_size()
@@ -180,9 +182,10 @@ class GamePanel():
             pygame.time.wait(75)
 
         
-    def draw(self, score, current_health) -> None:
+    def draw(self, score, current_health, current_stomp) -> None:
         self.score = score
         self.health_current = current_health
+        self.stomp_current = current_stomp
 
         self.health_bar_length = int(SCREEN_WIDTH / 6 * current_health / 1000)
         
@@ -207,13 +210,21 @@ class GamePanel():
         self.screen.blit(health_bar, (22,42))     
         self.last_health = current_health
 
-        # --Heart decoration for health bar
+        # --> Heart decoration for health bar
         self.screen.blit(self.heart_anim.get_image(), (5, 33))
         if self.health_current < PLAYER_HEALTH // 4:
             self.heart_anim.active = True
         else:
             self.heart_anim.active = False
             self.heart_anim.frame_number = 4
+
+        # --> Boot decoration for stomp bad
+        self.screen.blit(self.stomp_anim.get_image(), (SCREEN_WIDTH - 38, 33))
+        if self.stomp_current < PLAYER_STOMP // 4:
+            self.stomp_anim.active = True
+        else:
+            self.stomp_anim.active = False
+            self.stomp_anim.frame_number = 1
 
         # --> Player inventory, top right
         key_x = self.window_size[0] * 0.8

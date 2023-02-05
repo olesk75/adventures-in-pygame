@@ -9,6 +9,7 @@ Drop (pygame Sprite class)          : dropped items, like keys dropped by bosses
 import random
 import pygame
 import logging
+import copy
 
 from settings import *
 from monster_data import MonsterData
@@ -32,10 +33,10 @@ class Monster(pygame.sprite.Sprite):
         # Setting up animations
         self.animations = {
             'idle': None,  # TODO
-            'walk': anim[monster_type]['walk'],
-            'attack': anim[monster_type]['attack'],
-            'death': anim[monster_type]['death'],
-            'cast': anim[monster_type]['cast']
+            'walk': copy.copy(anim[monster_type]['walk']),
+            'attack': copy.copy(anim[monster_type]['attack']),
+            'death': copy.copy(anim[monster_type]['death']),
+            'cast': copy.copy(anim[monster_type]['cast'])
         }
 
         self.cast_player_pos = ()
@@ -125,25 +126,25 @@ class Monster(pygame.sprite.Sprite):
                             self.at_bottom = True                     
                             self.vel_y = 0
 
+                    if self.state != DEAD:  # Corpses should not fall through platforms, but also won't move to the rest here is pointless for the dead
+                        # Preventing falling off left/right edge of platforms if there is NO collision (-1) to the side and down (and it's not a jumping mob
+                        moved_hitbox = self.hitbox.move(-self.hitbox.width, 40)  # checking left 
+                        if  moved_hitbox.collidelist(all_platforms) == -1 and not self.data.attack_jumper:
+                            self.data.direction = 1
+                            self.turned = False
 
-                    # Preventing falling off left/right edge of platforms if there is NO collision (-1) to the side and down (and it's not a jumping mob
-                    moved_hitbox = self.hitbox.move(-self.hitbox.width, 40)  # checking left 
-                    if  moved_hitbox.collidelist(all_platforms) == -1 and not self.data.attack_jumper:
-                        self.data.direction = 1
-                        self.turned = False
+                        moved_hitbox = self.hitbox.move(self.hitbox.width, 40)  #checking right
+                        if moved_hitbox.collidelist(all_platforms) == -1 and not self.data.attack_jumper:
+                            self.data.direction = -1
+                            self.turned = True
+                    
+                        # Turning around if hitting a solid tile  
+                        moved_hitbox = self.hitbox.move(dx * 5 * self.data.direction, 20).inflate(0,-60)
 
-                    moved_hitbox = self.hitbox.move(self.hitbox.width, 40)  #checking right
-                    if moved_hitbox.collidelist(all_platforms) == -1 and not self.data.attack_jumper:
-                        self.data.direction = -1
-                        self.turned = True
-                
-                    # Turning around if hitting a solid tile  
-                    moved_hitbox = self.hitbox.move(dx * 5 * self.data.direction, 20).inflate(0,-60)
-
-                    if platform.rect.colliderect(moved_hitbox):
-                        self.data.direction *= -1
-                        self.rect.x += dx * 20  * self.data.direction # far enough to avoid re-triggering in an endless loop
-                        self.turned = not self.turned
+                        if platform.rect.colliderect(moved_hitbox):
+                            self.data.direction *= -1
+                            self.rect.x += dx * 20  * self.data.direction # far enough to avoid re-triggering in an endless loop
+                            self.turned = not self.turned
 
     def _boss_battle(self, player) -> tuple:
         """ Movement and attacks for specific bosess 
@@ -203,7 +204,6 @@ class Monster(pygame.sprite.Sprite):
                 if self.animation.on_last_frame:
                     logging.debug(f'BOSS {self.data.monster} dies')
                     self.state = DEAD
-                    self.kill() 
 
             else:
                 print(f'ERROR, wrong state for monster in boss fight: {self.state}')
@@ -254,10 +254,10 @@ class Monster(pygame.sprite.Sprite):
                     self.hitbox = pygame.Rect(0,0,0,0)
 
             elif new_state == DEAD:
+                    print('DEAD')
                     self.animation.active = False
                     self.animation.frame_number = 0  # make ready for next death from same monster, as we reuse the same animation instance
-
-                    #self.vel_y = -5
+                    self.image = self.animation.frame[-1]
 
                     if self.data.sound_death:
                         self.data.sound_death.set_volume(self.data.sound_death_volume)
@@ -291,7 +291,7 @@ class Monster(pygame.sprite.Sprite):
                 if self.data.attack_jumper and player_above_mob < 0 and self.vel_y == 0:  # player is higher up and we're not already jumping
                     if 0.01  > random.random():  # hardcoded jump probability
                         self.vel_y = -10
-            else:
+            if self.state == WALKING:
                 dx = self.data.speed_walking  #  we start at walking speed
 
                 # We throw in random cahnges in direction, different by mod type
@@ -313,15 +313,17 @@ class Monster(pygame.sprite.Sprite):
         self.rect.y += dy 
 
         # Checking detection, hitbox and attack rects as well as platform rects for collision
-        if self.state != DEAD:
-            self.create_rects()
-            self._check_platform_collision(dx, dy, platforms_sprite_group)
-        if self.state in (DEAD,DYING):
+        self.create_rects()
+        self._check_platform_collision(dx, dy, platforms_sprite_group)
+        if self.state in (DEAD, DYING):
             self.rect_attack = None
             self.rect_detect = None
             self.hitbox = None
-            if self.animation.on_last_frame:
-                self.state = DEAD
+        
+        # Dying, waiting for anim to run to the end
+        if self.state == DYING and self.animation.on_last_frame:
+            self.state = DEAD
+
 
         # Updating the ready_to_attack flag 
         now = pygame.time.get_ticks()
@@ -339,10 +341,12 @@ class Monster(pygame.sprite.Sprite):
             # If we have a diffent size attack sprites, we need to take scale into account
             self.image = self.animations['attack'].get_image(repeat_delay = self.data.attack_delay).convert_alpha()
         elif self.state == DYING:
-            self.image = self.animations['death'].get_image().convert_alpha()
+            self.image = self.animation.get_image()
         elif self.state == WALKING:
-            self.image = self.animations['walk'].get_image()
-
+            self.image = self.animation.get_image()
+        elif self.state == DEAD:
+            self.image = self.animation.get_image()
+            
         self.image = pygame.transform.flip(self.image, self.turned, False)        
 
         if DEBUG_HITBOXES:

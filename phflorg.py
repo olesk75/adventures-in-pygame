@@ -27,7 +27,7 @@ class Game:
         
         # user interface 
         self.panel = GamePanel(screen)
-        self.panel.setup_bars(self.health_current, self.health_max)
+        self.panel.setup_bars(self.health_current, self.health_max) 
         self.font = pygame.font.Font("assets/font/OldSchoolAdventures-42j9.ttf", 32)  
 
         # damage overlay (red tendrils)
@@ -134,7 +134,7 @@ class Game:
         self.check_damage_effects()
         self.health_current = self.level.player.health_current
         self.panel.inventory = self.level.player_inventory
-        self.panel.draw(self.level.player_score, self.health_current) 
+        self.panel.draw(self.level.player_score, self.health_current, 10)  # TODO: fox stomp
         self.check_level_complete()
         self.check_game_over()
 
