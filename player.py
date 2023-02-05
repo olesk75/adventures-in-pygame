@@ -224,7 +224,6 @@ class Player(pygame.sprite.Sprite):
                 self.animation = self.animations['stomp']
                 self.animation.frame_number = 0
                 self.animation.active = True
-                self.stomp_counter = 0  # we use this to dra effects over the player as he comes down
                 stomp_streaks = SpeedLines(self.hitbox_sprite.rect)
                 self.cast_active.append(stomp_streaks)
 
@@ -304,14 +303,6 @@ class Player(pygame.sprite.Sprite):
             if not self.on_ground:
                 x = self.hitbox_sprite.rect.left
                 y = self.hitbox_sprite.rect.top
-
-
-
-                # TODO: fix: we need to make it linger -> make sprites instead and add to sprite group
-                height = self.stomp_counter 
-                width = 20
-                pygame.draw.rect(self.screen, (255,255,255,255), (x, y, width, height), 2 )  # Player rect (WHITE)
-                self.stomp_counter += 1
 
             if self.on_ground:
                 self.state['next'] = IDLE
@@ -449,7 +440,7 @@ class Player(pygame.sprite.Sprite):
                 self.on_ground = False
                 self.fx_jump.play()
 
-            if keys[pygame.K_DOWN] and not self.on_ground:
+            if keys[pygame.K_DOWN] and not self.on_ground and self.stomp_counter == PLAYER_STOMP:
                 self.vel_y = 3
                 self.state['next'] = STOMPING
                 self.fx_stomp.play()

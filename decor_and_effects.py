@@ -181,7 +181,6 @@ class GamePanel():
     def draw(self, score, current_health, current_stomp) -> None:
         self.score = score
         self.health_current = current_health
-        self.stomp_current = current_stomp
 
         self.health_bar_length = int(SCREEN_WIDTH / 6 * current_health / 1000)
         
@@ -221,6 +220,7 @@ class GamePanel():
         self.screen.blit(stomp_bar_frame, (SCREEN_WIDTH - stomp_bar_length -20,40))
         ORANGE = pygame.Color('#f7b449')
 
+        stomp_bar_length = (stomp_bar_length /PLAYER_STOMP) * current_stomp
         stomp_bar = pygame.Surface((stomp_bar_length,16), pygame.SRCALPHA)
         stomp_bar.fill(ORANGE)
         self.screen.blit(stomp_bar, (SCREEN_WIDTH - stomp_bar_length -18,42))     
@@ -229,7 +229,7 @@ class GamePanel():
         
         # --> Boot decoration for stomp bad
         self.screen.blit(self.stomp_anim.get_image(), (SCREEN_WIDTH - 38, 33))
-        if self.stomp_current < PLAYER_STOMP // 4:
+        if current_stomp == PLAYER_STOMP:
             self.stomp_anim.active = True
         else:
             self.stomp_anim.active = False

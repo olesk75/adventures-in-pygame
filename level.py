@@ -241,6 +241,7 @@ class Level():
         if self.player.stomp_trigger == True and self.player.vel_y == 0:
             self.stomp_effects.add(LightEffect1(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery + 10))
             self.player.stomp_trigger = False
+            self.player.stomp_counter = 0
         for sprite in self.stomp_effects.sprites():
             if sprite.done == True:
                 sprite.kill()
@@ -260,6 +261,7 @@ class Level():
                     logging.debug(f'{monster.data.monster} killed by player attack')
                     monster.data.direction = -self.player.turned
                     self.player_score += monster.data.points_reward
+                    self.player.stomp_counter += 1
                     """ Adding drops from player death """
                     # skeleton-boss is a key carrier
                     if monster.data.monster == 'skeleton-boss':
@@ -352,9 +354,9 @@ class Level():
                     if monster.state not in (DYING, DEAD):
                         if pygame.Rect.colliderect(self.stomp_effects.sprite.rect, monster.hitbox): 
                             monster.state_change(DYING)
+                            self.player_score += monster.data.points_reward
+                            self.player.stomp_counter += 1
                             logging.debug(f'{monster.data.monster} killed by player stomp')
-
-
 
     def check_coll_player_monster(self) -> None:
         # Player + mobs group collision

@@ -134,7 +134,7 @@ class Game:
         self.check_damage_effects()
         self.health_current = self.level.player.health_current
         self.panel.inventory = self.level.player_inventory
-        self.panel.draw(self.level.player_score, self.health_current, 10)  # TODO: fox stomp
+        self.panel.draw(self.level.player_score, self.health_current, self.level.player.stomp_counter)  # TODO: fox stomp
         self.check_level_complete()
         self.check_game_over()
 
