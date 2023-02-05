@@ -136,8 +136,6 @@ class GamePanel():
         # Health bars + stompometer
         self.health_bar_length = int(SCREEN_WIDTH / 6 * health_current / 1000)  # grows when max health grows
         self.health_bar_max_length = int(SCREEN_WIDTH / 6 * health_max / 1000)  # grows when max health grows
-        
-
 
     def _blink_bar(self, duration) -> None:
         # Blinks the frame around the health bar red
@@ -169,8 +167,7 @@ class GamePanel():
         self.screen.blit(surf, (0,0))  # blit to screen
         pygame.display.update()
         screen_cpy = self.screen.copy()
-        pygame.time.wait(250)
-        
+        pygame.time.wait(250)     
 
         for _ in range(10):
             self.screen.blit(img2, (x,y))
@@ -180,7 +177,6 @@ class GamePanel():
             self.screen.blit(screen_cpy, (0,0))  # starting over
             pygame.display.update()
             pygame.time.wait(75)
-
         
     def draw(self, score, current_health, current_stomp) -> None:
         self.score = score
@@ -197,9 +193,9 @@ class GamePanel():
         draw_text(f'SCORE: {self.score}', self.font_small, WHITE, self.window_size[0]/100, self.window_size[1]/100)  # score
 
         # --> Health bar, white and semi transparent
-        bar_frame = pygame.Surface((self.health_bar_max_length+4,20), pygame.SRCALPHA)   # per-pixel alpha
-        bar_frame.fill((255,255,255,128))                         # notice the alpha value in the color
-        self.screen.blit(bar_frame, (20,40))
+        health_bar_frame = pygame.Surface((self.health_bar_max_length+4,20), pygame.SRCALPHA)   # per-pixel alpha
+        health_bar_frame.fill((255,255,255,128))  # with alpha
+        self.screen.blit(health_bar_frame, (20,40))
         self._blink_bar(10)  # blink if we should
         ratio = self.health_bar_length / self.health_bar_max_length
         GREEN = 255 * ratio
@@ -218,6 +214,19 @@ class GamePanel():
             self.heart_anim.active = False
             self.heart_anim.frame_number = 4
 
+        # --> Stomp bar (we reuse the health surface)
+        stomp_bar_length = SCREEN_WIDTH // 6
+        stomp_bar_frame = pygame.Surface((stomp_bar_length + 4 ,20), pygame.SRCALPHA)
+        stomp_bar_frame.fill((255,255,255,128))  # notice the alpha value in the color
+        self.screen.blit(stomp_bar_frame, (SCREEN_WIDTH - stomp_bar_length -20,40))
+        ORANGE = pygame.Color('#f7b449')
+
+        stomp_bar = pygame.Surface((stomp_bar_length,16), pygame.SRCALPHA)
+        stomp_bar.fill(ORANGE)
+        self.screen.blit(stomp_bar, (SCREEN_WIDTH - stomp_bar_length -18,42))     
+        
+
+        
         # --> Boot decoration for stomp bad
         self.screen.blit(self.stomp_anim.get_image(), (SCREEN_WIDTH - 38, 33))
         if self.stomp_current < PLAYER_STOMP // 4:
@@ -425,7 +434,6 @@ class SpeedLines:
         self.new_y_pos = self.rect.top
         if self.previous_y == self.new_y_pos:  # the eagle has landed
             self.done = True
-            print(self.new_y_pos - self.y_start)
         self.previous_y = self.new_y_pos
 
         now = pygame.time.get_ticks()

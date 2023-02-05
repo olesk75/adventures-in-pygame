@@ -352,6 +352,7 @@ class Level():
                     if monster.state not in (DYING, DEAD):
                         if pygame.Rect.colliderect(self.stomp_effects.sprite.rect, monster.hitbox): 
                             monster.state_change(DYING)
+                            logging.debug(f'{monster.data.monster} killed by player stomp')
 
 
 
@@ -490,8 +491,6 @@ class Level():
                 cast.draw(self.screen)
                 if cast.done:
                     self.player.cast_active.remove(cast)
-                    print(self.player.cast_active)
-
 
         """ DEBUG ZONE """
         if self.player.state['active'] == IDLE:

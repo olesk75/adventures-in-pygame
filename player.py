@@ -162,7 +162,7 @@ class Player(pygame.sprite.Sprite):
                 # If we were stomping and have landed, we trigger effect right away, but we stay in state for one second
                 if self.state['active'] == STOMPING and self.on_ground:
                     now = pygame.time.get_ticks()
-                    if now - self.stomp_start_timer > 1000 and self.stomp_trigger_lock == True:
+                    if now - self.stomp_start_timer > 500 and self.stomp_trigger_lock == True:
                         self.state['active'] = IDLE
                         self.animation = self.animations['idle']
                         self.animation.frame_number = 0
