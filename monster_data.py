@@ -134,5 +134,7 @@ class MonsterData():
             self.hitbox_width = 65 
             self.hitbox_height = 110
             self.sound_attack = False
-            self.sound_death = pygame.mixer.Sound('assets/sound/monster/minotaur/death.ogg')
+            self.sound_attack = pygame.mixer.Sound('assets/sound/monster/beholder/attack.flac')
+            self.sound_attack_volume = 0.5
+            self.sound_death = pygame.mixer.Sound('assets/sound/monster/beholder/death.flac')
             self.sound_death_volume = 0.5
