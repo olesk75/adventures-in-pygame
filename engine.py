@@ -67,7 +67,6 @@ def import_tile_sheet_graphics(ss_file :str) -> list:
     for frame_number in range(ss_tiles):
         tiles.append(tiles_terrain_ss.get_image(0, frame_number))  # row 0, as it's all in one row
 
-    print(tiles)
     return tiles
 
 
