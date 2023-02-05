@@ -252,7 +252,7 @@ class Monster(pygame.sprite.Sprite):
                     self.rect_detect = pygame.Rect(0,0,0,0)
                     self.hitbox = pygame.Rect(0,0,0,0)
 
-                    self.vel_y = -5
+                    #self.vel_y = -5
 
                     if self.data.sound_death:
                         self.data.sound_death.set_volume(self.data.sound_death_volume)
@@ -300,7 +300,7 @@ class Monster(pygame.sprite.Sprite):
         self.rect.x += scroll
 
         # we compensate for graivty
-        self.vel_y += self.gravity  # allows us to let mobs fall (including during death)
+        self.vel_y += self.gravity  # allows us to let mobs fall
         dy += self.vel_y
         
         # Update rectangle position
@@ -308,7 +308,7 @@ class Monster(pygame.sprite.Sprite):
         self.rect.y += dy 
 
         # Checking detection, hitbox and attack rects as well as platform rects for collision
-        if self.state != DYING and self.state != DEAD:
+        if self.state != DEAD:
             self.create_rects()
             self._check_platform_collision(dx, dy, platforms_sprite_group)
         else:

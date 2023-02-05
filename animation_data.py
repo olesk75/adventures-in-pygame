@@ -1,6 +1,5 @@
 import pygame
-from engine import SpriteSheet
-from animation import Animation
+from animation import Animation, SpriteSheet
 
 BLACK = (0,0,0)
 
@@ -20,6 +19,8 @@ ogre_archer_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/ogr
 skeleton_boss_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/skeleton-boss-sprites.png').convert_alpha(), 64, 64, BLACK, 4)
 skeleton_boss_attack_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/skeleton-boss-sprites-attack.png').convert_alpha(), 64*3, 64*3, BLACK, 4)
 beholder_ss_walk = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/beholder-walking.png').convert_alpha(), 32, 32, pygame.Color('#3e3c40'), 4)
+beholder_ss_attack = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/beholder-attacking.png').convert_alpha(), 32, 32, pygame.Color('#3e3c40'), 4)
+beholder_ss_death = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/beholder-dying.png').convert_alpha(), 32, 32, pygame.Color('#3e3c40'), 4)
 
 # Drops and animated objects
 health_potion_ss =  SpriteSheet(pygame.image.load('assets/spritesheets/objects/lifepotion.png').convert_alpha(), 32, 32, BLACK, 3)
@@ -39,6 +40,9 @@ leaves_ss = SpriteSheet(pygame.image.load('assets/spritesheets/env/leaf.png').co
 # Effects
 hit_indicator_ss = SpriteSheet(pygame.image.load('assets/spritesheets/effects/hit-star.png').convert_alpha(), 32,32, BLACK, 2)
 
+# Decor
+heart_ss = SpriteSheet(pygame.image.load('assets/spritesheets/decor/heart-beating.png').convert_alpha(), 16, 16, BLACK, 2)
+
 
 """ Create main animation dict """
 anim = {
@@ -53,25 +57,25 @@ anim = {
     'minotaur': {
         'walk': Animation(brenda_ss_walk, row=0, frames=8, speed=100), 
         'attack': Animation(minotaur_ss, row=7, frames=8, speed=75),
-        'death': Animation(minotaur_ss, row=20, frames=6, speed=100),
+        'death': Animation(minotaur_ss, row=20, frames=6, speed=100, repeat=False),
         'cast': None
     },
     'ogre-archer': {
         'walk': Animation(ogre_archer_ss, row=11, frames=9, speed=50),
         'attack': Animation(ogre_archer_ss, row=19, frames=13, speed=100),
-        'death': Animation(ogre_archer_ss, row=20, frames=6, speed=100),
+        'death': Animation(ogre_archer_ss, row=20, frames=6, speed=100, repeat=False),
         'cast': None
     },
     'skeleton-boss': {
         'walk': Animation(skeleton_boss_ss, row=11, frames=9, speed=50), 
         'attack': Animation(skeleton_boss_attack_ss, row=3, frames=8, speed=75), 
-        'death': Animation(skeleton_boss_ss, row=20, frames=6, speed=75), 
+        'death': Animation(skeleton_boss_ss, row=20, frames=6, speed=75, repeat=False), 
         'cast': Animation(skeleton_boss_ss, row=2, frames=7, speed=100)
     },
     'beholder': {
         'walk': Animation(beholder_ss_walk, row=0, frames=8, speed=100), 
-        'attack': Animation(beholder_ss_walk, row=0, frames=8, speed=75),
-        'death': Animation(beholder_ss_walk, row=0, frames=8, speed=100),
+        'attack': Animation(beholder_ss_attack, row=0, frames=8, speed=75),
+        'death': Animation(beholder_ss_death, row=0, frames=8, speed=100, repeat=False),
         'cast': None
     },
     'fire': {
@@ -94,6 +98,9 @@ anim = {
     },
     'effects': {
         'hit-indicator': Animation(hit_indicator_ss, row=0, frames=13, speed=20, repeat=False)
+    },
+    'decor': {
+        'beating-heart': Animation(heart_ss, frames=8, speed=50)
     }
     
 }

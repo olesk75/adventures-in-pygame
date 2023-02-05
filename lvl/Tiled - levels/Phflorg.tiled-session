@@ -7,15 +7,18 @@
     "expandedProjectPaths": [
     ],
     "fileStates": {
+        "Decorations.tsx": {
+            "dynamicWrapping": true
+        },
         "Monsters.tsx": {
             "dynamicWrapping": true
         },
         "Phflorg0.tmx": {
-            "scale": 0.6006770833333334,
-            "selectedLayer": 0,
+            "scale": 2.6624,
+            "selectedLayer": 9,
             "viewCenter": {
-                "x": 2401.456689499696,
-                "y": 256.3773519465881
+                "x": 1039.8512620192307,
+                "y": 357.57211538461536
             }
         },
         "Phflorg1.tmx": {

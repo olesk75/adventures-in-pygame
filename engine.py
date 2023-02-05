@@ -5,7 +5,6 @@ import re
 from csv import reader
 
 from settings import *
-from monsters import Drop
 
 # --- Draw on screen ---
 def draw_text(text, font, text_col, x, y)-> None:
@@ -58,6 +57,10 @@ def import_tile_graphics(path :str) -> list:
 class GamePanel():
     """ Class to show a panel on top left corner of the screen """
     def __init__(self, screen: pygame.display)-> None:
+        from animation_data import anim
+        self.heart_anim = anim['decor']['beating-heart']
+        self.heart_anim.active = False
+
         self.screen = screen
         self.window_size = pygame.display.get_window_size()# screen.get_window_size()
         
@@ -77,8 +80,11 @@ class GamePanel():
         self.panel_bg = pygame.image.load('assets/panel/game-panel.png').convert_alpha()
 
     def setup_bars(self, health_current, health_max) -> None:
+        # Health bars + stompometer
         self.health_bar_length = int(SCREEN_WIDTH / 6 * health_current / 1000)  # grows when max health grows
         self.health_bar_max_length = int(SCREEN_WIDTH / 6 * health_max / 1000)  # grows when max health grows
+        
+
 
     def _blink_bar(self, duration) -> None:
         # Blinks the frame around the health bar red
@@ -129,14 +135,14 @@ class GamePanel():
 
         self.health_bar_length = int(SCREEN_WIDTH / 6 * current_health / 1000)
         
-        # first the panel background
+        # --> Panel background
         self.screen.blit(self.panel_bg, (0,0))
 
-        # score in the top left
+        # --> The score
         WHITE = (255, 255, 255)
         draw_text(f'SCORE: {self.score}', self.font_small, WHITE, self.window_size[0]/100, self.window_size[1]/100)  # score
 
-        # health bar, white and semi transparent
+        # --> Health bar, white and semi transparent
         bar_frame = pygame.Surface((self.health_bar_max_length+4,20), pygame.SRCALPHA)   # per-pixel alpha
         bar_frame.fill((255,255,255,128))                         # notice the alpha value in the color
         self.screen.blit(bar_frame, (20,40))
@@ -147,15 +153,20 @@ class GamePanel():
         BLUE = 0
         health_bar = pygame.Surface((self.health_bar_length,16), pygame.SRCALPHA)   # per-pixel alpha
         health_bar.fill((RED,GREEN,BLUE,200))                         # notice the alpha value in the color
-        self.screen.blit(health_bar, (22,42)) 
-    
+        self.screen.blit(health_bar, (22,42))     
         self.last_health = current_health
 
+        # --Heart decoration for health bar
+        self.screen.blit(self.heart_anim.get_image(), (5, 33))
+        if self.health_current < PLAYER_HEALTH // 4:
+            self.heart_anim.active = True
+        else:
+            self.heart_anim.active = False
+            self.heart_anim.frame_number = 4
 
-        # player inventory top right
+        # --> Player inventory, top right
         key_x = self.window_size[0] * 0.8
         key_y = self.window_size[1] * 0.02
-
 
         for items in self.inventory:
             if items[0] == 'key':
@@ -171,26 +182,5 @@ class GamePanel():
 
             self.old_inv = self.inventory
 
-
-# --- Imports sprite sheets for animatons
-# SpriteSheet class
-class SpriteSheet():
-    def __init__(self, image, x_dim, y_dim, transp_color, scale):
-        self.image = image
-        self.x_dim = x_dim
-        self.y_dim = y_dim
-        self.scale = scale
-        self.transp_color = transp_color
-
-    def get_image(self, row, frame) -> pygame.Surface:
-        x_start = frame * self.x_dim
-        y_start = row * self.y_dim
-
-        image = pygame.Surface((self.x_dim, self.y_dim)).convert_alpha()  # empty surface with alpha
-        image.blit(self.image, (0,0), (x_start, y_start, self.x_dim, self.y_dim))  # Copy part of sheet on top of empty image
-        image = pygame.transform.scale(image, (self.x_dim * self.scale, self.y_dim * self.scale))
-        image.set_colorkey(self.transp_color)
-        
-        return image
 
 

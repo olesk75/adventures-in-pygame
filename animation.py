@@ -1,5 +1,28 @@
 import pygame
 
+# --- Imports sprite sheets for animatons
+# SpriteSheet class
+class SpriteSheet():
+    def __init__(self, image, x_dim, y_dim, transp_color, scale) -> None:
+        self.image = image
+        self.x_dim = x_dim
+        self.y_dim = y_dim
+        self.scale = scale
+        self.transp_color = transp_color
+
+    def get_image(self, row, frame) -> pygame.Surface:
+        x_start = frame * self.x_dim
+        y_start = row * self.y_dim
+
+        image = pygame.Surface((self.x_dim, self.y_dim)).convert_alpha()  # empty surface with alpha
+        image.blit(self.image, (0,0), (x_start, y_start, self.x_dim, self.y_dim))  # Copy part of sheet on top of empty image
+        image = pygame.transform.scale(image, (self.x_dim * self.scale, self.y_dim * self.scale))
+        image.set_colorkey(self.transp_color)
+        
+        return image
+
+
+
 # Animation class
 class Animation():
     """ Class which reads the sprite sheet and animates the images in sprites 
@@ -8,7 +31,7 @@ class Animation():
     """
 
     # Getting a sprite sheet
-    def __init__(self, sprite_sheet: pygame.Surface, row:int, frames:int, speed:int, repeat:bool=True) -> None:
+    def __init__(self, sprite_sheet: pygame.Surface, row:int=0, frames:int=1, speed:int=100, repeat:bool=True) -> None:
         self.ss = sprite_sheet
         self.row = row
         self.frames = frames
