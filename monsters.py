@@ -205,6 +205,9 @@ class Monster(pygame.sprite.Sprite):
                     logging.debug(f'BOSS {self.data.monster} dies')
                     self.state = DEAD
 
+            elif self.state == DEAD:
+                self.animation.active = False
+
             else:
                 print(f'ERROR, wrong state for monster in boss fight: {self.state}')
                 exit(1)

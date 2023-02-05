@@ -351,7 +351,7 @@ class Level():
                 for monster in stomp_collision:
                     if monster.state not in (DYING, DEAD):
                         if pygame.Rect.colliderect(self.stomp_effects.sprite.rect, monster.hitbox): 
-                            monster.state = DYING
+                            monster.state_change(DYING)
 
 
 
