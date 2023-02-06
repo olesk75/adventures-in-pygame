@@ -300,23 +300,38 @@ class Level():
     def check_player_attack(self) -> None:
         for monster in self.monsters_sprites.sprites():
             # --> We check if the player is attacking and if the attack hits a monster
-            if self.player.state['active'] == ATTACKING and monster.state != DYING and monster.state != DEAD:
+            if self.player.state['active'] == ATTACKING and monster.state not in (DYING, DEAD) and monster.invulnerable == False:
                 # Check if mob hit
                 if pygame.Rect.colliderect(self.player.rects['attack'], monster.hitbox): 
                     # Add hit (blood) particles
                     self.particles_blood(monster.hitbox.centerx, monster.hitbox.centery, monster.data.blood_color, self.player.turned)
-                    logging.debug(f'{monster.data.monster} killed by player attack')
-                    monster.data.direction = -self.player.turned
-                    self.player_score += monster.data.points_reward
-                    self.player.stomp_counter += 1
-                    """ Adding drops from player death """
-                    # skeleton-boss is a key carrier
-                    if monster.data.monster == 'skeleton-boss':
-                        drop_key = Drop( monster.hitbox.centerx, monster.hitbox.centery - 25 , self.anim['pickups']['key'], turned = False, scale = 2, drop_type='key',)
-                        self.drops_sprites.add(drop_key)
-                        logging.debug(f'{monster.data.monster} dropped a key')
+                    monster.data.hitpoints -= 1
+                    logging.debug(f'{monster.data.monster} hit by player attack - hitpoints remaining: {monster.data.hitpoints}')
+                    #monster.data.direction = -self.player.turned  # turns to player
+                    if self.player.turned:
+                        direction = - 1
+                    else:
+                        direction = 1
 
-                    monster.state_change(DYING)  # we do this _after_ key drop, as the hitbox disappears when the mob enters DYING state
+                    if monster.data.hitpoints == 0: # monster is dying
+                        self.player_score += monster.data.points_reward
+                        self.player.stomp_counter += 1
+                        """ Adding drops from player death """
+                        # skeleton-boss is a key carrier
+                        if monster.data.monster == 'skeleton-boss':
+                            drop_key = Drop( monster.hitbox.centerx, monster.hitbox.centery - 25 , self.anim['pickups']['key'], turned = False, scale = 2, drop_type='key',)
+                            self.drops_sprites.add(drop_key)
+                            logging.debug(f'{monster.data.monster} dropped a key')
+                        monster.state_change(DYING)  # we do this _after_ key drop, as the hitbox disappears when the mob enters DYING state
+
+                    else:  # monster still has hitpoints left
+                        monster.rect.centerx += 20 * (monster.data.speed_attacking + 1) * direction  # small bump back
+                        monster.invulnerable = True
+                        monster.inv_start = pygame.time.get_ticks()
+                        self.player.rects['attack'] = pygame.Rect(0,0,0,0)  
+                        # BLINK WHITE OR RED TODO
+                        monster.state = WALKING
+                        monster.state_change(ATTACKING)
 
 
     def check_player_win(self) -> None:

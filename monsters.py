@@ -69,6 +69,9 @@ class Monster(pygame.sprite.Sprite):
         self.score_flag = False  # We can only add more score when this is True
         self.prev_y_lvl = self.rect.y  # Tracking vertical progress
 
+        self.invulnerable = False  # we set this right after a hit to ensure we don't get duplicate hits
+        self.inv_start = 0  # timer to reset invulnerability
+
         self.currently_casting = None  # if the mob is busy casting, this is what it is casting
         self.cast_anim_list = []  # if the mob casts a spell, we creat animations here
 
@@ -272,6 +275,12 @@ class Monster(pygame.sprite.Sprite):
     def update(self, scroll, platforms_sprite_group, player) -> None:
         dx = 0
         dy = self.vel_y  # Newton would be proud!
+
+        # Check invulnerabiliy
+        if self.invulnerable:
+            now = pygame.time.get_ticks()
+            if now - self.inv_start > 500:
+                self.invulnerable = False
 
         """ Boss battles have separate logic depending on each boss - if they cast anything, we get a list of animations back as well
             the boss_battle function updates self.vel_y directly and adds self.
