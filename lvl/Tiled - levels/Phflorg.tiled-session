@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "Phflorg1.tmx",
+    "activeFile": "Terrain SS.tsx",
     "expandedProjectPaths": [
         "."
     ],
@@ -24,8 +24,8 @@
             "scale": 2.6624,
             "selectedLayer": 9,
             "viewCenter": {
-                "x": 2267.690805288462,
-                "y": 256.34765625
+                "x": 2399.90234375,
+                "y": 256.1598557692308
             }
         },
         "Phflorg0.tsx": {
@@ -34,14 +34,15 @@
             "scaleInEditor": 1
         },
         "Phflorg1.tmx": {
-            "scale": 4.4,
+            "scale": 2.32,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 484.8863636363636,
-                "y": 487.72727272727275
+                "x": 633.8362068965517,
+                "y": 524.1379310344828
             }
         },
         "Phflorg1.tsx": {
+            "dynamicWrapping": true,
             "scaleInDock": 1.5,
             "scaleInEditor": 1
         },
@@ -62,11 +63,12 @@
         "Terrain SS.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 7.2796,
-            "scaleInEditor": 13.3132
+            "scaleInEditor": 23
         },
         "Terrain.tsx": {
             "dynamicWrapping": false,
-            "scaleInDock": 6.0658
+            "scaleInDock": 6.0658,
+            "scaleInEditor": 1
         },
         "Trigger objects.tsx": {
             "dynamicWrapping": true,
@@ -83,17 +85,19 @@
         "Phflorg1.tsx",
         "Phflorg2.tmx",
         "Monsters.tsx",
-        "Terrain SS.tsx"
+        "Terrain SS.tsx",
+        "Terrain.tsx"
     ],
     "project": "Phflorg.tiled-project",
     "recentFiles": [
-        "Terrain SS.tsx",
-        "Monsters.tsx",
-        "Phflorg2.tmx",
-        "Phflorg1.tsx",
-        "Phflorg0.tsx",
+        "Phflorg1.tmx",
         "Phflorg0.tmx",
-        "Phflorg1.tmx"
+        "Phflorg0.tsx",
+        "Phflorg1.tsx",
+        "Phflorg2.tmx",
+        "Monsters.tsx",
+        "Terrain.tsx",
+        "Terrain SS.tsx"
     ],
     "tileset.lastUsedFormat": "tsx"
 }

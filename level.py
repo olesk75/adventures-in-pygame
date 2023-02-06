@@ -130,7 +130,7 @@ class Level():
         sprite_group = pygame.sprite.Group()
 
         # Import all the tile PNGs  TODO: they all get loaded MANY times as this functio is being called!
-        terrain_tile_list = import_tile_sheet_graphics('assets/spritesheets/tiles/terrain_tilest-sheet.png')
+        terrain_tile_list = import_tile_sheet_graphics('assets/spritesheets/tiles/terrain_tilesheet.png')
         decorations_tile_list = import_tile_graphics('assets/tile/decorations/*.png')
         hazards_tile_list = import_tile_graphics('assets/tile/hazards/*.png')
         pickups_tile_list = import_tile_graphics('assets/tile/pickups/*.png')
@@ -160,7 +160,16 @@ class Level():
                         y_size = y_size * 2 + 3
                         distance = 150
                         if int(val) in list_of_moving_platforms:
-                            sprite = MovingGameTile(x_size,y_size,x,y, 3,  distance,tile_surface)  # Moving platform
+                            # We take two of the existing tiles and combine them into one:
+                            img_left = terrain_tile_list[6]
+                            img_right = terrain_tile_list[8]
+                            img_comb = pygame.Surface((img_left.get_width() + img_right.get_width(), img_left.get_height()), pygame.SRCALPHA)
+
+                            # Blit the first two surfaces onto the third.
+                            img_comb.blit(img_left, (0, 0))
+                            img_comb.blit(img_right, (img_left.get_width(), 0))
+
+                            sprite = MovingGameTile(x_size * 2 ,y_size,x,y, 3,  distance,img_comb)  # Moving platform
                         else:
                             sprite = GameTile(x_size,y_size,x,y,tile_surface)  # Normal static terrain tiles
                         
