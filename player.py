@@ -350,7 +350,7 @@ class Player(pygame.sprite.Sprite):
             scroll = -dx  # We scroll left by the opposite of the player's x speed
         
          # Check if player has reached scroll threshold to the right (and we're not on the far right) + we're walking right
-        if dx > 0 and self.rects['player'].centerx >= SCREEN_WIDTH - SCROLL_THRESHOLD and self.world_x_pos < TILE_SIZE * MAX_COLS - SCROLL_THRESHOLD:
+        if dx > 0 and self.rects['player'].centerx >= SCREEN_WIDTH - SCROLL_THRESHOLD and self.world_x_pos < TILE_SIZE_SCREEN * MAX_COLS - SCROLL_THRESHOLD:
             scroll = -dx  # We scroll right by the opposite of the player's x speed
 
 
@@ -560,8 +560,8 @@ class PlayerInOut(pygame.sprite.Sprite):
             self.out_x = x
             self.out_y = y
         
-        self.image = pygame.Surface((TILE_SIZE, TILE_SIZE))  #  empty surface
-        self.rect = self.image.get_rect(center=(x + TILE_SIZE/2, y + TILE_SIZE/2))
+        self.image = pygame.Surface((TILE_SIZE_SCREEN, TILE_SIZE_SCREEN))  #  empty surface
+        self.rect = self.image.get_rect(center=(x + TILE_SIZE_SCREEN/2, y + TILE_SIZE_SCREEN/2))
 
     def update(self, scroll) -> None:
         self.rect.centerx += scroll

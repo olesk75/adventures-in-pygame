@@ -23,7 +23,7 @@ class GameData:
     SCROLL_THRESHOLD: int
     ROWS: int
     MAX_COLS: int
-    TILE_SIZE: int
+    TILE_SIZE_SCREEN: int
     TILE_TYPES: int
     ANIMATION_TYPES: int
     OBJECT_TYPES: int

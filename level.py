@@ -143,9 +143,9 @@ class Level():
             for col_index,val in enumerate(row):
                 if val != '-1':
                     # print(f'{row_index=} {col_index=}')  # DEBUG
-                    x = col_index * TILE_SIZE
-                    y = row_index * TILE_SIZE
-                    bottom_pos = (1 + row_index) * (TILE_SIZE)  # this helps anchor sprites that are odd sizes, where we have to check they are on the ground
+                    x = col_index * TILE_SIZE_SCREEN
+                    y = row_index * TILE_SIZE_SCREEN
+                    bottom_pos = (1 + row_index) * (TILE_SIZE_SCREEN)  # this helps anchor sprites that are odd sizes, where we have to check they are on the ground
             
 
                     if type == 'terrain':  

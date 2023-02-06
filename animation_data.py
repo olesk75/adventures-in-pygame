@@ -44,11 +44,6 @@ hit_indicator_ss = SpriteSheet(pygame.image.load('assets/spritesheets/effects/hi
 heart_ss = SpriteSheet(pygame.image.load('assets/spritesheets/decor/heart-beating.png').convert_alpha(), 16, 16, 2)
 stomp_ss = SpriteSheet(pygame.image.load('assets/spritesheets/decor/boot-stomping.png').convert_alpha(), 16, 16, 2)
 
-# --> GAME TILES
-# Terrain
-
-
-
 """ Create main animation dict """
 anim = {
     'player': {

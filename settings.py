@@ -32,7 +32,9 @@ JUMP_HEIGHT = 15
 SCROLL_THRESHOLD = 400
 ROWS = 16
 MAX_COLS = 150
-TILE_SIZE = 1080 // 16  #  67 pixels on that resolution
+
+TILE_SIZE = 32  # x and y native resolution of standard tiles
+TILE_SIZE_SCREEN = 1080 // 16  #  67 pixels on that resolution
 TILE_TYPES = 18
 ANIMATION_TYPES = 3
 OBJECT_TYPES = 9
