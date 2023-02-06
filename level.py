@@ -59,6 +59,15 @@ class Level():
         self.fx_health_pickup.set_volume(0.5)
         self.fx_player_stomp.set_volume(0.5)
 
+        # Import all the tile PNGs
+        self.terrain_tile_list = import_tile_sheet_graphics('assets/spritesheets/tiles/terrain_tilesheet.png')
+        self.decorations_tile_list = import_tile_graphics('assets/tile/decorations/*.png')
+        self.hazards_tile_list = import_tile_graphics('assets/tile/hazards/*.png')
+        self.pickups_tile_list = import_tile_graphics('assets/tile/pickups/*.png')
+        self.triggered_objects_tile_list = import_tile_graphics('assets/tile/trigger-objects/*.png')
+        self.monsters_tile_list = import_tile_graphics('assets/tile/monsters/*.png')
+        self.player_tile_list = import_tile_graphics('assets/tile/player/*.png')
+
         # messages 
         self.bubble_list = []
 
@@ -118,27 +127,17 @@ class Level():
         # hit indicator 
         self.hit_indicator_group = pygame.sprite.GroupSingle()  # Added when player attack hits a monster
         
-
         # player
         self.player = self.player_setup()
         self.player_sprites = pygame.sprite.GroupSingle()
         self.player_sprites.add(self.player)
 
+        
     
 
     def create_tile_group(self,layout,type) -> pygame.sprite.Group:
         sprite_group = pygame.sprite.Group()
 
-        # Import all the tile PNGs  TODO: they all get loaded MANY times as this functio is being called!
-        terrain_tile_list = import_tile_sheet_graphics('assets/spritesheets/tiles/terrain_tilesheet.png')
-        decorations_tile_list = import_tile_graphics('assets/tile/decorations/*.png')
-        hazards_tile_list = import_tile_graphics('assets/tile/hazards/*.png')
-        pickups_tile_list = import_tile_graphics('assets/tile/pickups/*.png')
-        triggered_objects_tile_list = import_tile_graphics('assets/tile/trigger-objects/*.png')
-        monsters_tile_list = import_tile_graphics('assets/tile/monsters/*.png')
-        player_tile_list = import_tile_graphics('assets/tile/player/*.png')
-
-        
         for row_index, row in enumerate(layout):
             for col_index,val in enumerate(row):
                 if val != '-1':
@@ -152,7 +151,7 @@ class Level():
                         list_of_solid_terrain = [0,1,2,3,4,5,6,7,8,11]  # only these terrain tiles will hold monsters and player up
                         list_of_moving_platforms = [11]
 
-                        tile_surface = terrain_tile_list[int(val)]
+                        tile_surface = self.terrain_tile_list[int(val)]
                         (x_size, y_size) = tile_surface.get_size()
                         # As we need to scale sprites mostly 32x32px into our screen size, we need the following calculation:
                         # The allows us non-rectangular sprites, as long as they are a multiple of 32 in both directions
@@ -161,8 +160,8 @@ class Level():
                         distance = 150
                         if int(val) in list_of_moving_platforms:
                             # We take two of the existing tiles and combine them into one:
-                            img_left = terrain_tile_list[6]
-                            img_right = terrain_tile_list[8]
+                            img_left = self.terrain_tile_list[6]
+                            img_right = self.terrain_tile_list[8]
                             img_comb = pygame.Surface((img_left.get_width() + img_right.get_width(), img_left.get_height()), pygame.SRCALPHA)
 
                             # Blit the first two surfaces onto the third.
@@ -178,7 +177,7 @@ class Level():
                         
                         
                     if type == 'decorations':
-                        tile_surface = decorations_tile_list[int(val)]
+                        tile_surface = self.decorations_tile_list[int(val)]
                         (x_size, y_size) = tile_surface.get_size()
                         x_size = x_size * 2 + 3
                         y_size = y_size * 2 + 3
@@ -186,7 +185,7 @@ class Level():
                         sprite.rect.bottom = bottom_pos
 
                     if type == 'hazards':
-                        tile_surface = hazards_tile_list[int(val)]
+                        tile_surface = self.hazards_tile_list[int(val)]
                         (x_size, y_size) = tile_surface.get_size()
                         x_size = x_size * 2 + 3
                         y_size = y_size * 2 + 3
@@ -197,7 +196,7 @@ class Level():
                         sprite.rect.bottom = bottom_pos
                         
                     if type == 'pickups':
-                        tile_surface = pickups_tile_list[int(val)]
+                        tile_surface = self.pickups_tile_list[int(val)]
                         (x_size, y_size) = tile_surface.get_size()
                         x_size = x_size * 2 + 3
                         y_size = y_size * 2 + 3
@@ -206,7 +205,7 @@ class Level():
                         sprite.rect.bottom = bottom_pos
 
                     if type == 'triggered_objects':
-                        tile_surface = triggered_objects_tile_list[int(val)]
+                        tile_surface = self.triggered_objects_tile_list[int(val)]
                         (x_size, y_size) = tile_surface.get_size()
                         x_size = x_size * 2 + 3
                         y_size = y_size * 2 + 3
@@ -216,7 +215,7 @@ class Level():
                         sprite.rect.bottom = bottom_pos
 
                     if type == 'monsters':
-                        tile_surface = monsters_tile_list[int(val)]
+                        tile_surface = self.monsters_tile_list[int(val)]
                         if int(val) == 0:  # minotaur
                             sprite = Monster(x,y,tile_surface, 'minotaur')
                         if int(val) == 1:  # ogre-archer
@@ -229,7 +228,7 @@ class Level():
                             sprite = Monster(x,y,tile_surface, 'beholder')
                         
                     if type == 'player':
-                        _ = player_tile_list[int(val)]  # we don't draw the tiles, only used in map editor
+                        _ = self.player_tile_list[int(val)]  # we don't draw the tiles, only used in map editor
                         if int(val) == 0:  # the level entrance tile
                             sprite = PlayerInOut(x, y, 'in')
                             self.lvl_entry = (x,y)
