@@ -135,28 +135,28 @@ class Player(pygame.sprite.Sprite):
                 if self.state['active'] == ATTACKING and self.animation.on_last_frame:
                     self.state['active'] = IDLE
                     self.animation = self.animations['idle']
-                    self.animation.frame_number = 0  # important as if we're starting a new game, the animation might be in a random state
+                    self.animation.start_over()  # important as if we're starting a new game, the animation might be in a random state
                     self.animation.active = True
 
                 # If we were walking, and now we're done with the animation (if not, we ignore for now)
                 if self.state['active'] == WALKING and self.animation.on_last_frame:
                     self.state['active'] = IDLE
                     self.animation = self.animations['idle']
-                    self.animation.frame_number = 0
+                    self.animation.start_over()
                     self.animation.active = True
 
                 # If we were casting, and now we're done with the animation (if not, we ignore for now)
                 if self.state['active'] == CASTING and self.animation.on_last_frame:
                     self.state['active'] = IDLE
                     self.animation = self.animations['idle']
-                    self.animation.frame_number = 0
+                    self.animation.start_over()
                     self.animation.active = True
 
                 # If we were jumping and have landed, we switch right away
                 if self.state['active'] == JUMPING and self.on_ground:
                     self.state['active'] = IDLE
                     self.animation = self.animations['idle']
-                    self.animation.frame_number = 0
+                    self.animation.start_over()
                     self.animation.active = True
 
                 # If we were stomping and have landed, we trigger effect right away, but we stay in state for one second
@@ -165,7 +165,7 @@ class Player(pygame.sprite.Sprite):
                     if now - self.stomp_start_timer > 500 and self.stomp_trigger_lock == True:
                         self.state['active'] = IDLE
                         self.animation = self.animations['idle']
-                        self.animation.frame_number = 0
+                        self.animation.start_over()
                         self.animation.active = True
                         self.stomp_trigger_lock = False  # we unlock triggering the effect again, as we're now changing state
                     else:
@@ -192,21 +192,21 @@ class Player(pygame.sprite.Sprite):
                 if self.state['active'] == ATTACKING and self.animation.on_last_frame:
                     self.state['active'] = WALKING
                     self.animation = self.animations['walk']
-                    self.animation.frame_number = 0
+                    self.animation.start_over()
                     self.animation.active = True
 
                 # If we were idle, we start walking straight away
                 if self.state['active'] == IDLE:
                     self.state['active'] = WALKING
                     self.animation = self.animations['walk']
-                    self.animation.frame_number = 0
+                    self.animation.start_over()
                     self.animation.active = True
 
                 # If we were jumping, and we're bak on the ground, we start stright away
                 if self.state['active'] == JUMPING and self.on_ground:
                     self.state['active'] = WALKING
                     self.animation = self.animations['walk']
-                    self.animation.frame_number = 0
+                    self.animation.start_over()
                     self.animation.active = True
     
             # --> Attacking 
@@ -214,7 +214,7 @@ class Player(pygame.sprite.Sprite):
                 # Attack interrupts anything
                 self.state['active'] = ATTACKING
                 self.animation = self.animations['attack']
-                self.animation.frame_number = 0
+                self.animation.start_over()
                 self.animation.active = True
 
             # --> Stomping
@@ -222,7 +222,7 @@ class Player(pygame.sprite.Sprite):
                 # Attack interrupts anything
                 self.state['active'] = STOMPING
                 self.animation = self.animations['stomp']
-                self.animation.frame_number = 0
+                self.animation.start_over()
                 self.animation.active = True
                 stomp_streaks = SpeedLines(self.hitbox_sprite.rect)
                 self.cast_active.append(stomp_streaks)
@@ -232,7 +232,7 @@ class Player(pygame.sprite.Sprite):
                 # Cast interrupts anything
                 self.state['active'] = CASTING
                 self.animation = self.animations['cast']
-                self.animation.frame_number = 0
+                self.animation.start_over()
                 self.animation.active = True
                 # TODO: Placeholder
                 # test expanding circle TODO: TEST TEST DEBUG
@@ -248,7 +248,7 @@ class Player(pygame.sprite.Sprite):
             if self.state['next'] == DYING:
                 self.animation = self.animations['death']
                 self.animation.active = True
-                self.animation.frame_number = 0
+                self.animation.start_over()
                 self.state['active'] = DYING
                 logging.debug('--- DYING ---')
                 

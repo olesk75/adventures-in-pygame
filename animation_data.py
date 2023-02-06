@@ -39,6 +39,7 @@ leaves_ss = SpriteSheet(pygame.image.load('assets/spritesheets/env/leaf.png').co
 
 # Effects
 hit_indicator_ss = SpriteSheet(pygame.image.load('assets/spritesheets/effects/hit-star.png').convert_alpha(), 32,32, 2)
+dust_ss = SpriteSheet(pygame.image.load('assets/spritesheets/effects/dust-landing.png').convert_alpha(), 52,16, 2)
 
 # Decor
 heart_ss = SpriteSheet(pygame.image.load('assets/spritesheets/decor/heart-beating.png').convert_alpha(), 16, 16, 2)
@@ -47,15 +48,15 @@ stomp_ss = SpriteSheet(pygame.image.load('assets/spritesheets/decor/boot-stompin
 """ Create main animation dict """
 anim = {
     'player': {
-        'walk': Animation(stabby_ss_walk, row=0, frames=8, speed=75), 
-        'attack': Animation(stabby_ss_attack, row=0, frames=5, speed=50), 
-        'death': Animation(stabby_ss_death, row=0, frames=8, speed=150, repeat=False),
-        'cast': Animation(stabby_ss_cast, row=0, frames=8, speed=100, repeat=False),
-        'idle': Animation(stabby_ss_idle, row=0, frames=8, speed=50), 
-        'stomp': Animation(stabby_ss_stomp, row=0, frames=5, speed=30, repeat=False), 
+        'walk': Animation(stabby_ss_walk, frames=8, speed=75), 
+        'attack': Animation(stabby_ss_attack, frames=5, speed=50), 
+        'death': Animation(stabby_ss_death, frames=8, speed=150, repeat=False),
+        'cast': Animation(stabby_ss_cast, frames=8, speed=100, repeat=False),
+        'idle': Animation(stabby_ss_idle, frames=8, speed=50), 
+        'stomp': Animation(stabby_ss_stomp, frames=5, speed=30, repeat=False), 
     },
     'minotaur': {
-        'walk': Animation(brenda_ss_walk, row=0, frames=8, speed=100), 
+        'walk': Animation(brenda_ss_walk, frames=8, speed=100), 
         'attack': Animation(minotaur_ss, row=7, frames=8, speed=75),
         'death': Animation(minotaur_ss, row=20, frames=6, speed=100, repeat=False),
         'cast': None
@@ -73,31 +74,32 @@ anim = {
         'cast': Animation(skeleton_boss_ss, row=2, frames=7, speed=100)
     },
     'beholder': {
-        'walk': Animation(beholder_ss_walk, row=0, frames=8, speed=100), 
-        'attack': Animation(beholder_ss_attack, row=0, frames=8, speed=75),
-        'death': Animation(beholder_ss_death, row=0, frames=8, speed=100, repeat=False),
+        'walk': Animation(beholder_ss_walk, frames=8, speed=100), 
+        'attack': Animation(beholder_ss_attack, frames=8, speed=75),
+        'death': Animation(beholder_ss_death, frames=8, speed=100, repeat=False),
         'cast': None
     },
     'fire': {
-        'fire-spell': Animation(fire_spell_ss, row=0, frames=17, speed=100),
-        'fire-hazard': Animation(fire_ss, row=0, frames=8, speed=50)
+        'fire-spell': Animation(fire_spell_ss, frames=17, speed=100),
+        'fire-hazard': Animation(fire_ss, frames=8, speed=50)
 
     },
     'spikes': {
-        'spike-trap': Animation(spike_ss, row=0, frames=2, speed=100)
+        'spike-trap': Animation(spike_ss, frames=2, speed=100)
     },
     'doors': {
-        'end-of-level': Animation(door_ss, row=0, frames=22, speed=100, repeat=False),
+        'end-of-level': Animation(door_ss, frames=22, speed=100, repeat=False),
     },
     'pickups': {
-        'key': Animation(key_ss, row=0, frames=10, speed=50, repeat=True),
-        'health-potion': Animation(health_potion_ss, row=0, frames=7, speed=100, repeat=True),
+        'key': Animation(key_ss, frames=10, speed=50, repeat=True),
+        'health-potion': Animation(health_potion_ss, frames=7, speed=100, repeat=True),
     },
     'environment': {
-        'leaves': Animation(leaves_ss, row=0, frames=10, speed=100, repeat=True)
+        'leaves': Animation(leaves_ss, frames=10, speed=100, repeat=True)
     },
     'effects': {
-        'hit-indicator': Animation(hit_indicator_ss, row=0, frames=13, speed=20, repeat=False)
+        'hit-indicator': Animation(hit_indicator_ss, frames=13, speed=20, repeat=False),  # TODO_ remove
+        'dust-landing': Animation(dust_ss, frames=5, speed=50, repeat=False),
     },
     'decor': {
         'beating-heart': Animation(heart_ss, frames=8, speed=50),

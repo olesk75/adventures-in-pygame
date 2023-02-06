@@ -42,7 +42,7 @@ class Animation():
 
         [self.sprites.append(self.ss.get_image(row, frame)) for frame in range(frames)]
         
-        self.frame_number = 0
+        self.frame_number = 0 
         self.on_last_frame = False  # gives way to check if animation is done (and ready to start over)
         self.last_run = 0
         self.repeat_start = 0  # ticks of time when we're done with one animation frame cycle
@@ -68,7 +68,7 @@ class Animation():
                         self.active = False 
                         self.frame_number -= 1   # we show the last frame forever
                     else:
-                        self.frame_number = 0
+                        self.frame_number = 0 
                         self.first_done = True
                         self.repeat_start = now
                     
@@ -80,7 +80,8 @@ class Animation():
             exit(1)
         return image
 
-
+    def start_over(self) -> None:
+        self.frame_number = 0 
 
     # Scale override is non-funtional
     def _show_anim(self, scale_override=False) -> None:

@@ -250,7 +250,7 @@ class Monster(pygame.sprite.Sprite):
             elif new_state == DYING:
                     self.animation = self.animations['death']
                     self.animation.active = True
-                    self.animation.frame_number = 0
+                    self.animation.start_over()
                     self.rect_attack = pygame.Rect(0,0,0,0)
                     self.rect_detect = pygame.Rect(0,0,0,0)
                     self.hitbox = pygame.Rect(0,0,0,0)
@@ -258,7 +258,7 @@ class Monster(pygame.sprite.Sprite):
             elif new_state == DEAD:
                     print('DEAD')
                     self.animation.active = False
-                    self.animation.frame_number = 0  # make ready for next death from same monster, as we reuse the same animation instance
+                    self.animation.start_over()  # make ready for next death from same monster, as we reuse the same animation instance
                     self.image = self.animation.frame[-1]
 
                     if self.data.sound_death:

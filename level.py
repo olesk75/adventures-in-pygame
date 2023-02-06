@@ -41,6 +41,7 @@ class Level():
         self.arrow_damage = arrow_damage
 
         self.last_stomp = 0  # used to time player's stomp shadows (effect)
+        self.previous_vel_y = 0  # keeping track of player falling for dust effects
         
         # tile data for current level
         level_data = levels[self.current_level]
@@ -124,6 +125,9 @@ class Level():
         # stomp self image shadows and effect
         self.stomp_shadows = pygame.sprite.Group()
         self.stomp_effects = pygame.sprite.GroupSingle()  # only one stomp effect at a time
+
+        # dust effects 
+        self.dust_sprites = pygame.sprite.Group()
 
         # particle system
         self.particle_system = ParticleSystem()
@@ -267,9 +271,27 @@ class Level():
             self.stomp_effects.add(LightEffect1(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery + 10))
             self.player.stomp_trigger = False
             self.player.stomp_counter = 0
+            # TODO add dust
         for sprite in self.stomp_effects.sprites():
             if sprite.done == True:
                 sprite.kill()
+
+    def check_player_dust(self) -> None:
+        if self.player.vel_y > 0:
+            self.previous_vel_y = self.player.vel_y    
+            
+        if self.player.vel_y == 0 and self.previous_vel_y > (0.5 + 15):
+            width = 52
+            height = 16
+            self.dust_jump = GameTileAnimation(width, height, self.player.rects['hitbox'].centerx - width, self.player.rects['hitbox'].bottom - (height + 4), self.anim['effects']['dust-landing'])
+            self.dust_jump.animation.start_over()
+            self.dust_sprites.add(self.dust_jump)
+        
+        # Housekeeping
+        for sprite in self.dust_sprites.sprites():
+            if sprite.animation.on_last_frame:
+                sprite.kill()
+
 
     # --> CHECK ALL COLLISIONS <--
     # Note: use pygame.sprite.spritecollide() for sprite against group with low precision
@@ -282,7 +304,7 @@ class Level():
                 # Check if mob hit
                 if pygame.Rect.colliderect(self.player.rects['attack'], monster.hitbox): 
                     # Add hit (blood) particles
-                    self.particles_blood(monster.hitbox.centerx, monster.hitbox.centery)
+                    self.particles_blood(monster.hitbox.centerx, monster.hitbox.centery, monster.data.blood_color)
                     logging.debug(f'{monster.data.monster} killed by player attack')
                     monster.data.direction = -self.player.turned
                     self.player_score += monster.data.points_reward
@@ -436,22 +458,21 @@ class Level():
                 msg_types.append(bubble.msg_type)
                 bubble.show()
 
-        []
+
        
-    def particles_blood(self, x, y) -> None:
+    def particles_blood(self, x, y, color) -> None:
         if self.player.turned is True:
             direction = -1 
         else: 
             direction = 1
 
-        for _ in range(15):   
+        for _ in range(30):   
             self.particle_system.add({
                 'center': [x + random() * 30, y + random() * 30],
                 'velocity': [random() * 10 * direction , random() * -10],
-                'radius': random() * 15,
-                'color': RED
+                'radius': random() * 10,
+                'color': color
             })
-
                 
 
     def run(self) -> None:
@@ -506,7 +527,11 @@ class Level():
 
         # stomp effect
         self.stomp_effects.update(self.scroll)
-        self.stomp_effects.draw(self.screen)        
+        self.stomp_effects.draw(self.screen)
+
+        # dust
+        self.dust_sprites.update(self.scroll)
+        self.dust_sprites.draw(self.screen)
 
         # player 
         self.scroll = self.player.update(self.terrain_sprites)
@@ -540,6 +565,7 @@ class Level():
         self.check_player_fallen_off()
         self.check_player_attack()
         self.check_player_stomp()
+        self.check_player_dust()
         self.check_player_win()
 
         # --> Check collisions <--

@@ -240,7 +240,7 @@ class GamePanel():
             self.stomp_anim.frame_number = 1
 
         # --> Player inventory, top right
-        key_x = self.window_size[0] * 0.8
+        key_x = self.window_size[0] * 0.75
         key_y = self.window_size[1] * 0.02
 
         for items in self.inventory:
@@ -308,24 +308,21 @@ class ParticleSystem():
                 'color':pygame.Color,
             }
         self.last_run = 0
-        self.update_delay = 10
+        self.update_delay = 15
         
     def add(self, particle) -> None:
         self.all_particles.append(particle)
-        
         
     def update(self, scroll) -> None:
         now = pygame.time.get_ticks()
         if now - self.last_run > self.update_delay:
             for particle in self.all_particles:
                 # Updating velocities
-                particle['velocity'][1] += GRAVITY*2  # adding gravity to the velocity
+                particle['velocity'][1] += GRAVITY * 2  # adding gravity to the velocity (looks better if we add some more gravity/)
 
                 # Updating coordinates as funtion of velocities
                 particle['center'][0] += scroll + particle['velocity'][0] # x
                 particle['center'][1] += particle['velocity'][1]  # y
-
-                print(len(self.all_particles))
 
                 # Shrinking the circle radius
                 particle['radius'] -= 0.5

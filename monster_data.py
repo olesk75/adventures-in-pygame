@@ -40,6 +40,7 @@ class MonsterData():
             self.sound_attack = False
             self.sound_death = pygame.mixer.Sound('assets/sound/monster/minotaur/death.ogg')
             self.sound_death_volume = 0.5
+            self.blood_color = pygame.Color('#ac3232')
 
         if monster == 'ogre-archer':
             self.boss = False
@@ -62,6 +63,7 @@ class MonsterData():
             self.sound_attack_volume = 0.5
             self.sound_death = pygame.mixer.Sound('assets/sound/monster/ogre-archer/death.wav') 
             self.sound_death_volume = 0.3
+            self.blood_color = pygame.Color('#ac3232')
  
         if monster == 'skeleton-boss':
             self.boss = True
@@ -84,6 +86,7 @@ class MonsterData():
             self.sound_attack_volume = 0.1
             self.sound_death = pygame.mixer.Sound('assets/sound/monster/skeleton-boss/death.wav')
             self.sound_death_volume = 1
+            self.blood_color = BLACK
  
             # Boss specific
             self.boss_attacks = [('firewalker', 0.01)] 
@@ -115,6 +118,7 @@ class MonsterData():
             self.sound_death_volume = 0.5
             self.sound_cast = pygame.mixer.Sound('assets/sound/monster/elven-caster/cast.mp3')
             self.sound_cast_volume = 0.5
+            self.blood_color = pygame.Color('#ac3232')
 
         if monster == 'beholder':  # TODO: make unique
             self.boss = False  # bosses have unique behaviour, not just wondering around
@@ -138,3 +142,4 @@ class MonsterData():
             self.sound_attack_volume = 0.5
             self.sound_death = pygame.mixer.Sound('assets/sound/monster/beholder/death.flac')
             self.sound_death_volume = 0.5
+            self.blood_color = pygame.Color('#99e550') 
