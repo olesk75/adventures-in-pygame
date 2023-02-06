@@ -37,9 +37,7 @@ class BubbleMessage():
         self.start_time = 0
         self.init_time = pygame.time.get_ticks()
         self.duration = ttl
-        self.font_size = 48
-        #self.font = pygame.font.Font("assets/font/m5x7.ttf", self.font_size)  # 16, 32, 48
-        #self.font = pygame.font.Font("assets/font/OldSchoolAdventures-42j9.ttf", self.font_size)  # 16, 32, 48
+        self.font_size = 64
         
         self.font = pygame.font.Font("assets/font/Silver.ttf", self.font_size)  # 16, 32, 48
 
@@ -63,19 +61,18 @@ class BubbleMessage():
             padding_x = 30
             padding_y = 12
 
-            white = (255,255,255)
 
             surf = pygame.transform.scale(self.bubble_bg,(self.x_size + int(self.x_size * 0.2), self.y_size))
-            line_size = 3
-
 
             for row, msg_text in enumerate(self.msg_list):
-                text_img = self.font.render(msg_text, True, white)
+                text_img = self.font.render(msg_text, True, BLACK)
+                
+            if self.player.rect.centerx < self.half_screen:  # On the left side of the screen we flip the bubble and move it right of the player
+                surf = pygame.transform.flip(surf, True, False)
                 surf.blit(text_img, (padding_x, padding_y + row * pygame.font.Font.size(self.font, msg_text)[1]))
-            
-            if self.player.rect.centerx < self.half_screen:
-                self.screen.blit(surf, (self.player.rect.centerx, self.player.rect.top - self.y_size))    
+                self.screen.blit(surf , (self.player.rect.centerx, self.player.rect.top - self.y_size))
             else:
+                surf.blit(text_img, (padding_x, padding_y + row * pygame.font.Font.size(self.font, msg_text)[1]))
                 self.screen.blit(surf, (self.player.rect.centerx - self.x_size, self.player.rect.top - self.y_size))
 
 
@@ -123,8 +120,7 @@ class GamePanel():
         self.health_current = 0
 
         # Define fonts
-        self.font_small = pygame.font.SysFont('Lucida Sans', 40)
-        self.font_big = pygame.font.SysFont('Lucida Sans', 60)
+        self.font_small = pygame.font.Font("assets/font/Silver.ttf", 36)
 
         self.blink_counter = 0
         self.blink = False

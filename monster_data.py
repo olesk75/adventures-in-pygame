@@ -24,6 +24,7 @@ class MonsterData():
             self.boss = False  # bosses have unique behaviour, not just wondering around
             self.caster = False
             self.direction = 1  # right
+            self.hitpoints = 2  # the number of hits the mob can take before dying
             self.speed_walking = 3
             self.speed_attacking = 3
             self.detection_range = 200
@@ -46,6 +47,7 @@ class MonsterData():
             self.boss = False
             self.caster = False
             self.direction = 1  # right
+            self.hitpoints = 2
             self.speed_walking = 1
             self.speed_attacking = 0
             self.detection_range = 400
@@ -69,6 +71,7 @@ class MonsterData():
             self.boss = True
             self.caster = True
             self.direction = 1  # right
+            self.hitpoints = 5
             self.speed_walking = 4
             self.speed_attacking = 5
             self.detection_range = 400
@@ -99,6 +102,7 @@ class MonsterData():
             self.boss = False
             self.caster = True
             self.direction = 1  # right
+            self.hitpoints = 2
             self.speed_walking = 1
             self.speed_attacking = 0
             self.detection_range = 400
@@ -124,6 +128,7 @@ class MonsterData():
             self.boss = False  # bosses have unique behaviour, not just wondering around
             self.caster = False
             self.direction = 1  # right
+            self.hitpoints = 3
             self.speed_walking = 3
             self.speed_attacking = 5
             self.detection_range = 200

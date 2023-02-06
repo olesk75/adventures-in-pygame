@@ -28,7 +28,7 @@ class Game:
         # user interface 
         self.panel = GamePanel(screen)
         self.panel.setup_bars(self.health_current, self.health_max) 
-        self.font = pygame.font.Font("assets/font/OldSchoolAdventures-42j9.ttf", 32)  
+        self.font = pygame.font.Font("assets/font/Silver.ttf", 64)  
 
         # damage overlay (red tendrils)
         self.damage_img = pygame.image.load('assets/panel/damage.png').convert_alpha()

@@ -304,7 +304,7 @@ class Level():
                 # Check if mob hit
                 if pygame.Rect.colliderect(self.player.rects['attack'], monster.hitbox): 
                     # Add hit (blood) particles
-                    self.particles_blood(monster.hitbox.centerx, monster.hitbox.centery, monster.data.blood_color)
+                    self.particles_blood(monster.hitbox.centerx, monster.hitbox.centery, monster.data.blood_color, self.player.turned)
                     logging.debug(f'{monster.data.monster} killed by player attack')
                     monster.data.direction = -self.player.turned
                     self.player_score += monster.data.points_reward
@@ -343,6 +343,7 @@ class Level():
     # Player + projectile collision (arrows etc.) AND player's attack collision (so attacking arrows in flight for example)
         if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.projectile_sprites,False) and self.player.state['active'] != DYING:
             for projectile in pygame.sprite.spritecollide(self.player.hitbox_sprite,self.projectile_sprites,False):
+                self.particles_blood(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery, RED, projectile.turned)  # add blood particles whne player is hit
                 self.player.hit(self.arrow_damage, projectile.turned, self.terrain_sprites)  # TODO: separate sprite group for solid terrain
                 projectile.kill()
         for projectile in self.projectile_sprites.sprites():
@@ -372,10 +373,10 @@ class Level():
             for t_object in pygame.sprite.spritecollide(self.player,self.triggered_objects_sprites,False):
                 if any('key' in sublist for sublist in self.player_inventory): # do we have key?
                     t_object.animation.active = True
-                    self.bubble_list.append(BubbleMessage(self.screen, 'Level complete!\nCongratulations!', 3000, 0, 'exit', self.player))
+                    self.bubble_list.append(BubbleMessage(self.screen, 'And that was the lock...', 3000, 0, 'exit', self.player))
                 else:
                     self.player.hit(0, -1, self.terrain_sprites)
-                    self.bubble_list.append(BubbleMessage(self.screen, 'Come back when you have a key!', 3000, 0, 'exit', self.player))
+                    self.bubble_list.append(BubbleMessage(self.screen, 'I\'m missing a key!', 3000, 0, 'exit', self.player))
 
     # Dropped objects pickup / collision
     def check_coll_player_drops(self) -> None:
@@ -385,7 +386,7 @@ class Level():
                     self.player_inventory.append(('key', self.key_img))  # inventory of items and their animations
                     self.fx_key_pickup.play()            
                     drop.kill()
-                    self.bubble_list.append(BubbleMessage(self.screen, 'You have found a key!', 5000, 3000, 'key', self.player))
+                    self.bubble_list.append(BubbleMessage(self.screen, 'A key! All I need now is a lock.', 5000, 3000, 'key', self.player))
                 if drop.drop_type == 'health-potion':
                     self.fx_health_pickup.play()
                     self.player.heal(500)
@@ -441,6 +442,7 @@ class Level():
                 if pygame.Rect.colliderect(self.player.rects['hitbox'], monster.rect_attack) and monster.state == ATTACKING and self.player.state['active'] != STOMPING:
                     if monster.data.attack_instant_damage:  
                         self.player.hit(monster.data.attack_damage, monster.turned, self.terrain_sprites)  # melee hit
+                        self.particles_blood(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery, RED, monster.turned)  # add blood particles whne player is hit
                     elif now - monster.last_arrow > monster.data.attack_delay:  # launching projectile 
                         arrow = Projectile(monster.hitbox.centerx, monster.hitbox.centery, self.arrow_img, turned = monster.turned, scale = 2)
                         # We only add the arrow once the bow animation is complete (and we know we're ATTACKING, so attack anim is active)
@@ -460,8 +462,8 @@ class Level():
 
 
        
-    def particles_blood(self, x, y, color) -> None:
-        if self.player.turned is True:
+    def particles_blood(self, x, y, color, turned) -> None:
+        if turned is True:
             direction = -1 
         else: 
             direction = 1
