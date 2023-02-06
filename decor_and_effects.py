@@ -231,7 +231,7 @@ class GamePanel():
         
 
         
-        # --> Boot decoration for stomp bad
+        # --> Boot decoration for stomp 
         self.screen.blit(self.stomp_anim.get_image(), (SCREEN_WIDTH - 38, 33))
         if current_stomp == PLAYER_STOMP:
             self.stomp_anim.active = True

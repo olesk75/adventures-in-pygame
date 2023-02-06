@@ -60,7 +60,7 @@ def import_tile_sheet_graphics(ss_file :str) -> list:
     from animation import SpriteSheet
 
     transparency = pygame.Color('#595652')
-    tiles_terrain_ss = SpriteSheet(pygame.image.load(ss_file).convert_alpha(), 32, 32, transparency, 1)
+    tiles_terrain_ss = SpriteSheet(pygame.image.load(ss_file).convert_alpha(), 32, 32, 1)
 
     ss_tiles = 12  # number of tiles in the tileset
 

@@ -476,6 +476,7 @@ class Player(pygame.sprite.Sprite):
             self.fx_hit.play()
             # Adjust health and bars
             self.health_current -= damage
+            self.stomp_counter = 0  # reset stomp on hit
             if self.health_current <= 0:
                 self.health_current = 0                                    
                 self.state['next'] = DYING
@@ -500,6 +501,7 @@ class Player(pygame.sprite.Sprite):
                 self.fx_hit.play()
                 self.invincible = True  # we want 
                 self.last_damage = pygame.time.get_ticks()  
+                self.stomp_counter = 0  # reset stomp on hit
                 # Adjust health and bars
                 self.health_current -= damage
                 if self.health_current <= 0:

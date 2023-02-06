@@ -3,8 +3,9 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "Terrain SS.tsx",
+    "activeFile": "Trigger objects.tsx",
     "expandedProjectPaths": [
+        "Tilesets",
         "."
     ],
     "fileStates": {
@@ -22,10 +23,10 @@
         },
         "Phflorg0.tmx": {
             "scale": 2.6624,
-            "selectedLayer": 9,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 2399.90234375,
-                "y": 256.1598557692308
+                "x": 2399.1511418269233,
+                "y": 354.9429086538462
             }
         },
         "Phflorg0.tsx": {
@@ -34,24 +35,24 @@
             "scaleInEditor": 1
         },
         "Phflorg1.tmx": {
-            "scale": 2.32,
+            "scale": 1.5873,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 633.8362068965517,
-                "y": 524.1379310344828
+                "x": 2399.6723996723995,
+                "y": 256.0952560952561
             }
         },
         "Phflorg1.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1.5,
-            "scaleInEditor": 1
+            "scaleInEditor": 13.0592
         },
         "Phflorg2.tmx": {
-            "scale": 2.2156,
+            "scale": 1.2295,
             "selectedLayer": 10,
             "viewCenter": {
-                "x": 2399.575735692363,
-                "y": 495.8024914244449
+                "x": 2399.7559983733227,
+                "y": 281.4152094347295
             }
         },
         "Pickups.tsx": {
@@ -62,17 +63,18 @@
         },
         "Terrain SS.tsx": {
             "dynamicWrapping": false,
-            "scaleInDock": 7.2796,
-            "scaleInEditor": 23
+            "scaleInDock": 4.9114,
+            "scaleInEditor": 10.0064
         },
         "Terrain.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 6.0658,
-            "scaleInEditor": 1
+            "scaleInEditor": 14.08
         },
         "Trigger objects.tsx": {
             "dynamicWrapping": true,
-            "scaleInDock": 1.5
+            "scaleInDock": 1.5,
+            "scaleInEditor": 1
         }
     },
     "last.exportedFilePath": "/home/olesk/Nextcloud/CODE/Python/adventures-in-pygame/lvl/2",
@@ -82,22 +84,22 @@
         "Phflorg1.tmx",
         "Phflorg0.tmx",
         "Phflorg0.tsx",
-        "Phflorg1.tsx",
         "Phflorg2.tmx",
         "Monsters.tsx",
         "Terrain SS.tsx",
-        "Terrain.tsx"
+        "Trigger objects.tsx"
     ],
     "project": "Phflorg.tiled-project",
     "recentFiles": [
         "Phflorg1.tmx",
         "Phflorg0.tmx",
         "Phflorg0.tsx",
-        "Phflorg1.tsx",
         "Phflorg2.tmx",
         "Monsters.tsx",
-        "Terrain.tsx",
-        "Terrain SS.tsx"
+        "Terrain SS.tsx",
+        "Trigger objects.tsx",
+        "Phflorg1.tsx",
+        "Terrain.tsx"
     ],
     "tileset.lastUsedFormat": "tsx"
 }
