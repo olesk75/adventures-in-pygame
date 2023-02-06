@@ -38,7 +38,6 @@ fire_spell_ss = SpriteSheet(pygame.image.load('assets/spritesheets/spells/fire-s
 leaves_ss = SpriteSheet(pygame.image.load('assets/spritesheets/env/leaf.png').convert_alpha(), 16,16, 1)
 
 # Effects
-hit_indicator_ss = SpriteSheet(pygame.image.load('assets/spritesheets/effects/hit-star.png').convert_alpha(), 32,32, 2)
 dust_ss = SpriteSheet(pygame.image.load('assets/spritesheets/effects/dust-landing.png').convert_alpha(), 52,16, 2)
 
 # Decor
@@ -98,7 +97,6 @@ anim = {
         'leaves': Animation(leaves_ss, frames=10, speed=100, repeat=True)
     },
     'effects': {
-        'hit-indicator': Animation(hit_indicator_ss, frames=13, speed=20, repeat=False),  # TODO_ remove
         'dust-landing': Animation(dust_ss, frames=5, speed=50, repeat=False),
     },
     'decor': {

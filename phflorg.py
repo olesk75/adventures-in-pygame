@@ -80,7 +80,7 @@ class Game:
         self.write_text("GAME OVER", WHITE, 0, 200, align='center')
         self.write_text(f"SCORE : {self.level.player_score}", WHITE, 0, 300, align='center')
         self.write_text(f"HIGH SCORE : 99999", WHITE, 0, 400, align='center')
-        self.write_text("Press SPACE to try again, Q to quit", WHITE, 0, 500, align='center')
+        self.write_text("Press SPACE to try again,  Q to quit", WHITE, 0, 500, align='center')
 
         keys = pygame.key.get_pressed()
 
@@ -101,7 +101,7 @@ class Game:
         self.write_text(f"LEVEL {self.level.current_level} COMPLETE", WHITE, 0, 200, align='center')
         self.write_text(f"SCORE : {self.level.player_score}", WHITE, 0, 300, align='center')
         self.write_text(f"HIGH SCORE : 99999", WHITE, 0, 400, align='center')
-        self.write_text("Press SPACE to continue to the next level Q to quit", WHITE, 0, 500, align='center')
+        self.write_text("Press SPACE to continue to the next level,  Q to quit", WHITE, 0, 500, align='center')
 
         keys = pygame.key.get_pressed()
 
