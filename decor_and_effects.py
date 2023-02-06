@@ -298,6 +298,49 @@ class ParallaxBackground():
 
     # TODO: right now the parallax factor is hard coded; move to level_data.py to allow different factors for different levels
 
+class ParticleSystem():
+    def __init__(self) -> None:
+        self.all_particles = []
+        self.particle = {
+                'center': list,
+                'velocity': list,
+                'radius': float,
+                'color':pygame.Color,
+            }
+        self.last_run = 0
+        self.update_delay = 10
+        
+    def add(self, particle) -> None:
+        self.all_particles.append(particle)
+        
+        
+    def update(self, scroll) -> None:
+        now = pygame.time.get_ticks()
+        if now - self.last_run > self.update_delay:
+            for particle in self.all_particles:
+                # Updating velocities
+                particle['velocity'][1] += GRAVITY*2  # adding gravity to the velocity
+
+                # Updating coordinates as funtion of velocities
+                particle['center'][0] += scroll + particle['velocity'][0] # x
+                particle['center'][1] += particle['velocity'][1]  # y
+
+                print(len(self.all_particles))
+
+                # Shrinking the circle radius
+                particle['radius'] -= 0.5
+                if particle['radius'] < 1:
+                    self.all_particles.remove(particle)
+            
+            self.last_run = now
+
+
+    def draw(self, screen) -> None:
+        for particle in self.all_particles:
+            pygame.draw.circle(screen, particle['color'], [particle['center'][0],particle['center'][1]], particle['radius'])
+            
+
+
 class EnvironmentalEffects(pygame.sprite.Group):
     """
     Class for adding non-interactive environmental effects, like blowing leaves, snow, raid etc.

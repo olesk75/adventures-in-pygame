@@ -22,7 +22,6 @@ class Monster(pygame.sprite.Sprite):
         the player position will be tracked by the rect
         """
         super().__init__()
-        self.gravity = 0.5 
         self.data = MonsterData(monster_type)
         self.screen = surface
 
@@ -308,7 +307,7 @@ class Monster(pygame.sprite.Sprite):
         self.rect.x += scroll
 
         # we compensate for graivty
-        self.vel_y += self.gravity  # allows us to let mobs fall
+        self.vel_y += GRAVITY  # allows us to let mobs fall
         dy += self.vel_y
         
         # Update rectangle position

@@ -8,6 +8,7 @@ GamePanel(class)                    : contans the player information for the scr
 
 import pygame
 import logging
+from random import random
 
 from settings import *
 
@@ -16,7 +17,7 @@ from game_tiles import GameTile, GameTileAnimation, MovingGameTile
 from level_data import levels, GameAudio
 from player import Player, PlayerInOut
 from monsters import Monster, Projectile, Spell, Drop
-from decor_and_effects import ParallaxBackground, EnvironmentalEffects,BubbleMessage,LightEffect1
+from decor_and_effects import ParallaxBackground, EnvironmentalEffects, BubbleMessage, LightEffect1, ParticleSystem
 from monster_data import arrow_damage
 
 class Level():
@@ -124,8 +125,8 @@ class Level():
         self.stomp_shadows = pygame.sprite.Group()
         self.stomp_effects = pygame.sprite.GroupSingle()  # only one stomp effect at a time
 
-        # hit indicator 
-        self.hit_indicator_group = pygame.sprite.GroupSingle()  # Added when player attack hits a monster
+        # particle system
+        self.particle_system = ParticleSystem()
         
         # player
         self.player = self.player_setup()
@@ -133,7 +134,22 @@ class Level():
         self.player_sprites.add(self.player)
 
         
-    
+    def _debug_show_state(self) -> None:
+        """ DEBUG ZONE """
+        if self.player.state['active'] == IDLE:
+            pygame.draw.rect(self.screen, (0,255,0), (SCREEN_WIDTH - 50,0,50,50))
+        if self.player.state['active'] == JUMPING:
+            pygame.draw.rect(self.screen, (0,255,255), (SCREEN_WIDTH - 50,0,50,50))
+        if self.player.state['active'] == ATTACKING:
+            pygame.draw.rect(self.screen, (255,0,0), (SCREEN_WIDTH - 50,0,50,50))
+        if self.player.state['active'] == WALKING:
+            pygame.draw.rect(self.screen, (0,0,255), (SCREEN_WIDTH - 50,0,50,50))
+        if self.player.state['active'] == DYING:
+            pygame.draw.rect(self.screen, (0,0,0), (SCREEN_WIDTH - 50,0,50,50))
+        if self.player.state['active'] == CASTING:
+            pygame.draw.rect(self.screen, (255,255,0), (SCREEN_WIDTH - 50,0,50,50))
+        if self.player.state['active'] == STOMPING:
+            pygame.draw.rect(self.screen, (255,0,255), (SCREEN_WIDTH - 50,0,50,50))
 
     def create_tile_group(self,layout,type) -> pygame.sprite.Group:
         sprite_group = pygame.sprite.Group()
@@ -265,8 +281,8 @@ class Level():
             if self.player.state['active'] == ATTACKING and monster.state != DYING and monster.state != DEAD:
                 # Check if mob hit
                 if pygame.Rect.colliderect(self.player.rects['attack'], monster.hitbox): 
-                    # SPAWN HIT INDICATOR
-                    self.hit_indicator_group.add(GameTileAnimation(32, 32, monster.hitbox.centerx, monster.hitbox.centery, self.anim['effects']['hit-indicator']))
+                    # Add hit (blood) particles
+                    self.particles_blood(monster.hitbox.centerx, monster.hitbox.centery)
                     logging.debug(f'{monster.data.monster} killed by player attack')
                     monster.data.direction = -self.player.turned
                     self.player_score += monster.data.points_reward
@@ -419,6 +435,23 @@ class Level():
             else:
                 msg_types.append(bubble.msg_type)
                 bubble.show()
+
+        []
+       
+    def particles_blood(self, x, y) -> None:
+        if self.player.turned is True:
+            direction = -1 
+        else: 
+            direction = 1
+
+        for _ in range(15):   
+            self.particle_system.add({
+                'center': [x + random() * 30, y + random() * 30],
+                'velocity': [random() * 10 * direction , random() * -10],
+                'radius': random() * 15,
+                'color': RED
+            })
+
                 
 
     def run(self) -> None:
@@ -479,13 +512,6 @@ class Level():
         self.scroll = self.player.update(self.terrain_sprites)
         self.player_sprites.draw(self.screen)
 
-        # hit indicator
-        self.hit_indicator_group.update(self.scroll)
-        self.hit_indicator_group.draw(self.screen)
-        if self.hit_indicator_group.sprite: 
-            if self.hit_indicator_group.sprite.animation.frame_number == self.hit_indicator_group.sprite.animation.frames - 1:
-                self.hit_indicator_group.sprite.kill()
-
         # entry and exit points
         self.player_in_out_sprites.update(self.scroll)  
         #self.player_in_out_sprites.draw(self.screen)  # normally we do not draw these, but good to have for debugging
@@ -493,6 +519,10 @@ class Level():
         # environmental effects
         self.env_sprites.update(self.scroll)
         self.env_sprites.draw(self.screen)
+
+        # particle system
+        self.particle_system.update(self.scroll)
+        self.particle_system.draw(self.screen)
 
         """ DEMO ZONE """
         # Testing player casting
@@ -503,26 +533,16 @@ class Level():
                 if cast.done:
                     self.player.cast_active.remove(cast)
 
-        """ DEBUG ZONE """
-        if self.player.state['active'] == IDLE:
-            pygame.draw.rect(self.screen, (0,255,0), (SCREEN_WIDTH - 50,0,50,50))
-        if self.player.state['active'] == JUMPING:
-            pygame.draw.rect(self.screen, (0,255,255), (SCREEN_WIDTH - 50,0,50,50))
-        if self.player.state['active'] == ATTACKING:
-            pygame.draw.rect(self.screen, (255,0,0), (SCREEN_WIDTH - 50,0,50,50))
-        if self.player.state['active'] == WALKING:
-            pygame.draw.rect(self.screen, (0,0,255), (SCREEN_WIDTH - 50,0,50,50))
-        if self.player.state['active'] == DYING:
-            pygame.draw.rect(self.screen, (0,0,0), (SCREEN_WIDTH - 50,0,50,50))
-        if self.player.state['active'] == CASTING:
-            pygame.draw.rect(self.screen, (255,255,0), (SCREEN_WIDTH - 50,0,50,50))
-        if self.player.state['active'] == STOMPING:
-            pygame.draw.rect(self.screen, (255,0,255), (SCREEN_WIDTH - 50,0,50,50))
+        # DEBUGGING
+        self._debug_show_state()
 
-        # --> Check collisions <--
+        # --> Check player condition and actions <--
+        self.check_player_fallen_off()
         self.check_player_attack()
         self.check_player_stomp()
         self.check_player_win()
+
+        # --> Check collisions <--
         self.check_coll_player_hazard()
         self.check_coll_player_projectile()
         self.check_coll_player_spell()
@@ -531,8 +551,11 @@ class Level():
         self.check_coll_player_drops()
         self.check_coll_stomp_monster()  # we need this to be called before player/monster collision check
         self.check_coll_player_monster()
+
+        # --> Check monster condition and actions <--
         self.check_monsters()  # this check mob detection + attack as well as player attack against all mobs
-        self.check_player_fallen_off()
+        
+        # --> Check effects and particle system <--
         self.show_bubbles()
         
         # --> Log status if in the right mode
