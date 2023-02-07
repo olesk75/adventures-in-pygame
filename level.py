@@ -385,7 +385,7 @@ class Level():
     def check_coll_player_pickup(self) -> None:
         if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.pickups_sprites,False) and self.player.state['active'] != DYING:
             for pickup in pygame.sprite.spritecollide(self.player,self.pickups_sprites,False):
-                if pickup.name == 'health potoion':
+                if pickup.name == 'health potion':
                     self.fx_health_pickup.play()
                     self.player.heal(500)
                     pickup.kill()

@@ -33,6 +33,9 @@ class Game:
         # damage overlay (red tendrils)
         self.damage_img = pygame.image.load('assets/panel/damage.png').convert_alpha()
 
+        # map screen background
+        self.map_img = pygame.image.load('assets/map/map.png').convert_alpha()
+
         self.last_run = 0
         self.slowmo = False
 
@@ -93,7 +96,7 @@ class Game:
             self.state = GS_QUIT
             
         if keys[pygame.K_SPACE]:
-            game.create_level(1)  # starting at level 1
+            self.create_level(1)  # starting at level 1
             fade_to_color(pygame.Color('black'))  # fade to red
             self.faded = False
             self.state = GS_PLAYING
@@ -107,32 +110,34 @@ class Game:
         self.write_text(f"LEVEL {self.level.current_level} COMPLETE", WHITE, 0, 200, align='center')
         self.write_text(f"SCORE : {self.level.player_score}", WHITE, 0, 300, align='center')
         self.write_text(f"HIGH SCORE : 99999", WHITE, 0, 400, align='center')
-        self.write_text("Press SPACE to continue to the world map,  Q to quit", WHITE, 0, 500, align='center')
+        self.write_text("Press ENTER to continue to the world map,  Q to quit", WHITE, 0, 500, align='center')
 
         keys = pygame.key.get_pressed()
 
+        if keys[pygame.K_q]:
+            self.state = GS_QUIT
+            
+        if keys[pygame.K_RETURN]:
+            self.faded = False
+            fade_to_color(pygame.Color('white'))  # fade to white
+            self.state = GS_MAP_SCREEN
+
+    def map_screen(self) -> None:
+        """ Show the worldmap_img map screen """
+        map_bg = pygame.transform.scale(self.map_img, (2, 2)).convert_alpha()
+
+        screen.blit(map_bg,(0,0))                      
+
+
+        keys = pygame.key.get_pressed()
         if keys[pygame.K_q]:
             self.state = GS_QUIT
             
         if keys[pygame.K_SPACE]:
             game.create_level(self.level.current_level + 1)  # next level!
+            fade_to_color(pygame.Color('black'))  # fade to black
             self.faded = False
             self.state = GS_PLAYING
-            fade_to_color(pygame.Color('white'))  # fade to white
-            self.map_screen()
-
-    def map_screen(self) -> None:
-        """ Show the world map screen """
-
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_q]:
-            self.state = GS_QUIT
-            
-        # if keys[pygame.K_SPACE]:
-        #     game.create_level(1)  # starting at level 1
-        #     fade_to_color(pygame.Color('black'))  # fade to red
-        #     self.faded = False
-        #     self.state = GS_PLAYING
 
 
     def write_text(self, text: str, color: pygame.Color, x :int, y: int, align: str=None) -> None:
