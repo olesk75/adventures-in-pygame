@@ -39,6 +39,8 @@ class GameTileAnimation(GameTile):
 
 		self.x_vel = 0  # this allows us to keep track of movement speed (not pos)
 		self.y_vel = 0
+
+		self.name = ''  # This allows us to store the type (like "health potion") in this object
         
 	def update(self, scroll) -> None:
 		# Moves the rectangle of this sprite 

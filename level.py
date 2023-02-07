@@ -222,7 +222,15 @@ class Level():
                         y_size = y_size * 2 + 3
                         if int(val) == 0:  # health potion
                             sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['pickups']['health-potion'])
+                            sprite.name = 'health potion'
+                        if int(val) == 1:  # stomp potion
+                            sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['pickups']['stomp-potion'])
+                            sprite.name = 'stomp potion'
+                        if int(val) == 2:  # mana potion
+                            sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['pickups']['mana-potion'])
+                            sprite.name = 'mana potion'
                         sprite.rect.bottom = bottom_pos
+                        
 
                     if type == 'triggered_objects':
                         tile_surface = self.triggered_objects_tile_list[int(val)]
@@ -307,7 +315,6 @@ class Level():
                     self.particles_blood(monster.hitbox.centerx, monster.hitbox.centery, monster.data.blood_color, self.player.turned)
                     monster.data.hitpoints -= 1
                     logging.debug(f'{monster.data.monster} hit by player attack - hitpoints remaining: {monster.data.hitpoints}')
-                    #monster.data.direction = -self.player.turned  # turns to player
                     if self.player.turned:
                         direction = - 1
                     else:
@@ -378,10 +385,20 @@ class Level():
     def check_coll_player_pickup(self) -> None:
         if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.pickups_sprites,False) and self.player.state['active'] != DYING:
             for pickup in pygame.sprite.spritecollide(self.player,self.pickups_sprites,False):
-                # TODO: more types than just health potion
-                self.fx_health_pickup.play()
-                self.player.heal(500)
-                pickup.kill()
+                if pickup.name == 'health potoion':
+                    self.fx_health_pickup.play()
+                    self.player.heal(500)
+                    pickup.kill()
+                if pickup.name == 'stomp potion':
+                    self.fx_health_pickup.play()
+                    self.player.stomp_counter = PLAYER_STOMP
+                    pickup.kill()
+                if pickup.name == 'mana potoion':
+                    self.fx_health_pickup.play()
+                    pass
+                    pickup.kill()
+
+
 
     def check_coll_player_triggered_objects(self) -> None:
         if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.triggered_objects_sprites,False) and self.player.state['active'] != DYING:
@@ -402,9 +419,7 @@ class Level():
                     self.fx_key_pickup.play()            
                     drop.kill()
                     self.bubble_list.append(BubbleMessage(self.screen, 'A key! All I need now is a lock.', 5000, 3000, 'key', self.player))
-                if drop.drop_type == 'health-potion':
-                    self.fx_health_pickup.play()
-                    self.player.heal(500)
+               
                 logging.debug(f'PICKUP: {drop.drop_type}')
                 logging.debug(f'Inventory: {self.player_inventory}')   
 

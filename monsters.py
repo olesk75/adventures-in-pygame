@@ -444,7 +444,7 @@ class Spell(pygame.sprite.Sprite):
 
 
 class Drop(pygame.sprite.Sprite):
-    def __init__(self, x, y, anim, turned= False, scale = 1, drop_type=None):
+    def __init__(self, x, y, anim, turned= False, scale = 1, drop_type=None) -> None:
         """
         The Drop class constructor - object animates in place until kill()
         NOTE: continious animation
@@ -467,6 +467,4 @@ class Drop(pygame.sprite.Sprite):
     def update(self, scroll) -> None:
         self.rect.x += scroll # we compensate for scrolling
 
-        self.image = pygame.transform.flip( self.anim.get_image().convert_alpha(), self.turned, False) 
-        #self.image = pygame.transform.scale(self.image, (self.image.get_width() * self.scale, self.image.get_height() * self.scale))
-        
+        self.image = pygame.transform.flip( self.anim.get_image().convert_alpha(), self.turned, False)         

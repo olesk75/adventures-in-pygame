@@ -56,6 +56,7 @@
             }
         },
         "Pickups.tsx": {
+            "dynamicWrapping": true,
             "scaleInDock": 1
         },
         "Player.tsx": {
@@ -78,7 +79,7 @@
         }
     },
     "last.exportedFilePath": "/home/olesk/Nextcloud/CODE/Python/adventures-in-pygame/lvl/2",
-    "last.imagePath": "/home/olesk/Nextcloud/CODE/Python/adventures-in-pygame/assets/spritesheets/tiles",
+    "last.imagePath": "/home/olesk/Nextcloud/CODE/Python/adventures-in-pygame/assets/tile/pickups",
     "map.lastUsedExportFilter": "All Files (*)",
     "openFiles": [
         "Phflorg1.tmx",

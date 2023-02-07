@@ -97,6 +97,8 @@ class GameAudio():
         # Load audio for world
         self.key_pickup_fx = pygame.mixer.Sound('assets/sound/objects/key_pickup.wav')
         self.health_pickup_fx = pygame.mixer.Sound('assets/sound/objects/health_pickup.wav')
+        self.stomp_pickup_fx = pygame.mixer.Sound('assets/sound/objects/health_pickup.wav')
+        self.mana_pickup_fx = pygame.mixer.Sound('assets/sound/objects/health_pickup.wav')
 
         # Game music
         if level == 2 or level == 1 or level == 0:

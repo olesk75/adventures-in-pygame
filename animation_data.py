@@ -24,6 +24,8 @@ beholder_ss_death = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/
 
 # Drops and animated objects
 health_potion_ss =  SpriteSheet(pygame.image.load('assets/spritesheets/objects/lifepotion.png').convert_alpha(), 32, 32, 3)
+stomp_potion_ss =  SpriteSheet(pygame.image.load('assets/spritesheets/objects/stomppotion.png').convert_alpha(), 32, 32, 3)
+mana_potion_ss =  SpriteSheet(pygame.image.load('assets/spritesheets/objects/manapotion.png').convert_alpha(), 32, 32, 3)
 key_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/key.png').convert_alpha(), 32, 32, 2)
 door_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/portcullis.png').convert_alpha(), 32, 32, 4)
 
@@ -92,6 +94,8 @@ anim = {
     'pickups': {
         'key': Animation(key_ss, frames=10, speed=50, repeat=True),
         'health-potion': Animation(health_potion_ss, frames=7, speed=100, repeat=True),
+        'stomp-potion': Animation(stomp_potion_ss, frames=7, speed=100, repeat=True),
+        'mana-potion': Animation(mana_potion_ss, frames=7, speed=100, repeat=True),
     },
     'environment': {
         'leaves': Animation(leaves_ss, frames=10, speed=100, repeat=True)
