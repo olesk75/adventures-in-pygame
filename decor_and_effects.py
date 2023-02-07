@@ -56,8 +56,6 @@ class BubbleMessage():
             self.y_size += y_padding
 
     def _display_msg(self) -> None:
-            # TODO: BLIT ONTO A SPRITE BIG ENOUGH FOR RECT AND CIRCLES FIRST, THEN WE CAN USE THE SPRITE TO MOVE THE BUBBLE OVER TIME
-            # ALSO MAKE QUARTERR SIZE, SCALE UP, TO GET PIXEL ART EFFECT, OR REDUCE RESOLUTION EVERYWHERE AND SCALE UP!!
             padding_x = 30
             padding_y = 12
 

@@ -366,7 +366,7 @@ class Level():
         if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.projectile_sprites,False) and self.player.state['active'] != DYING:
             for projectile in pygame.sprite.spritecollide(self.player.hitbox_sprite,self.projectile_sprites,False):
                 self.particles_blood(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery, RED, projectile.turned)  # add blood particles whne player is hit
-                self.player.hit(self.arrow_damage, projectile.turned, self.terrain_sprites)  # TODO: separate sprite group for solid terrain
+                self.player.hit(self.arrow_damage, projectile.turned, self.terrain_sprites)
                 projectile.kill()
         for projectile in self.projectile_sprites.sprites():
             # We can attack and destroy projectiles as well

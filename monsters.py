@@ -31,7 +31,6 @@ class Monster(pygame.sprite.Sprite):
 
         # Setting up animations
         self.animations = {
-            'idle': None,  # TODO
             'walk': copy.copy(anim[monster_type]['walk']),
             'attack': copy.copy(anim[monster_type]['attack']),
             'death': copy.copy(anim[monster_type]['death']),

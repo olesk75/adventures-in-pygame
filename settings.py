@@ -24,7 +24,9 @@ DARKGRAY = ( 20,  20,  20)
 
 # General constants
 SCREEN_WIDTH = 1920
-SCREEN_HEIGHT = 1080
+SCREEN_HEIGHT = 960
+
+
 LEVEL_WIDTH = 4
 GRAVITY = 0.5
 MAX_PLATFORMS = 10
@@ -34,7 +36,7 @@ ROWS = 16
 MAX_COLS = 150
 
 TILE_SIZE = 32  # x and y native resolution of standard tiles
-TILE_SIZE_SCREEN = 1080 // 16  #  67 pixels on that resolution
+TILE_SIZE_SCREEN = SCREEN_WIDTH // TILE_SIZE
 TILE_TYPES = 18
 ANIMATION_TYPES = 3
 OBJECT_TYPES = 9

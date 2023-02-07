@@ -19,7 +19,6 @@ class Player(pygame.sprite.Sprite):
 
         self.screen = surface
 
-        # TODO: fix hardcoded values
         self.health_max = health_max
         self.health_current = self.health_max
 
@@ -27,11 +26,11 @@ class Player(pygame.sprite.Sprite):
         self.invincibility_duration = 500
         self.last_damage = 0
 
-        self.stomp_counter = 0  # used to leave behind ghostly images of player on every n'th iteration
-
-        from animation_data import anim
+        self.stomp_counter = 0 
 
         # Setting up animations
+        from animation_data import anim
+
         self.animations = {
             'idle': anim['player']['idle'],
             'walk': anim['player']['walk'],
@@ -234,7 +233,7 @@ class Player(pygame.sprite.Sprite):
                 self.animation = self.animations['cast']
                 self.animation.start_over()
                 self.animation.active = True
-                # TODO: Placeholder
+
                 # test expanding circle TODO: TEST TEST DEBUG
                 circle1 = ExpandingCircle(self.hitbox_sprite.rect.centerx, self.hitbox_sprite.rect.centery, WHITE, 30, 300,10)
                 circle2 = ExpandingCircle(self.hitbox_sprite.rect.centerx, self.hitbox_sprite.rect.centery, WHITE, 30, 200,10)

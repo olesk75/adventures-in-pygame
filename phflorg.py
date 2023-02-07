@@ -36,12 +36,13 @@ class Game:
         self.last_run = 0
         self.slowmo = False
 
-    def create_level(self,current_level) -> None:
+    def create_level(self,current_level,music_on) -> None:
         """ Create each level """
         self.level = Level(current_level,screen, self.health_max)
-        self.level_audio = GameAudio(current_level)
-        self.level_audio.music.play(-1,0.0)
-        self.level_audio.music.set_volume(0.4)
+        if music_on:
+            self.level_audio = GameAudio(current_level)
+            self.level_audio.music.play(-1,0.0)
+            self.level_audio.music.set_volume(0.4)
     
     def check_level_complete(self) -> None:
         if self.level.level_complete == True:
@@ -134,9 +135,21 @@ class Game:
         self.check_damage_effects()
         self.health_current = self.level.player.health_current
         self.panel.inventory = self.level.player_inventory
-        self.panel.draw(self.level.player_score, self.health_current, self.level.player.stomp_counter)  # TODO: fox stomp
+        self.panel.draw(self.level.player_score, self.health_current, self.level.player.stomp_counter)
         self.check_level_complete()
         self.check_game_over()
+
+
+# Command lind arguments
+music_on = True
+sound_on = True
+if len(sys.argv):
+    if '--no-music' in sys.argv:
+        music_on = False
+        print('OFF')
+    if '--no-sound' in sys.argv:
+        sound_on = False
+
 
 # Pygame setup
 pygame.init()
@@ -145,7 +158,8 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 clock = pygame.time.Clock()
 game = Game()
-game.create_level(1)
+
+game.create_level(1, music_on)
 
 while True:
     for event in pygame.event.get():
