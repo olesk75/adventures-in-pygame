@@ -15,6 +15,7 @@ GS_PLAYING = 1
 GS_GAME_OVER = 2
 GS_LEVEL_COMPLETE = 3
 GS_QUIT = 5
+GS_MAP_SCREEN = 6
 
 # Color contants
 WHITE    = (255, 255, 255)
@@ -45,6 +46,8 @@ ATTACK_SPEED = 1  # UNUSED
 PLAYER_HEALTH = 1000
 PLAYER_STOMP = 5  # monsters to kill before stop recharges
 STOMP_SPEED = 50
+MUSIC_ON = True
+SOUNDS_ON = True
 
 # Debug settings
 DEBUG_HITBOXES = False

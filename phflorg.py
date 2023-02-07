@@ -36,25 +36,27 @@ class Game:
         self.last_run = 0
         self.slowmo = False
 
-    def create_level(self,current_level,music_on) -> None:
+    def create_level(self,current_level) -> None:
         """ Create each level """
         self.level = Level(current_level,screen, self.health_max)
-        if music_on:
+        if MUSIC_ON:
             self.level_audio = GameAudio(current_level)
             self.level_audio.music.play(-1,0.0)
             self.level_audio.music.set_volume(0.4)
-    
+
     def check_level_complete(self) -> None:
+        """ Check if player has successfully reached end of the level """
         if self.level.level_complete == True:
             self.state = GS_LEVEL_COMPLETE
             logging.debug('GAME state: LEVEL COMPLETE ')
             
 
     def check_game_over(self) -> None:
-        """ Check if out of health"""
+        """ Check if player is DEAD """
         if self.level.player.state['active'] == DEAD:
             self.max_level = 1
-            self.level_audio.music.stop()
+            if MUSIC_ON:
+                self.level_audio.music.stop()
 
             self.state = GS_GAME_OVER
             logging.debug('GAME state: GAME OVER ')
@@ -72,10 +74,12 @@ class Game:
             FPS = 10
             self.slowmo = True
             self.last_run = pygame.time.get_ticks()
+            # TODO: add slo-mo for stom as well, and player boss death
 
     def game_over(self) -> None:
+        """ Go to GAME OVER screen """
         if not self.faded:
-            fade_to_color(pygame.Color('red'))  # fade to red
+            fade_to_color(pygame.Color('red'))  # fade to red  # TODO: fix! doesn't work
             self.faded = True
 
         self.write_text("GAME OVER", WHITE, 0, 200, align='center')
@@ -95,6 +99,7 @@ class Game:
             self.state = GS_PLAYING
 
     def level_complete(self) -> None:
+        """ Go to LEVEL COMPLETE SCREEN """
         if not self.faded:
             fade_to_color(pygame.Color('black'))  # fade to black
             self.faded = True
@@ -102,7 +107,7 @@ class Game:
         self.write_text(f"LEVEL {self.level.current_level} COMPLETE", WHITE, 0, 200, align='center')
         self.write_text(f"SCORE : {self.level.player_score}", WHITE, 0, 300, align='center')
         self.write_text(f"HIGH SCORE : 99999", WHITE, 0, 400, align='center')
-        self.write_text("Press SPACE to continue to the next level,  Q to quit", WHITE, 0, 500, align='center')
+        self.write_text("Press SPACE to continue to the world map,  Q to quit", WHITE, 0, 500, align='center')
 
         keys = pygame.key.get_pressed()
 
@@ -114,19 +119,30 @@ class Game:
             self.faded = False
             self.state = GS_PLAYING
             fade_to_color(pygame.Color('white'))  # fade to white
+            self.map_screen()
+
+    def map_screen(self) -> None:
+        """ Show the world map screen """
+
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_q]:
+            self.state = GS_QUIT
+            
+        # if keys[pygame.K_SPACE]:
+        #     game.create_level(1)  # starting at level 1
+        #     fade_to_color(pygame.Color('black'))  # fade to red
+        #     self.faded = False
+        #     self.state = GS_PLAYING
 
 
     def write_text(self, text: str, color: pygame.Color, x :int, y: int, align: str=None) -> None:
+        """ Write text on screen """
         text_img = self.font.render(text, True, color)  # surface with the string 
         if align == 'center':  # we ignore x and calculate x based on length of string
             x = (SCREEN_WIDTH / 2) - (text_img.get_width() / 2)  # start half of the text length left of x center
         
-
         screen.blit(text_img, (x, y))
-        pygame.display.update()
-            
-            
-        #self.screen.blit(surf, (self.player.rect.centerx, self.player.rect.top - self.y_size))    
+        pygame.display.update()  # force manual update  # TODO: fix
 
 
     def run(self) -> None:
@@ -141,25 +157,27 @@ class Game:
 
 
 # Command lind arguments
-music_on = True
-sound_on = True
 if len(sys.argv):
     if '--no-music' in sys.argv:
-        music_on = False
-        print('OFF')
+        MUSIC_ON = False
+        logging.debug('Music is OFF')
     if '--no-sound' in sys.argv:
-        sound_on = False
+        SOUNDS_ON = False
+        logging.debug('Sound effects are OFF')
 
 
 # Pygame setup
 pygame.init()
-#screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)  # OSX
+current_screen = pygame.display.Info()
+monitor_res = ( current_screen.current_w, current_screen.current_h)
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        
+#screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)  # OSX
 
 clock = pygame.time.Clock()
 game = Game()
 
-game.create_level(1, music_on)
+game.create_level(1)
 
 while True:
     for event in pygame.event.get():
@@ -179,6 +197,9 @@ while True:
 
     if game.state == GS_LEVEL_COMPLETE:
         game.level_complete()
+
+    if game.state == GS_MAP_SCREEN:
+        game.map_screen()
         
 
     pygame.display.update()
