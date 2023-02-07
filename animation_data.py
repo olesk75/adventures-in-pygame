@@ -15,7 +15,11 @@ stabby_ss_cast = SpriteSheet(pygame.image.load('assets/spritesheets/stabby-casti
 # Monsters
 brenda_ss_walk = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/Brenda-walking.png').convert_alpha(), 32, 32, 4)
 minotaur_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/minotaur-sprites.png').convert_alpha(), 64, 64, 2)
-ogre_archer_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/ogre-archer-sprites.png').convert_alpha(), 64, 64, 2)
+
+elven_archer_running_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/elven-archer-running.png').convert_alpha(), 32, 32, 4)
+elven_archer_attacking_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/elven-archer-attacking.png').convert_alpha(), 32, 32, 4)
+elven_archer_dying_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/elven-archer-dying.png').convert_alpha(), 32, 32, 4)
+
 skeleton_boss_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/skeleton-boss-sprites.png').convert_alpha(), 64, 64, 4)
 skeleton_boss_attack_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/skeleton-boss-sprites-attack.png').convert_alpha(), 64*3, 64*3, 4)
 beholder_ss_walk = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/beholder-walking.png').convert_alpha(), 32, 32, 4)
@@ -62,10 +66,10 @@ anim = {
         'death': Animation(minotaur_ss, row=20, frames=6, speed=100, repeat=False),
         'cast': None
     },
-    'ogre-archer': {
-        'walk': Animation(ogre_archer_ss, row=11, frames=9, speed=50),
-        'attack': Animation(ogre_archer_ss, row=19, frames=13, speed=100),
-        'death': Animation(ogre_archer_ss, row=20, frames=6, speed=100, repeat=False),
+    'elven-archer': {
+        'walk': Animation(elven_archer_running_ss, frames=8, speed=50),
+        'attack': Animation(elven_archer_attacking_ss, frames=8, speed=100),
+        'death': Animation(elven_archer_dying_ss, frames=7, speed=100, repeat=False),
         'cast': None
     },
     'skeleton-boss': {

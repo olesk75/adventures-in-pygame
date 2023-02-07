@@ -3,10 +3,10 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "Trigger objects.tsx",
+    "activeFile": "Phflorg1.tmx",
     "expandedProjectPaths": [
-        "Tilesets",
-        "."
+        ".",
+        "Tilesets"
     ],
     "fileStates": {
         "Decorations.tsx": {
@@ -19,7 +19,7 @@
         "Monsters.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1,
-            "scaleInEditor": 1
+            "scaleInEditor": 7.93
         },
         "Phflorg0.tmx": {
             "scale": 2.6624,
@@ -35,11 +35,11 @@
             "scaleInEditor": 1
         },
         "Phflorg1.tmx": {
-            "scale": 1.5873,
-            "selectedLayer": 4,
+            "scale": 1.83,
+            "selectedLayer": 7,
             "viewCenter": {
-                "x": 2399.6723996723995,
-                "y": 256.0952560952561
+                "x": 1022.6775956284151,
+                "y": 240.4371584699453
             }
         },
         "Phflorg1.tsx": {
@@ -57,7 +57,8 @@
         },
         "Pickups.tsx": {
             "dynamicWrapping": true,
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 7.93
         },
         "Player.tsx": {
             "scaleInDock": 1
@@ -65,7 +66,7 @@
         "Terrain SS.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 4.9114,
-            "scaleInEditor": 10.0064
+            "scaleInEditor": 7.93
         },
         "Terrain.tsx": {
             "dynamicWrapping": false,
@@ -75,7 +76,7 @@
         "Trigger objects.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1.5,
-            "scaleInEditor": 1
+            "scaleInEditor": 7.93
         }
     },
     "last.exportedFilePath": "/home/olesk/Nextcloud/CODE/Python/adventures-in-pygame/lvl/2",
@@ -84,21 +85,22 @@
     "openFiles": [
         "Phflorg1.tmx",
         "Phflorg0.tmx",
-        "Phflorg0.tsx",
-        "Phflorg2.tmx",
-        "Monsters.tsx",
-        "Terrain SS.tsx",
-        "Trigger objects.tsx"
-    ],
-    "project": "Phflorg.tiled-project",
-    "recentFiles": [
-        "Phflorg1.tmx",
-        "Phflorg0.tmx",
-        "Phflorg0.tsx",
         "Phflorg2.tmx",
         "Monsters.tsx",
         "Terrain SS.tsx",
         "Trigger objects.tsx",
+        "Pickups.tsx"
+    ],
+    "project": "Phflorg.tiled-project",
+    "recentFiles": [
+        "Pickups.tsx",
+        "Trigger objects.tsx",
+        "Terrain SS.tsx",
+        "Monsters.tsx",
+        "Phflorg2.tmx",
+        "Phflorg0.tmx",
+        "Phflorg1.tmx",
+        "Phflorg0.tsx",
         "Phflorg1.tsx",
         "Terrain.tsx"
     ],

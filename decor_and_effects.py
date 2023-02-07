@@ -296,6 +296,7 @@ class ParallaxBackground():
 
 class ParticleSystem():
     def __init__(self) -> None:
+        """ Particle system with pixel art extension """
         self.all_particles = []
         self.particle = {
                 'center': list,
@@ -321,7 +322,7 @@ class ParticleSystem():
                 particle['center'][1] += particle['velocity'][1]  # y
 
                 # Shrinking the circle radius
-                particle['radius'] -= 0.5
+                particle['radius'] -= 0.3
                 if particle['radius'] < 1:
                     self.all_particles.remove(particle)
             
@@ -330,7 +331,10 @@ class ParticleSystem():
 
     def draw(self, screen) -> None:
         for particle in self.all_particles:
-            pygame.draw.circle(screen, particle['color'], [particle['center'][0],particle['center'][1]], particle['radius'])
+            side = int(particle['radius'] * 4)
+            x = int(particle['center'][0] - side/2)
+            y = int(particle['center'][1] - side/2)
+            pygame.draw.rect(screen, particle['color'], pygame.Rect(x, y, side, side ))
             
 
 

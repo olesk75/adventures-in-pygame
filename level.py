@@ -246,8 +246,8 @@ class Level():
                         tile_surface = self.monsters_tile_list[int(val)]
                         if int(val) == 0:  # minotaur
                             sprite = Monster(x,y,tile_surface, 'minotaur')
-                        if int(val) == 1:  # ogre-archer
-                            sprite = Monster(x,y,tile_surface, 'ogre-archer')
+                        if int(val) == 1:  # elven-archer
+                            sprite = Monster(x,y,tile_surface, 'elven-archer')
                         if int(val) == 2:  # skeleton-boss
                             sprite = Monster(x,y,tile_surface, 'skeleton-boss')
                         if int(val) == 3:  # elven-caster
@@ -474,7 +474,7 @@ class Level():
                         self.player.hit(monster.data.attack_damage, monster.turned, self.terrain_sprites)  # melee hit
                         self.particles_blood(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery, RED, monster.turned)  # add blood particles whne player is hit
                     elif now - monster.last_arrow > monster.data.attack_delay:  # launching projectile 
-                        arrow = Projectile(monster.hitbox.centerx, monster.hitbox.centery, self.arrow_img, turned = monster.turned, scale = 2)
+                        arrow = Projectile(monster.hitbox.centerx, monster.hitbox.centery, self.arrow_img, turned = monster.turned, scale = 4)
                         # We only add the arrow once the bow animation is complete (and we know we're ATTACKING, so attack anim is active)
                         if monster.animation.on_last_frame:
                             self.projectile_sprites.add(arrow)
@@ -498,11 +498,11 @@ class Level():
         else: 
             direction = 1
 
-        for _ in range(30):   
+        for _ in range(50):   
             self.particle_system.add({
                 'center': [x + random() * 30, y + random() * 30],
                 'velocity': [random() * 10 * direction , random() * -10],
-                'radius': random() * 10,
+                'radius': random() * 5,
                 'color': color
             })
                 

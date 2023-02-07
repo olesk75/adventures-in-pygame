@@ -7,7 +7,7 @@ import pygame
 from settings import *
 
 
-monsters = ['minotaur', 'ogre-archer', 'skeleton-boss', 'elven-caster', 'beholder']  # used to recognize tiles from level files - order must match tile numbering 
+monsters = ['minotaur', 'elven-archer', 'skeleton-boss', 'elven-caster', 'beholder']  # used to recognize tiles from level files - order must match tile numbering 
 
 arrow_damage = 100
 
@@ -43,12 +43,12 @@ class MonsterData():
             self.sound_death_volume = 0.5
             self.blood_color = pygame.Color('#ac3232')
 
-        if monster == 'ogre-archer':
+        if monster == 'elven-archer':
             self.boss = False
             self.caster = False
             self.direction = 1  # right
             self.hitpoints = 2
-            self.speed_walking = 1
+            self.speed_walking = 4
             self.speed_attacking = 0
             self.detection_range = 400
             self.attack_jumper = False
@@ -61,9 +61,9 @@ class MonsterData():
             self.random_turns = 0.15
             self.hitbox_width = 65 
             self.hitbox_height = 110
-            self.sound_attack = pygame.mixer.Sound('assets/sound/monster/ogre-archer/attack.ogg')
+            self.sound_attack = pygame.mixer.Sound('assets/sound/monster/elven-archer/attack.ogg')
             self.sound_attack_volume = 0.5
-            self.sound_death = pygame.mixer.Sound('assets/sound/monster/ogre-archer/death.wav') 
+            self.sound_death = pygame.mixer.Sound('assets/sound/monster/elven-archer/death.wav') 
             self.sound_death_volume = 0.3
             self.blood_color = pygame.Color('#ac3232')
  
