@@ -2,13 +2,12 @@ import pygame
 import logging
 
 from settings import *
-from level import GameAudio
 from decor_and_effects import ExpandingCircle, SpeedLines
 
 
 # Player class
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y, surface, health_max) -> None:
+    def __init__(self, x, y, surface, health_max, audio) -> None:
         # need also walk_anim, attack_anim, death_anim, sounds
         """
         The Player class constructor - note that x and y is only for initialization,
@@ -86,7 +85,7 @@ class Player(pygame.sprite.Sprite):
         self.hitbox_sprite.rect = self.rects['hitbox']
 
         # Setting up sound effects
-        sounds = GameAudio(1)  # TODO: remove level hardcoding
+        sounds = audio
         self.fx_attack = sounds.player['attack']
         self.fx_jump = sounds.player['jump']
         self.fx_die = sounds.player['die']

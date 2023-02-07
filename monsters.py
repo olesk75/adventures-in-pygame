@@ -359,16 +359,6 @@ class Monster(pygame.sprite.Sprite):
             
         self.image = pygame.transform.flip(self.image, self.turned, False)        
 
-        if DEBUG_HITBOXES:
-            pygame.draw.rect(pygame.display.get_surface(), (255,255,255), self.rect, 4 )  # self.rect - WHITE
-            if self.hitbox:
-                pygame.draw.rect(pygame.display.get_surface(), (128,128,128), self.hitbox, 2 )  # Hitbox rect (grey)
-            if self.rect_attack:
-                pygame.draw.rect(pygame.display.get_surface(), (255, 0, 0), self.rect_attack, 4 )  # attack rect - RED
-            if self.rect_detect:
-                pygame.draw.rect(pygame.display.get_surface(), (0,0,128), self.rect_detect, 2 )  # Detection rect - BLUE
-
-
 class Projectile(pygame.sprite.Sprite):
     def __init__(self,x, y, image, turned, scale = 1) -> None:
         """

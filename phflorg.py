@@ -124,7 +124,7 @@ class Game:
 
     def map_screen(self) -> None:
         """ Show the worldmap_img map screen """
-        map_bg = pygame.transform.scale(self.map_img, (2, 2)).convert_alpha()
+        map_bg = pygame.transform.scale(self.map_img, (SCREEN_WIDTH, SCREEN_HEIGHT)).convert_alpha()
 
         screen.blit(map_bg,(0,0))                      
 
@@ -175,8 +175,12 @@ if len(sys.argv):
 pygame.init()
 current_screen = pygame.display.Info()
 monitor_res = ( current_screen.current_w, current_screen.current_h)
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        
+width, height = SCREEN_WIDTH, SCREEN_HEIGHT
+if current_screen.current_w < SCREEN_WIDTH or current_screen.current_h < SCREEN_HEIGHT:
+    width  = SCREEN_WIDTH // 2
+    height  = SCREEN_HEIGHT // 2
+_screen = pygame.display.set_mode((width, height))
+screen = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 #screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)  # OSX
 
 clock = pygame.time.Clock()
@@ -206,6 +210,8 @@ while True:
     if game.state == GS_MAP_SCREEN:
         game.map_screen()
         
+    _screen.blit(pygame.transform.scale(screen, (width, height)), (0, 0))
 
+    #_screen.blit(screen, (0, 0))
     pygame.display.update()
     clock.tick(FPS)

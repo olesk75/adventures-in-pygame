@@ -38,6 +38,7 @@ MAX_COLS = 150
 
 TILE_SIZE = 32  # x and y native resolution of standard tiles
 TILE_SIZE_SCREEN = SCREEN_WIDTH // TILE_SIZE
+SCALE_FACTOR = 1
 TILE_TYPES = 18
 ANIMATION_TYPES = 3
 OBJECT_TYPES = 9

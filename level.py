@@ -53,10 +53,10 @@ class Level():
         self.health_max = health_max
 
         # audio for current level
-        sounds = GameAudio(self.current_level)
-        self.fx_key_pickup = sounds.key_pickup_fx
-        self.fx_health_pickup = sounds.health_pickup_fx
-        self.fx_player_stomp = sounds.player['stomp']
+        self.sounds = GameAudio(self.current_level)  # used here and sent to player on creation as well
+        self.fx_key_pickup = self.sounds.key_pickup_fx
+        self.fx_health_pickup = self.sounds.health_pickup_fx
+        self.fx_player_stomp = self.sounds.player['stomp']
         self.fx_key_pickup.set_volume(0.5)
         self.fx_health_pickup.set_volume(0.5)
         self.fx_player_stomp.set_volume(0.5)
@@ -270,7 +270,7 @@ class Level():
 
   
     def player_setup(self) -> None:
-        player = Player(self.lvl_entry[0], self.lvl_entry[0], self.screen, self.health_max)
+        player = Player(self.lvl_entry[0], self.lvl_entry[0], self.screen, self.health_max, self.sounds)
         return player
 
 
@@ -592,6 +592,16 @@ class Level():
 
         # DEBUGGING
         self._debug_show_state()
+        if DEBUG_HITBOXES:
+            pygame.draw.rect(self.screen, (255,255,255), self.rect, 4 )  # self.rect - WHITE
+            if self.hitbox:
+                pygame.draw.rect(self.screen, (128,128,128), self.hitbox, 2 )  # Hitbox rect (grey)
+            if self.rect_attack:
+                pygame.draw.rect(self.screen, (255, 0, 0), self.rect_attack, 4 )  # attack rect - RED
+            if self.rect_detect:
+                pygame.draw.rect(self.screen, (0,0,128), self.rect_detect, 2 )  # Detection rect - BLUE
+
+
 
         # --> Check player condition and actions <--
         self.check_player_fallen_off()
