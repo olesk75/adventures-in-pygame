@@ -3,12 +3,15 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "Phflorg1.tmx",
+    "activeFile": "Mountain terrain.tsx",
     "expandedProjectPaths": [
         ".",
         "Tilesets"
     ],
     "fileStates": {
+        ":/automap-tiles.tsx": {
+            "scaleInDock": 5.7553
+        },
         "Decorations.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1
@@ -16,17 +19,30 @@
         "Hazards.tsx": {
             "scaleInDock": 1
         },
+        "Level 1 - Phflorg - mountains.tmx": {
+            "scale": 2.6056,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 503.7227509978509,
+                "y": 591.41848326681
+            }
+        },
         "Monsters.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1,
             "scaleInEditor": 7.93
         },
+        "Mountain terrain.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 5.7113,
+            "scaleInEditor": 7.9711
+        },
         "Phflorg0.tmx": {
             "scale": 2.6624,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 2399.1511418269233,
-                "y": 354.9429086538462
+                "x": 2292.8560697115386,
+                "y": 256.34765625
             }
         },
         "Phflorg0.tsx": {
@@ -38,8 +54,8 @@
             "scale": 1.83,
             "selectedLayer": 7,
             "viewCenter": {
-                "x": 1022.6775956284151,
-                "y": 240.4371584699453
+                "x": 2400,
+                "y": 256.01092896174856
             }
         },
         "Phflorg1.tsx": {
@@ -51,8 +67,8 @@
             "scale": 1.2295,
             "selectedLayer": 10,
             "viewCenter": {
-                "x": 2399.7559983733227,
-                "y": 281.4152094347295
+                "x": 2339.568930459536,
+                "y": 346.8889792598617
             }
         },
         "Pickups.tsx": {
@@ -61,12 +77,13 @@
             "scaleInEditor": 7.93
         },
         "Player.tsx": {
+            "dynamicWrapping": false,
             "scaleInDock": 1
         },
         "Terrain SS.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 4.9114,
-            "scaleInEditor": 7.93
+            "scaleInEditor": 8.0412
         },
         "Terrain.tsx": {
             "dynamicWrapping": false,
@@ -79,9 +96,12 @@
             "scaleInEditor": 7.93
         }
     },
-    "last.exportedFilePath": "/home/olesk/Nextcloud/CODE/Python/adventures-in-pygame/lvl/2",
-    "last.imagePath": "/home/olesk/Nextcloud/CODE/Python/adventures-in-pygame/assets/tile/pickups",
-    "map.lastUsedExportFilter": "All Files (*)",
+    "last.exportedFilePath": "/home/olesk/Nextcloud/CODE/Python/adventures-in-pygame/lvl/lvl 1 - mountains",
+    "last.imagePath": "/home/olesk/Nextcloud/CODE/Python/adventures-in-pygame/assets/tile/tile-sets",
+    "map.height": 30,
+    "map.lastUsedExportFilter": "CSV files (*.csv)",
+    "map.lastUsedFormat": "tmx",
+    "map.width": 250,
     "openFiles": [
         "Phflorg1.tmx",
         "Phflorg0.tmx",
@@ -89,17 +109,21 @@
         "Monsters.tsx",
         "Terrain SS.tsx",
         "Trigger objects.tsx",
-        "Pickups.tsx"
+        "Pickups.tsx",
+        "Mountain terrain.tsx",
+        "Level 1 - Phflorg - mountains.tmx"
     ],
     "project": "Phflorg.tiled-project",
     "recentFiles": [
-        "Pickups.tsx",
-        "Trigger objects.tsx",
-        "Terrain SS.tsx",
-        "Monsters.tsx",
-        "Phflorg2.tmx",
-        "Phflorg0.tmx",
         "Phflorg1.tmx",
+        "Phflorg0.tmx",
+        "Phflorg2.tmx",
+        "Monsters.tsx",
+        "Terrain SS.tsx",
+        "Trigger objects.tsx",
+        "Pickups.tsx",
+        "Level 1 - Phflorg - mountains.tmx",
+        "Mountain terrain.tsx",
         "Phflorg0.tsx",
         "Phflorg1.tsx",
         "Terrain.tsx"

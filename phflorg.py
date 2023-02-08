@@ -9,6 +9,7 @@ from decor_and_effects import GamePanel, fade_to_color
 
 
 FPS = 60
+logging.basicConfig(level=logging.DEBUG)
 
 class Game:
     def __init__(self) -> None:
@@ -173,15 +174,17 @@ if len(sys.argv):
 
 # Pygame setup
 pygame.init()
+
+# Resolution and screen setup
 current_screen = pygame.display.Info()
 monitor_res = ( current_screen.current_w, current_screen.current_h)
 width, height = SCREEN_WIDTH, SCREEN_HEIGHT
 if current_screen.current_w < SCREEN_WIDTH or current_screen.current_h < SCREEN_HEIGHT:
-    width  = SCREEN_WIDTH // 2
-    height  = SCREEN_HEIGHT // 2
-_screen = pygame.display.set_mode((width, height))
+    width  = SCREEN_WIDTH // 1.5
+    height  = SCREEN_HEIGHT // 1.5
+    print(width,height, monitor_res)
+_screen = pygame.display.set_mode((width, height))  # , pygame.FULLSCREEN)
 screen = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-#screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)  # OSX
 
 clock = pygame.time.Clock()
 game = Game()

@@ -2,6 +2,8 @@ import pygame
 import pickle
 import glob
 import re
+import logging
+
 from csv import reader
 
 from settings import *
@@ -55,16 +57,21 @@ def import_tile_graphics(path :str) -> list:
 
 # --- Reads all tiles of a certain category, in numerical order, and returns list
 def import_tile_sheet_graphics(ss_file :str) -> list:
+    """ Import tiles from a tilset file - calculating row and columns based on size, given TILE_SIZE """
     from animation import SpriteSheet
 
     tiles = []
     ss_image = pygame.image.load(ss_file).convert_alpha()
-    ss_tiles = int(ss_image.get_width() / TILE_SIZE)  # get number of tiles in set - assuming everything on a single row!
+    ss_tile_rows = int(ss_image.get_height() / TILE_SIZE)  # get number of columns
+    ss_tile_cols = int(ss_image.get_width() / TILE_SIZE)  # get number of tiles in row
 
     tiles_terrain_ss = SpriteSheet(ss_image, TILE_SIZE, TILE_SIZE, 1)
 
-    for frame_number in range(ss_tiles):
-        tiles.append(tiles_terrain_ss.get_image(0, frame_number))  # row 0, as it's all in one row
+    for row in range(ss_tile_rows):
+        for column in range(ss_tile_cols):
+            tiles.append(tiles_terrain_ss.get_image(row, column))  # row 0, as it's all in one row
+
+    logging.debug(f'Loaded {ss_file}, containing {ss_tile_cols} columns of sprites in {ss_tile_rows} rows')
 
     return tiles
 

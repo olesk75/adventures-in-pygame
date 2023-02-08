@@ -22,7 +22,7 @@ from monster_data import arrow_damage
 
 class Level():
     def __init__(self,current_level,surface, health_max) -> None:
-        logging.basicConfig(level=logging.DEBUG)
+        
         self.last_log = ''  # we do this to only log when something _new_ happens
 
         # TESTING
@@ -63,6 +63,7 @@ class Level():
 
         # Import all the tile PNGs
         self.terrain_tile_list = import_tile_sheet_graphics('assets/spritesheets/tiles/terrain_tilesheet.png')
+        self.terrain_tilesheet_list = import_tile_sheet_graphics('assets/tile/tilesets/mountain-terrain-tileset.png')  # these are the new format tiles
         self.decorations_tile_list = import_tile_graphics('assets/tile/decorations/*.png')
         self.hazards_tile_list = import_tile_graphics('assets/tile/hazards/*.png')
         self.pickups_tile_list = import_tile_graphics('assets/tile/pickups/*.png')
@@ -104,7 +105,7 @@ class Level():
         # ---> Sprites not loaded from the map (projectiles, spels, panels etc.)
 
         # projectiles (no animation variety)
-        self.arrow_img = pygame.image.load('assets/spritesheets/spells/arrow.png').convert_alpha()
+        self.arrow_img = pygame.image.load('assets/sprites/arrow.png').convert_alpha()
         self.projectile_sprites = pygame.sprite.Group()
 
         # spells
