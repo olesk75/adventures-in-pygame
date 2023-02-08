@@ -51,4 +51,4 @@ MUSIC_ON = True
 SOUNDS_ON = True
 
 # Debug settings
-DEBUG_HITBOXES = True
+DEBUG_HITBOXES = False
