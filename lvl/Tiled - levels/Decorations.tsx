@@ -16,4 +16,4 @@
  <tile id="5">
   <image width="32" height="32" source="../../assets/tile/decorations/6.png"/>
  </tile>
-</tileset>
+	</tileset>
