@@ -12,7 +12,6 @@
  <tileset firstgid="14" source="Trigger objects.tsx"/>
  <tileset firstgid="15" source="Hazards.tsx"/>
  <tileset firstgid="17" source="Player.tsx"/>
- <tileset firstgid="19" source="Terrain SS.tsx"/>
  <imagelayer id="13" name="background - clouds" locked="1" offsetx="0" offsety="90" parallaxx="0.5" repeatx="1">
   <image source="../../assets/backgrounds/lvl1/clouds.png" width="1376" height="422"/>
  </imagelayer>

@@ -6,33 +6,41 @@ Level 0 is a special test level and not part of the game normally
 import pygame
 
 level_0 = {
-    'terrain': 'lvl/0/level0_terrain.csv',
-    'decorations': 'lvl/0/level0_decorations.csv',
-    'hazards':  'lvl/0/level0_hazards.csv',
-    'pickups': 'lvl/0/level0_pickups.csv',
-    'triggered_objects': 'lvl/0/level0_triggered_objects.csv',
-    'monsters': 'lvl/0/level0_monsters.csv',
-    'player': 'lvl/0/level0_player.csv',
+    'size_x': 250,
+    'size_y': 15,
+    'pos_terrain': 'lvl/lvl 1 - mountains/level1_terrain.csv',
+    'pos_decorations': 'lvl/lvl 1 - mountains/level1_decorations.csv',
+    'pos_hazards':  'lvl/lvl 1 - mountains/level1_hazards.csv',
+    'pos_pickups': 'lvl/lvl 1 - mountains/level1_pickups.csv',
+    'pos_triggered_objects': 'lvl/lvl 1 - mountains/level1_triggered_objects.csv',
+    'pos_monsters': 'lvl/lvl 1 - mountains/level1_monsters.csv',
+    'pos_player': 'lvl/lvl 1 - mountains/level1_player.csv',
     'environmental_effect': 'leaves',
+    'terrain_ts': 'assets/tile/tilesets/mountain-terrain-tileset.png',
     'background': {
-        'near': 'assets/backgrounds/lvl0/near.png',
-        'medium': 'assets/backgrounds/lvl0/medium.png',
-        'further': 'assets/backgrounds/lvl0/further.png',
-        'far': 'assets/backgrounds/lvl0/far.png',
-        'clouds': 'assets/backgrounds/lvl0/clouds.png',
+        'near': 'assets/backgrounds/lvl1/near.png',
+        'medium': 'assets/backgrounds/lvl1/medium.png',
+        'further': 'assets/backgrounds/lvl1/further.png',
+        'far': 'assets/backgrounds/lvl1/far.png',
+        'clouds': 'assets/backgrounds/lvl1/clouds.png',
         'background_color': (130, 181, 255),
-        'y_adjust': [0,150,400,450,0]
-    }
+        'y_adjust': [0,150,400,450,0],
+    },
+    'tileset': 'mountain',
+    'solid_tiles': range(32),  # the tiles that will keep a player or monster up
+    'moving_horiz': [27],  #  moving platforms
+    'moving_vert': [[3,11,19]],  # bobbing platforms (in one group)
+    'music': None  # TODO: move music here
 }
 
 level_1 = {
-    'terrain': 'lvl/1/level1_terrain.csv',
-    'decorations': 'lvl/1/level1_decorations.csv',
-    'hazards':  'lvl/1/level1_hazards.csv',
-    'pickups': 'lvl/1/level1_pickups.csv',
-    'triggered_objects': 'lvl/1/level1_triggered_objects.csv',
-    'monsters': 'lvl/1/level1_monsters.csv',
-    'player': 'lvl/1/level1_player.csv',
+    'pos_terrain': 'lvl/1/level1_terrain.csv',
+    'pos_decorations': 'lvl/1/level1_decorations.csv',
+    'pos_hazards':  'lvl/1/level1_hazards.csv',
+    'pos_pickups': 'lvl/1/level1_pickups.csv',
+    'pos_triggered_objects': 'lvl/1/level1_triggered_objects.csv',
+    'pos_monsters': 'lvl/1/level1_monsters.csv',
+    'pos_player': 'lvl/1/level1_player.csv',
     'environmental_effect': 'leaves',
     'background': {
         'near': 'assets/backgrounds/lvl1/near.png',
@@ -46,13 +54,13 @@ level_1 = {
 }
 
 level_2 = {
-    'terrain': 'lvl/2/level2_terrain.csv',
-    'decorations': 'lvl/2/level2_decorations.csv',
-    'hazards':  'lvl/2/level2_hazards.csv',
-    'pickups': 'lvl/2/level2_pickups.csv',
-    'triggered_objects': 'lvl/2/level2_triggered_objects.csv',
-    'monsters': 'lvl/2/level2_monsters.csv',
-    'player': 'lvl/2/level2_player.csv',
+    'pos_terrain': 'lvl/2/level2_terrain.csv',
+    'pos_decorations': 'lvl/2/level2_decorations.csv',
+    'pos_hazards':  'lvl/2/level2_hazards.csv',
+    'pos_pickups': 'lvl/2/level2_pickups.csv',
+    'pos_triggered_objects': 'lvl/2/level2_triggered_objects.csv',
+    'pos_monsters': 'lvl/2/level2_monsters.csv',
+    'pos_player': 'lvl/2/level2_player.csv',
     'environmental_effect': 'leaves',
     'background': {
         'near': 'assets/backgrounds/lvl2/near.png',

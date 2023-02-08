@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "Mountain terrain.tsx",
+    "activeFile": "Level 1 - Phflorg - mountains.tmx",
     "expandedProjectPaths": [
         ".",
         "Tilesets"
@@ -20,11 +20,11 @@
             "scaleInDock": 1
         },
         "Level 1 - Phflorg - mountains.tmx": {
-            "scale": 2.6056,
-            "selectedLayer": 0,
+            "scale": 4.6263,
+            "selectedLayer": 7,
             "viewCenter": {
-                "x": 503.7227509978509,
-                "y": 591.41848326681
+                "x": 204.80729740829605,
+                "y": 225.6662992023863
             }
         },
         "Monsters.tsx": {
@@ -34,27 +34,14 @@
         },
         "Mountain terrain.tsx": {
             "dynamicWrapping": false,
-            "scaleInDock": 5.7113,
+            "scaleInDock": 4.1219,
             "scaleInEditor": 7.9711
-        },
-        "Phflorg0.tmx": {
-            "scale": 2.6624,
-            "selectedLayer": 4,
-            "viewCenter": {
-                "x": 2292.8560697115386,
-                "y": 256.34765625
-            }
-        },
-        "Phflorg0.tsx": {
-            "dynamicWrapping": true,
-            "scaleInDock": 5.7984,
-            "scaleInEditor": 1
         },
         "Phflorg1.tmx": {
             "scale": 1.83,
-            "selectedLayer": 7,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 2400,
+                "x": 2399.7267759562837,
                 "y": 256.01092896174856
             }
         },
@@ -67,7 +54,7 @@
             "scale": 1.2295,
             "selectedLayer": 10,
             "viewCenter": {
-                "x": 2339.568930459536,
+                "x": 2399.3493289955263,
                 "y": 346.8889792598617
             }
         },
@@ -103,28 +90,23 @@
     "map.lastUsedFormat": "tmx",
     "map.width": 250,
     "openFiles": [
-        "Phflorg1.tmx",
-        "Phflorg0.tmx",
         "Phflorg2.tmx",
         "Monsters.tsx",
-        "Terrain SS.tsx",
         "Trigger objects.tsx",
         "Pickups.tsx",
         "Mountain terrain.tsx",
+        "Phflorg1.tmx",
         "Level 1 - Phflorg - mountains.tmx"
     ],
     "project": "Phflorg.tiled-project",
     "recentFiles": [
-        "Phflorg1.tmx",
-        "Phflorg0.tmx",
+        "Level 1 - Phflorg - mountains.tmx",
         "Phflorg2.tmx",
         "Monsters.tsx",
-        "Terrain SS.tsx",
         "Trigger objects.tsx",
         "Pickups.tsx",
-        "Level 1 - Phflorg - mountains.tmx",
         "Mountain terrain.tsx",
-        "Phflorg0.tsx",
+        "Phflorg1.tmx",
         "Phflorg1.tsx",
         "Terrain.tsx"
     ],

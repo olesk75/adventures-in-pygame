@@ -44,7 +44,7 @@ class Level():
         self.previous_vel_y = 0  # keeping track of player falling for dust effects
         
         # tile data for current level
-        level_data = levels[self.current_level]
+        self.level_data = levels[self.current_level]
         self.lvl_entry = (0,0)
         self.lvl_exit = (0,0)
 
@@ -62,8 +62,7 @@ class Level():
         self.fx_player_stomp.set_volume(0.5)
 
         # Import all the tile PNGs
-        self.terrain_tile_list = import_tile_sheet_graphics('assets/spritesheets/tiles/terrain_tilesheet.png')
-        self.terrain_tilesheet_list = import_tile_sheet_graphics('assets/tile/tilesets/mountain-terrain-tileset.png')  # these are the new format tiles
+        self.terrain_tilesheet_list = import_tile_sheet_graphics(self.level_data['terrain_ts'])  # these are the new format tiles
         self.decorations_tile_list = import_tile_graphics('assets/tile/decorations/*.png')
         self.hazards_tile_list = import_tile_graphics('assets/tile/hazards/*.png')
         self.pickups_tile_list = import_tile_graphics('assets/tile/pickups/*.png')
@@ -75,32 +74,32 @@ class Level():
         self.bubble_list = []
 
         # player entry and exit points
-        player_in_out_layout = import_csv_layout(level_data['player'])
-        self.player_in_out_sprites = self.create_tile_group(player_in_out_layout,'player')
+        player_in_out_layout = import_csv_layout(self.level_data['pos_player'])
+        self.player_in_out_sprites = self.create_tile_group(player_in_out_layout,'pos_player')
 
         # terrain setup
-        terrain_layout = import_csv_layout(level_data['terrain'])
-        self.terrain_sprites = self.create_tile_group(terrain_layout,'terrain')
+        terrain_layout = import_csv_layout(self.level_data['pos_terrain'])
+        self.terrain_sprites = self.create_tile_group(terrain_layout,'pos_terrain')
 
         # decorations setup 
-        decorations_layout = import_csv_layout(level_data['decorations'])
-        self.decorations_sprites = self.create_tile_group(decorations_layout,'decorations')
+        decorations_layout = import_csv_layout(self.level_data['pos_decorations'])
+        self.decorations_sprites = self.create_tile_group(decorations_layout,'pos_decorations')
 
         # hazards setup 
-        hazards_layout = import_csv_layout(level_data['hazards'])
-        self.hazards_sprites = self.create_tile_group(hazards_layout,'hazards')
+        hazards_layout = import_csv_layout(self.level_data['pos_hazards'])
+        self.hazards_sprites = self.create_tile_group(hazards_layout,'pos_hazards')
 
         # pickups
-        pickups_layout = import_csv_layout(level_data['pickups'])
-        self.pickups_sprites = self.create_tile_group(pickups_layout,'pickups')
+        pickups_layout = import_csv_layout(self.level_data['pos_pickups'])
+        self.pickups_sprites = self.create_tile_group(pickups_layout,'pos_pickups')
 
         # triggered_objects 
-        triggered_objects_layout = import_csv_layout(level_data['triggered_objects'])
-        self.triggered_objects_sprites = self.create_tile_group(triggered_objects_layout,'triggered_objects')
+        triggered_objects_layout = import_csv_layout(self.level_data['pos_triggered_objects'])
+        self.triggered_objects_sprites = self.create_tile_group(triggered_objects_layout,'pos_triggered_objects')
 
         # monsters 
-        monsters_layout = import_csv_layout(level_data['monsters'])
-        self.monsters_sprites = self.create_tile_group(monsters_layout,'monsters')
+        monsters_layout = import_csv_layout(self.level_data['pos_monsters'])
+        self.monsters_sprites = self.create_tile_group(monsters_layout,'pos_monsters')
 
         # ---> Sprites not loaded from the map (projectiles, spels, panels etc.)
 
@@ -121,7 +120,7 @@ class Level():
         self.background = ParallaxBackground(self.current_level, self.screen)
 
         # environmental effects (leaves, snow etc.)
-        self.env_sprites = EnvironmentalEffects(level_data['environmental_effect'], self.screen)  # 'leaves' for lvl1
+        self.env_sprites = EnvironmentalEffects(self.level_data['environmental_effect'], self.screen)  # 'leaves' for lvl1
 
         # stomp self image shadows and effect
         self.stomp_shadows = pygame.sprite.Group()
@@ -168,36 +167,47 @@ class Level():
                     bottom_pos = (1 + row_index) * (TILE_SIZE_SCREEN)  # this helps anchor sprites that are odd sizes, where we have to check they are on the ground
             
 
-                    if type == 'terrain':  
-                        list_of_solid_terrain = [0,1,2,3,4,5,6,7,8,11]  # only these terrain tiles will hold monsters and player up
-                        list_of_moving_platforms = [11]
+                    if type == 'pos_terrain':  
+                        """ Loading terrain tiles
+                            NOTE: there is really no limit to size - the program can accept any size of level,
+                                  but there is currently no vertical scrolling, so stick to 15 32x32 tile with 2x resize
+                        """
+                        #list_of_moving_platforms = [11]
 
-                        tile_surface = self.terrain_tile_list[int(val)]
+                        tile_surface = self.terrain_tilesheet_list[int(val)]
+                        
                         (x_size, y_size) = tile_surface.get_size()
+                        if not x_size == y_size == TILE_SIZE:
+                            logging.debug(f'Terrain tiles are of size {x_size}x{y_size}, but we have TILE_SIZE {TILE_SIZE} in settings')
                         # As we need to scale sprites mostly 32x32px into our screen size, we need the following calculation:
                         # The allows us non-rectangular sprites, as long as they are a multiple of 32 in both directions
-                        x_size = x_size * 2 + 3
-                        y_size = y_size * 2 + 3
-                        distance = 150
-                        if int(val) in list_of_moving_platforms:
-                            # We take two of the existing tiles and combine them into one:
-                            img_left = self.terrain_tile_list[6]
-                            img_right = self.terrain_tile_list[8]
-                            img_comb = pygame.Surface((img_left.get_width() + img_right.get_width(), img_left.get_height()), pygame.SRCALPHA)
+                        x_size = x_size * 2
+                        y_size = y_size * 2
 
-                            # Blit the first two surfaces onto the third.
-                            img_comb.blit(img_left, (0, 0))
-                            img_comb.blit(img_right, (img_left.get_width(), 0))
 
-                            sprite = MovingGameTile(x_size * 2 ,y_size,x,y, 3,  distance,img_comb)  # Moving platform
+                        # if int(val) in list_of_moving_platforms:
+                        #     # We take two of the existing tiles and combine them into one:
+                        #     img_left = self.terrain_tile_list[6]
+                        #     img_right = self.terrain_tile_list[8]
+                        #     img_comb = pygame.Surface((img_left.get_width() + img_right.get_width(), img_left.get_height()), pygame.SRCALPHA)
+
+                        #     # Blit the first two surfaces onto the third.
+                        #     img_comb.blit(img_left, (0, 0))
+                        #     img_comb.blit(img_right, (img_left.get_width(), 0))
+
+                        #     sprite = MovingGameTile(x_size * 2 ,y_size,x,y, 3,  distance,img_comb)  # Moving platform
+                        # else:
+
+                        if int(val) in self.level_data['moving_horiz']:  # TODO: for now only accepts single tiles
+                            distance = 100
+                            sprite = MovingGameTile(x_size ,y_size,x,y, 3,  distance,tile_surface)  # Moving platform
                         else:
                             sprite = GameTile(x_size,y_size,x,y,tile_surface)  # Normal static terrain tiles
-                        
-                        if int(val) not in list_of_solid_terrain:  # Water mostly
+                        if int(val) not in self.level_data['solid_tiles']:  # Water mostly
                             sprite.solid = False
                         
                         
-                    if type == 'decorations':
+                    if type == 'pos_decorations':
                         tile_surface = self.decorations_tile_list[int(val)]
                         (x_size, y_size) = tile_surface.get_size()
                         x_size = x_size * 2 + 3
@@ -205,7 +215,7 @@ class Level():
                         sprite = GameTile(x_size,y_size,x,y,tile_surface)
                         sprite.rect.bottom = bottom_pos
 
-                    if type == 'hazards':
+                    if type == 'pos_hazards':
                         tile_surface = self.hazards_tile_list[int(val)]
                         (x_size, y_size) = tile_surface.get_size()
                         x_size = x_size * 2 + 3
@@ -216,7 +226,7 @@ class Level():
                             sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['spikes']['spike-trap'])
                         sprite.rect.bottom = bottom_pos
                         
-                    if type == 'pickups':
+                    if type == 'pos_pickups':
                         tile_surface = self.pickups_tile_list[int(val)]
                         (x_size, y_size) = tile_surface.get_size()
                         x_size = x_size * 2 + 3
@@ -233,7 +243,7 @@ class Level():
                         sprite.rect.bottom = bottom_pos
                         
 
-                    if type == 'triggered_objects':
+                    if type == 'pos_triggered_objects':
                         tile_surface = self.triggered_objects_tile_list[int(val)]
                         (x_size, y_size) = tile_surface.get_size()
                         x_size = x_size * 2 + 3
@@ -243,7 +253,7 @@ class Level():
                             sprite.animation.active = False
                         sprite.rect.bottom = bottom_pos
 
-                    if type == 'monsters':
+                    if type == 'pos_monsters':
                         tile_surface = self.monsters_tile_list[int(val)]
                         if int(val) == 0:  # minotaur
                             sprite = Monster(x,y,tile_surface, 'minotaur')
@@ -256,7 +266,7 @@ class Level():
                         if int(val) == 4:  # elven-caster
                             sprite = Monster(x,y,tile_surface, 'beholder')
                         
-                    if type == 'player':
+                    if type == 'pos_player':
                         _ = self.player_tile_list[int(val)]  # we don't draw the tiles, only used in map editor
                         if int(val) == 0:  # the level entrance tile
                             sprite = PlayerInOut(x, y, 'in')
@@ -264,8 +274,11 @@ class Level():
                         if int(val) == 1:  # the level exit tile
                             sprite = PlayerInOut(x, y, 'out')
                             self.lvl_exit = (x,y)
-
-                    sprite_group.add(sprite)
+                    try:
+                        sprite_group.add(sprite)
+                    except UnboundLocalError:
+                        logging.error(f'Tile type "{type}" not recognized during level import')
+                        exit(1)
         return sprite_group
     
 
@@ -627,8 +640,3 @@ class Level():
         # --> Check effects and particle system <--
         self.show_bubbles()
         
-        # --> Log status if in the right mode
-        log_mob_msg = f'{len(self.monsters_sprites.sprites())} monsters left in the sprite group'
-        if log_mob_msg != self.last_log:
-            logging.debug(log_mob_msg)
-        self.last_log = log_mob_msg

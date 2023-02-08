@@ -189,7 +189,7 @@ screen = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 game = Game()
 
-game.create_level(1)
+game.create_level(0 )
 
 while True:
     for event in pygame.event.get():
