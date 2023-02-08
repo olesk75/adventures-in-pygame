@@ -13,9 +13,6 @@ stabby_ss_death = SpriteSheet(pygame.image.load('assets/spritesheets/stabby-deat
 stabby_ss_cast = SpriteSheet(pygame.image.load('assets/spritesheets/stabby-casting.png').convert_alpha(), 32, 32, 4)
 
 # Monsters
-brenda_ss_walk = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/Brenda-walking.png').convert_alpha(), 32, 32, 4)
-minotaur_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/minotaur-sprites.png').convert_alpha(), 64, 64, 2)
-
 elven_archer_running_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/elven-archer-running.png').convert_alpha(), 32, 32, 4)
 elven_archer_attacking_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/elven-archer-attacking.png').convert_alpha(), 32, 32, 4)
 elven_archer_dying_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/elven-archer-dying.png').convert_alpha(), 32, 32, 4)
@@ -59,12 +56,6 @@ anim = {
         'cast': Animation(stabby_ss_cast, frames=8, speed=100, repeat=False),
         'idle': Animation(stabby_ss_idle, frames=8, speed=50), 
         'stomp': Animation(stabby_ss_stomp, frames=5, speed=30, repeat=False), 
-    },
-    'minotaur': {
-        'walk': Animation(brenda_ss_walk, frames=8, speed=100), 
-        'attack': Animation(minotaur_ss, row=7, frames=8, speed=75),
-        'death': Animation(minotaur_ss, row=20, frames=6, speed=100, repeat=False),
-        'cast': None
     },
     'elven-archer': {
         'walk': Animation(elven_archer_running_ss, frames=8, speed=50),

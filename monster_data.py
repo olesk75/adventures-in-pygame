@@ -7,41 +7,17 @@ import pygame
 from settings import *
 
 
-monsters = ['minotaur', 'elven-archer', 'skeleton-boss', 'elven-caster', 'beholder']  # used to recognize tiles from level files - order must match tile numbering 
+known_monsters = ['beholder', 'elven-archer', 'skeleton-boss', 'elven-caster']  # used to recognize tiles from level files - order must match tile numbering 
 
 arrow_damage = 100
 
 class MonsterData():
     """ Movement, detection and attack properties of monsters """
     def __init__(self, monster, movement_pattern=0) -> None:
-        known_monsters = monsters
         if monster not in known_monsters:
-            raise ValueError("Monster must be one of %r." % known_monsters)
+            raise ValueError(f'Monster "{monster}" not in list of known monsters: {known_monsters}')
 
         self.monster = monster
-
-        if monster == 'minotaur':
-            self.boss = False  # bosses have unique behaviour, not just wondering around
-            self.caster = False
-            self.direction = 1  # right
-            self.hitpoints = 2  # the number of hits the mob can take before dying
-            self.speed_walking = 3
-            self.speed_attacking = 3
-            self.detection_range = 200
-            self.detection_range_high = False
-            self.attack_range = 50
-            self.attack_jumper = False
-            self.attack_instant_damage = True  # if the mob attacks, and the player is in range, player dies
-            self.attack_delay = 0  # delay between attacks (ms)
-            self.attack_damage = 100
-            self.points_reward = 100
-            self.random_turns = 0.0
-            self.hitbox_width = 65 
-            self.hitbox_height = 110
-            self.sound_attack = False
-            self.sound_death = pygame.mixer.Sound('assets/sound/monster/minotaur/death.ogg')
-            self.sound_death_volume = 0.5
-            self.blood_color = pygame.Color('#ac3232')
 
         if monster == 'elven-archer':
             self.boss = False

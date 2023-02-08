@@ -5,8 +5,10 @@ class GameTile(pygame.sprite.Sprite):
 	"""
 	Customized Sprite class which allows update with scroll value, which will be triggerd by spritegroup.update(scroll)
 	"""
-	def __init__(self, size_x, size_y, x, y, surface) -> None:
-		# Basic static sprite (always contains an image and a rect)
+	def __init__(self, size_x, size_y, x, y, surface, slope=None, slope_pos=None) -> None:
+		# Inherits from basic sprite (always contains an image and a rect)
+		# slope indicates if tile is not flat, and slope_pos is used for other slope angles than 45 degree, where we need
+		# to know where in the multi-tile slope the current tile is
 		super().__init__()
 		self.image = pygame.transform.scale(surface, (size_x, size_y)).convert_alpha()
 
@@ -14,7 +16,9 @@ class GameTile(pygame.sprite.Sprite):
 
 		self.solid = True  # some, like water, allows you to fall
 		self.moving = False
-        
+		self.slope = slope  # if we have a slope, we put 1 for 45 degrees up slope, 2 for 22.5 degrees, and same but negative for sloping down
+		self.slope_pos = slope_pos # -1 for left, 1 for right, can be extended later
+
 	def update(self, scroll) -> None:
 		# Moves the rectangle of this sprite 
 		self.rect.centerx += scroll

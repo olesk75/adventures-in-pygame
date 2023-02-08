@@ -28,6 +28,12 @@ level_0 = {
     },
     'tileset': 'mountain',
     'solid_tiles': range(32),  # the tiles that will keep a player or monster up
+    'sloping_tiles': {  # all the tiles that are non-flat (which the player can walk on)
+        'down_in_1': [6],  # the steepest, gets down in one tile (45 degree)
+        'down_in_2': [20,21],
+        'up_in_1': [7],
+        'up_in_2': [22,23],
+    },  
     'moving_horiz': [27],  #  moving platforms
     'moving_vert': [[3,11,19]],  # bobbing platforms (in one group)
     'music': None  # TODO: move music here

@@ -172,7 +172,6 @@ class Level():
                             NOTE: there is really no limit to size - the program can accept any size of level,
                                   but there is currently no vertical scrolling, so stick to 15 32x32 tile with 2x resize
                         """
-                        #list_of_moving_platforms = [11]
 
                         tile_surface = self.terrain_tilesheet_list[int(val)]
                         
@@ -185,24 +184,28 @@ class Level():
                         y_size = y_size * 2
 
 
-                        # if int(val) in list_of_moving_platforms:
-                        #     # We take two of the existing tiles and combine them into one:
-                        #     img_left = self.terrain_tile_list[6]
-                        #     img_right = self.terrain_tile_list[8]
-                        #     img_comb = pygame.Surface((img_left.get_width() + img_right.get_width(), img_left.get_height()), pygame.SRCALPHA)
-
-                        #     # Blit the first two surfaces onto the third.
-                        #     img_comb.blit(img_left, (0, 0))
-                        #     img_comb.blit(img_right, (img_left.get_width(), 0))
-
-                        #     sprite = MovingGameTile(x_size * 2 ,y_size,x,y, 3,  distance,img_comb)  # Moving platform
-                        # else:
-
                         if int(val) in self.level_data['moving_horiz']:  # TODO: for now only accepts single tiles
                             distance = 100
                             sprite = MovingGameTile(x_size ,y_size,x,y, 3,  distance,tile_surface)  # Moving platform
                         else:
-                            sprite = GameTile(x_size,y_size,x,y,tile_surface)  # Normal static terrain tiles
+                            slope = 0
+                            slope_pos = None  # only used for multi-tile slopes where we need to know if it's the first or second tile
+                            slope_tiles = self.level_data['sloping_tiles']
+                            if int(val) in slope_tiles['down_in_1']:
+                                slope = 1
+                            if int(val) in slope_tiles['down_in_2']:
+                                slope = 2
+                                slope_pos = -1 # default, this tile is the left in the pair
+                                if int(row[col_index-1]) in slope_tiles['down_in_2']:  # check if previous tile was first or if this tile is
+                                    slope_pos = 1  # nope, there was another to our left
+                            if int(val) in slope_tiles['up_in_1']:
+                                slope = -1
+                            if int(val) in slope_tiles['up_in_2']:
+                                slope = -2
+                                slope_pos = 1 # default, this tile is the right in the pair
+                                if int(row[col_index+1]) in slope_tiles['up_in_2']:  # check if if tile to the right is same type, then this is the first
+                                    slope_pos = -1
+                            sprite = GameTile(x_size,y_size,x,y,tile_surface, slope=slope, slope_pos=slope_pos)  # Normal static terrain tiles
                         if int(val) not in self.level_data['solid_tiles']:  # Water mostly
                             sprite.solid = False
                         
@@ -255,16 +258,15 @@ class Level():
 
                     if type == 'pos_monsters':
                         tile_surface = self.monsters_tile_list[int(val)]
-                        if int(val) == 0:  # minotaur
-                            sprite = Monster(x,y,tile_surface, 'minotaur')
-                        if int(val) == 1:  # elven-archer
-                            sprite = Monster(x,y,tile_surface, 'elven-archer')
-                        if int(val) == 2:  # skeleton-boss
-                            sprite = Monster(x,y,tile_surface, 'skeleton-boss')
-                        if int(val) == 3:  # elven-caster
-                            sprite = Monster(x,y,tile_surface, 'elven-caster')
-                        if int(val) == 4:  # elven-caster
+                        if int(val) == 0:
                             sprite = Monster(x,y,tile_surface, 'beholder')
+                        elif int(val) == 1:  # elven-archer
+                            sprite = Monster(x,y,tile_surface, 'elven-archer')
+                        elif int(val) == 2:  # skeleton-boss
+                            sprite = Monster(x,y,tile_surface, 'skeleton-boss')
+                        else:
+                            logging.error(f'Tile value {int(val)} for tile type "{type}" not recognized during level import')
+                            exit(1)
                         
                     if type == 'pos_player':
                         _ = self.player_tile_list[int(val)]  # we don't draw the tiles, only used in map editor
@@ -313,11 +315,6 @@ class Level():
         for sprite in self.dust_sprites.sprites():
             if sprite.animation.on_last_frame:
                 sprite.kill()
-
-
-    # --> CHECK ALL COLLISIONS <--
-    # Note: use pygame.sprite.spritecollide() for sprite against group with low precision
-    #       use pygame.Rect.colliderect() to compare two rects (high precision hitboxes intead of sprite)
     
     def check_player_attack(self) -> None:
         for monster in self.monsters_sprites.sprites():
@@ -607,13 +604,13 @@ class Level():
         # DEBUGGING
         self._debug_show_state()
         if DEBUG_HITBOXES:
-            pygame.draw.rect(self.screen, (255,255,255), self.rect, 4 )  # self.rect - WHITE
-            if self.hitbox:
-                pygame.draw.rect(self.screen, (128,128,128), self.hitbox, 2 )  # Hitbox rect (grey)
-            if self.rect_attack:
-                pygame.draw.rect(self.screen, (255, 0, 0), self.rect_attack, 4 )  # attack rect - RED
-            if self.rect_detect:
-                pygame.draw.rect(self.screen, (0,0,128), self.rect_detect, 2 )  # Detection rect - BLUE
+            pygame.draw.rect(self.screen, (255,255,255), self.player.rect, 4 )  # self.rect - WHITE
+            if self.player.rects['hitbox']:
+                pygame.draw.rect(self.screen, (128,128,128), self.player.rects['hitbox'], 2 )  # Hitbox rect (grey)
+            if self.player.rects['attack']:
+                pygame.draw.rect(self.screen, (255, 0, 0), self.player.rects['attack'], 4 )  # attack rect - RED
+            if self.player.collision_sprite.rect:
+                pygame.draw.rect(self.screen, ('#e75480'), self.player.collision_sprite.rect, 2 )  # Collsion rect - PINK
 
 
 
