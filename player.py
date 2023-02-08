@@ -143,7 +143,6 @@ class Player(pygame.sprite.Sprite):
                 h = TILE_SIZE * 2
                 adjustment = 15  # this is critical, as if we go too low, we'll fall through at the bottom
                 x = self.rects['hitbox'].centerx - platform.rect.left
-                print(platform.rect.left, platform.rect.right)
                 # Steep, 45 degree slopes
                 if platform.slope == 1:
                     y = h - x
@@ -158,10 +157,8 @@ class Player(pygame.sprite.Sprite):
                 elif platform.slope == -2:  # Going UP and right
                     if platform.slope_pos == -1:  # we're the left platform
                         y = x/2
-                        print('left')
                     if platform.slope_pos == 1: # we're on the right platform
                         y = h/2 + x/2
-                        print('right')
                 else:
                     logging.error(f'Invalid value {platform.slope=}')
 
