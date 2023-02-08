@@ -104,7 +104,7 @@ class MonsterData():
             self.boss = False  # bosses have unique behaviour, not just wondering around
             self.caster = False
             self.direction = 1  # right
-            self.hitpoints = 3
+            self.hitpoints = 2
             self.speed_walking = 3
             self.speed_attacking = 5
             self.detection_range = 200
