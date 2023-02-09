@@ -243,6 +243,8 @@ class Level():
                         if int(val) == 2:  # mana potion
                             sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['pickups']['mana-potion'])
                             sprite.name = 'mana potion'
+                        
+
                         sprite.rect.bottom = bottom_pos
                         
 
@@ -254,16 +256,25 @@ class Level():
                         if int(val) == 0:  # door at end of level
                             sprite = GameTileAnimation(x_size, y_size,x,y - 10 , self.anim['doors']['end-of-level'])
                             sprite.animation.active = False
+                            sprite.name = 'door'
+                        if int(val) == 1:  # treasure chest
+                            sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['pickups']['chest'])
+                            sprite.animation.active = False
+                            sprite.name = 'chest'
+
                         sprite.rect.bottom = bottom_pos
 
                     if type == 'pos_monsters':
                         tile_surface = self.monsters_tile_list[int(val)]
                         if int(val) == 0:
                             sprite = Monster(x,y,tile_surface, 'beholder')
+                            sprite.name = 'beholder'
                         elif int(val) == 1:  # elven-archer
                             sprite = Monster(x,y,tile_surface, 'elven-archer')
+                            sprite.name = 'elven-archer'
                         elif int(val) == 2:  # skeleton-boss
                             sprite = Monster(x,y,tile_surface, 'skeleton-boss')
+                            sprite.name = 'skeleton-boss'
                         else:
                             logging.error(f'Tile value {int(val)} for tile type "{type}" not recognized during level import')
                             exit(1)
