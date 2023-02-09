@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 class Game:
     def __init__(self) -> None:
-        self.state = GS_PLAYING  # we start with the welcome screen
+        self.state = GS_WELCOME  # we start with the welcome screen
         
         # game attributes
         self.max_level = 2
@@ -36,6 +36,9 @@ class Game:
 
         # map screen background
         self.map_img = pygame.image.load('assets/map/map.png').convert_alpha()
+
+        # welcome screen background
+        self.welcome_img = pygame.image.load('assets/map/welcome-screen.png').convert_alpha()
 
         self.last_run = 0
         self.slowmo = False
@@ -98,9 +101,8 @@ class Game:
             
         if keys[pygame.K_SPACE]:
             self.create_level(1)  # starting at level 1
-            fade_to_color(pygame.Color('black'))  # fade to red
+            fade_to_color(pygame.Color('black'))  # fade to black
             self.faded = False
-            self.state = GS_PLAYING
 
     def level_complete(self) -> None:
         """ Go to LEVEL COMPLETE SCREEN """
@@ -136,6 +138,22 @@ class Game:
             
         if keys[pygame.K_SPACE]:
             game.create_level(self.level.current_level + 1)  # next level!
+            fade_to_color(pygame.Color('black'))  # fade to black
+            self.faded = False
+            self.state = GS_PLAYING
+
+    def welcome_screen(self) -> None:
+        """ Show the welcome screen """
+        welcome_bg = pygame.transform.scale(self.welcome_img, (SCREEN_WIDTH, SCREEN_HEIGHT)).convert_alpha()
+
+        screen.blit(welcome_bg,(0,0))                      
+
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_q]:
+            self.state = GS_QUIT
+            
+        if keys[pygame.K_SPACE]:
+            game.create_level(FIRST_LEVEL)  # next level!
             fade_to_color(pygame.Color('black'))  # fade to black
             self.faded = False
             self.state = GS_PLAYING
@@ -189,7 +207,7 @@ screen = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 game = Game()
 
-game.create_level(0 )
+game.create_level(1)
 
 while True:
     for event in pygame.event.get():
@@ -212,6 +230,9 @@ while True:
 
     if game.state == GS_MAP_SCREEN:
         game.map_screen()
+
+    if game.state == GS_WELCOME:
+        game.welcome_screen()
         
     _screen.blit(pygame.transform.scale(screen, (width, height)), (0, 0))
 

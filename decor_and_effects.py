@@ -344,9 +344,11 @@ class EnvironmentalEffects(pygame.sprite.Group):
     """
     def __init__(self, effect, screen) -> pygame.sprite.Group:
         super().__init__()
-        from animation_data import anim
+        from animation_data import leaves_ss
+        from animation import Animation
+        self.Anim = Animation
+        self.ss = leaves_ss
         self.effect = effect  # 'leaves', 'snow', all found in level_data for each level
-        self.anim = anim
         self.screen = screen
         self.base_wind = -1  # blowing toward the left of the screen
         self.gust_strength = 1
@@ -364,7 +366,7 @@ class EnvironmentalEffects(pygame.sprite.Group):
     def _add_leaf(self) -> None:
         now = pygame.time.get_ticks() 
         if random.random() < 1/30: # making sure we've waited long enough
-            leaf = GameTileAnimation(16,16,randint(SCREEN_WIDTH, SCREEN_WIDTH*3), randint(0, SCREEN_HEIGHT/4), self.anim['environment']['leaves'])  # TODO: They ALL use the SAME Animation instance, so all animate identically
+            leaf = GameTileAnimation(16,16,randint(SCREEN_WIDTH, SCREEN_WIDTH*3), randint(0, SCREEN_HEIGHT/4), self.Anim(self.ss, frames=10, speed=100, repeat=True))  # TODO: They ALL use the SAME Animation instance, so all animate identically
             leaf.x_vel = random.uniform(-4, -1)  # starting horisontal speed
             leaf.y_vel = GRAVITY * 2
             leaf.animation.active = True

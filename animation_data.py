@@ -39,7 +39,7 @@ spike_ss = SpriteSheet(pygame.image.load('assets/spritesheets/hazards/spikes.png
 fire_spell_ss = SpriteSheet(pygame.image.load('assets/spritesheets/spells/fire-spell.png').convert_alpha(), 24,32, 2)
 
 # Environmental effects
-leaves_ss = SpriteSheet(pygame.image.load('assets/spritesheets/env/leaf.png').convert_alpha(), 16,16, 1)
+leaves_ss = SpriteSheet(pygame.image.load('assets/spritesheets/env/leaf.png').convert_alpha(), 16,16, 2)
 
 # Effects
 dust_ss = SpriteSheet(pygame.image.load('assets/spritesheets/effects/dust-landing.png').convert_alpha(), 52,16, 2)
@@ -48,7 +48,11 @@ dust_ss = SpriteSheet(pygame.image.load('assets/spritesheets/effects/dust-landin
 heart_ss = SpriteSheet(pygame.image.load('assets/spritesheets/decor/heart-beating.png').convert_alpha(), 16, 16, 2)
 stomp_ss = SpriteSheet(pygame.image.load('assets/spritesheets/decor/boot-stomping.png').convert_alpha(), 16, 16, 2)
 
-""" Create main animation dict """
+""" Create main animation dict 
+    Note: this creates ONE animation for each situation. So two objects being assigned the same animation will have 
+    pointers to exactly the _same_ animation object (so will be completely in sync always).
+    The only way to get unique copies is to use copy.copy() or make a manual Animation object for each use case
+"""
 anim = {
     'player': {
         'walk': Animation(stabby_ss_walk, frames=8, speed=75), 
@@ -95,7 +99,7 @@ anim = {
         'chest': Animation(chest_ss, frames=9, speed=100, repeat=True),
     },
     'environment': {
-        'leaves': Animation(leaves_ss, frames=10, speed=100, repeat=True)
+        'leaves': Animation(leaves_ss, frames=10, speed=100, repeat=True)  # NOT IN USE - WE NEED INDIVIDUAL NAIMATIONS FFOR EACH INSTANCE
     },
     'effects': {
         'dust-landing': Animation(dust_ss, frames=5, speed=50, repeat=False),

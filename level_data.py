@@ -40,43 +40,71 @@ level_0 = {
 }
 
 level_1 = {
-    'pos_terrain': 'lvl/1/level1_terrain.csv',
-    'pos_decorations': 'lvl/1/level1_decorations.csv',
-    'pos_hazards':  'lvl/1/level1_hazards.csv',
-    'pos_pickups': 'lvl/1/level1_pickups.csv',
-    'pos_triggered_objects': 'lvl/1/level1_triggered_objects.csv',
-    'pos_monsters': 'lvl/1/level1_monsters.csv',
-    'pos_player': 'lvl/1/level1_player.csv',
-    'environmental_effect': None,
+    'size_x': 250,
+    'size_y': 15,
+    'pos_terrain': 'lvl/lvl 1 - mountains/level1_terrain.csv',
+    'pos_decorations': 'lvl/lvl 1 - mountains/level1_decorations.csv',
+    'pos_hazards':  'lvl/lvl 1 - mountains/level1_hazards.csv',
+    'pos_pickups': 'lvl/lvl 1 - mountains/level1_pickups.csv',
+    'pos_triggered_objects': 'lvl/lvl 1 - mountains/level1_triggered_objects.csv',
+    'pos_monsters': 'lvl/lvl 1 - mountains/level1_monsters.csv',
+    'pos_player': 'lvl/lvl 1 - mountains/level1_player.csv',
+    'environmental_effect': 'leaves',
+    'terrain_ts': 'assets/tile/tilesets/mountain-tileset.png',
     'background': {
         'near': 'assets/backgrounds/lvl1/near.png',
         'medium': 'assets/backgrounds/lvl1/medium.png',
         'further': 'assets/backgrounds/lvl1/further.png',
         'far': 'assets/backgrounds/lvl1/far.png',
         'clouds': 'assets/backgrounds/lvl1/clouds.png',
-        'background_color': (130, 181, 210),
-        'y_adjust': [0,150,400,450,0]
-    }
+        'background_color': (130, 181, 255),
+        'y_adjust': [0,150,400,450,0],
+    },
+    'tileset': 'mountain',
+    'solid_tiles': range(32),  # the tiles that will keep a player or monster up
+    'sloping_tiles': {  # all the tiles that are non-flat (which the player can walk on)
+        'down_in_1': [6],  # the steepest, gets down in one tile (45 degree)
+        'down_in_2': [20,21],
+        'up_in_1': [7],
+        'up_in_2': [22,23],
+    },  
+    'moving_horiz': [27],  #  moving platforms
+    'moving_vert': [[3,11,19]],  # bobbing platforms (in one group)
+    'music': None  # TODO: move music here
 }
 
 level_2 = {
-    'pos_terrain': 'lvl/2/level2_terrain.csv',
-    'pos_decorations': 'lvl/2/level2_decorations.csv',
-    'pos_hazards':  'lvl/2/level2_hazards.csv',
-    'pos_pickups': 'lvl/2/level2_pickups.csv',
-    'pos_triggered_objects': 'lvl/2/level2_triggered_objects.csv',
-    'pos_monsters': 'lvl/2/level2_monsters.csv',
-    'pos_player': 'lvl/2/level2_player.csv',
+    'size_x': 250,
+    'size_y': 15,
+    'pos_terrain': 'lvl/lvl 1 - mountains/level1_terrain.csv',
+    'pos_decorations': 'lvl/lvl 1 - mountains/level1_decorations.csv',
+    'pos_hazards':  'lvl/lvl 1 - mountains/level1_hazards.csv',
+    'pos_pickups': 'lvl/lvl 1 - mountains/level1_pickups.csv',
+    'pos_triggered_objects': 'lvl/lvl 1 - mountains/level1_triggered_objects.csv',
+    'pos_monsters': 'lvl/lvl 1 - mountains/level1_monsters.csv',
+    'pos_player': 'lvl/lvl 1 - mountains/level1_player.csv',
     'environmental_effect': 'leaves',
+    'terrain_ts': 'assets/tile/tilesets/mountain-tileset.png',
     'background': {
-        'near': 'assets/backgrounds/lvl2/near.png',
-        'medium': 'assets/backgrounds/lvl2/medium.png',
-        'further': 'assets/backgrounds/lvl2/further.png',
-        'far': 'assets/backgrounds/lvl2/far.png',
-        'clouds': 'assets/backgrounds/lvl2/clouds.png',
-        'background_color': (171, 106, 140),
-        'y_adjust': [0,0,0,0,0]
-    }
+        'near': 'assets/backgrounds/lvl1/near.png',
+        'medium': 'assets/backgrounds/lvl1/medium.png',
+        'further': 'assets/backgrounds/lvl1/further.png',
+        'far': 'assets/backgrounds/lvl1/far.png',
+        'clouds': 'assets/backgrounds/lvl1/clouds.png',
+        'background_color': (130, 181, 255),
+        'y_adjust': [0,150,400,450,0],
+    },
+    'tileset': 'mountain',
+    'solid_tiles': range(32),  # the tiles that will keep a player or monster up
+    'sloping_tiles': {  # all the tiles that are non-flat (which the player can walk on)
+        'down_in_1': [6],  # the steepest, gets down in one tile (45 degree)
+        'down_in_2': [20,21],
+        'up_in_1': [7],
+        'up_in_2': [22,23],
+    },  
+    'moving_horiz': [27],  #  moving platforms
+    'moving_vert': [[3,11,19]],  # bobbing platforms (in one group)
+    'music': None  # TODO: move music here
 }
 
 

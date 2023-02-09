@@ -44,11 +44,12 @@ ANIMATION_TYPES = 3
 OBJECT_TYPES = 9
 WALKING_SPEED = 5
 ATTACK_SPEED = 1  # UNUSED
-PLAYER_HEALTH = 10000
+PLAYER_HEALTH = 3000
 PLAYER_STOMP = 5  # monsters to kill before stop recharges
 STOMP_SPEED = 50
 MUSIC_ON = True
 SOUNDS_ON = True
+FIRST_LEVEL = 1  # where to start
 
 # Debug settings
 DEBUG_HITBOXES = False
