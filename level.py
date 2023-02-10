@@ -299,7 +299,8 @@ class Level():
 
   
     def player_setup(self) -> None:
-        player = Player(self.lvl_entry[0], self.lvl_entry[0], self.screen, self.health_max, self.sounds)
+        player = Player(self.lvl_entry[0], self.lvl_entry[1], self.screen, self.health_max, self.sounds)
+        logging.debug(f'Payer born at coordinates {self.lvl_entry[0]}, {self.lvl_entry[0]}')
         return player
 
 
@@ -432,7 +433,7 @@ class Level():
                     t_object.animation.active = True
                     self.bubble_list.append(BubbleMessage(self.screen, 'And that was the lock...', 3000, 0, 'exit', self.player))
                 else:
-                    self.player.hit(0, -1, self.terrain_sprites)
+                    self.player.hit(0, -self.player.turned, self.terrain_sprites)
                     self.bubble_list.append(BubbleMessage(self.screen, 'I\'m missing a key!', 3000, 0, 'exit', self.player))
 
     # Dropped objects pickup / collision

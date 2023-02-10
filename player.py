@@ -114,7 +114,8 @@ class Player(pygame.sprite.Sprite):
         self.cast_delay = 500
         self.cast_active = []  # all player spells
         self.world_x_pos = x + self.rects['player'].width / 2 # player center x position across the whole world, not just screen
-        self.world_y_pos = y + self.rects['player'].height / 2 # player center y position across the whole world, not just screen
+        self.world_y_pos = y - self.rects['player'].height / 2 # player center y position across the whole world, not just screen (remember: up is negative y)
+        self.v_scroll_initial = self.world_y_pos - V_SCROLL_THRESHOLD # just for the "camera" to see the player on the initial placement if he's not in the topleft screen
 
 
     def _check_collision(self, dx, dy, platforms) -> tuple:
@@ -362,6 +363,13 @@ class Player(pygame.sprite.Sprite):
         dy = 0
         h_scroll = 0
         v_scroll = 0
+
+        # Initial adjustment of "camera" on first update
+        if self.v_scroll_initial:
+            if self.v_scroll_initial > self.world_y_pos - V_SCROLL_THRESHOLD:
+                self.v_scroll_initial = self.world_y_pos - V_SCROLL_THRESHOLD
+            v_scroll = -self.v_scroll_initial
+            self.v_scroll_initial = False
         
         # If we've been hit, we're invincible - check if it's time to reset
         if self.invincible and self.state['active'] not in (DYING, DEAD):
@@ -444,6 +452,8 @@ class Player(pygame.sprite.Sprite):
         if self.rects['hitbox'].right + dx > SCREEN_WIDTH:
             dx = SCREEN_WIDTH - self.rects['player'].right
         
+
+        """ Scrolling horizontally or vertically if player reaches either of the four scroll thresholds (left/right/top/bottom) """
         # Check if player has reached h_scroll threshold to the LEFT (and we're not on the far left) + we're walking left
         if dx < 0 and self.rects['player'].centerx <= H_SCROLL_THRESHOLD and self.world_x_pos > H_SCROLL_THRESHOLD + self.rects['hitbox'].width:
             h_scroll = -dx  # We h_scroll left by the opposite of the player's x speed
@@ -458,7 +468,7 @@ class Player(pygame.sprite.Sprite):
 
          # Check if player has reached v_scroll threshold at bottom of the screen (and we're not all the way down at the bottom) + we're moving downwards
         if dy > 0 and self.rects['player'].centery >= SCREEN_HEIGHT - V_SCROLL_THRESHOLD and \
-            self.world_y_pos < TILE_SIZE_SCREEN * MAX_ROWS - V_SCROLL_THRESHOLD:  # the very bottom
+            self.world_y_pos < TILE_SIZE_SCREEN * MAX_ROWS - V_SCROLL_THRESHOLD * 2:  # the very bottom
             v_scroll = -dy  # We h_scroll down by the opposite of the player's y speed
 
 
@@ -473,7 +483,15 @@ class Player(pygame.sprite.Sprite):
 
         self.world_x_pos += dx
         self.world_y_pos += dy
-        print(f"{self.rects['player'].centery=} and {self.world_y_pos=} - scroll threshold towards bottom is: {TILE_SIZE_SCREEN * MAX_ROWS - V_SCROLL_THRESHOLD}")
+        print(f"Player's centery: {self.rects['player'].centery} and {self.world_y_pos=} - scroll threshold towards bottom is: {TILE_SIZE_SCREEN * MAX_ROWS - V_SCROLL_THRESHOLD}, and lowest possible point before death is {TILE_SIZE_SCREEN * MAX_ROWS}")
+
+        # If we fall off the world we die
+        if self.world_y_pos > TILE_SIZE_SCREEN * MAX_ROWS:
+            self.state['next'] = DEAD
+            logging.debug('DEAD: fell off the world')
+            self._state_engine()  # we call the state engine to get an out-of-turn state update
+
+
 
         return h_scroll, v_scroll
     

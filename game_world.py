@@ -7,26 +7,6 @@ GamePanel(class)                    : contans the player information for the scr
 
 
 import pygame
-from dataclasses import dataclass
-
-
-@dataclass
-class GameData:
-    SCREEN_WIDTH: int
-    SCREEN_HEIGHT: int
-    LEVEL_WIDTH: int
-    GRAVITY: int
-    MAX_PLATFORMS: int
-    JUMP_HEIGHT: int
-    PLAYER_BOUNCING: bool
-    H_SCROLL_THRESHOLD: int
-    ROWS: int
-    MAX_COLS: int
-    MAX_ROWS: int
-    TILE_SIZE_SCREEN: int
-    TILE_TYPES: int
-    ANIMATION_TYPES: int
-    OBJECT_TYPES: int
 
 class GameTile(pygame.sprite.Sprite):
     """
