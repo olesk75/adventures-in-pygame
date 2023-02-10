@@ -47,7 +47,7 @@ def import_tile_graphics(path :str) -> list:
     tile_files = glob.glob(path, recursive=False)
 
     # sort files by numer, meaning 10.png comes after 9.png, not alphabetically
-    tile_files.sort(key=lambda var:[int(x) if x.isdigit() else x for x in re.findall(r'[^0-9]|[0-9]+', var)])
+    tile_files.sort(key=lambda var:[int(x) if x.isdigit() else x for x in re.findall(r'\D|\D+', var)])
 
     for filename in tile_files:  # read tile files sorted by name
         tiles.append(pygame.image.load(filename).convert_alpha())

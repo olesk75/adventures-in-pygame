@@ -20,7 +20,7 @@ class GameData:
     MAX_PLATFORMS: int
     JUMP_HEIGHT: int
     PLAYER_BOUNCING: bool
-    SCROLL_THRESHOLD: int
+    H_SCROLL_THRESHOLD: int
     ROWS: int
     MAX_COLS: int
     TILE_SIZE_SCREEN: int
@@ -35,9 +35,9 @@ class GameTile(pygame.sprite.Sprite):
     def __init__(self) -> None:
         super().__init__()
         
-    def update(self, scroll) -> None:
+    def update(self, h_scroll) -> None:
         # Moves the rectangle of this sprite 
-        self.rect.x += scroll
+        self.rect.x += h_scroll
 
 class GameTileAnimation(GameTile):
     """
@@ -51,9 +51,9 @@ class GameTileAnimation(GameTile):
         self.sprites = self.animation.sprites
         self.animation.active = True
         
-    def update(self, scroll) -> None:
+    def update(self, h_scroll) -> None:
         # Moves the rectangle of this sprite 
-        self.rect.x += scroll
+        self.rect.x += h_scroll
         #print(f'scrolling {self.dx}, new x_pos: {self.rect.left}')
     
     def draw(self, screen) -> None:

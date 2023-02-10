@@ -358,7 +358,7 @@ class Player(pygame.sprite.Sprite):
         """ Movement as a result of keypresses as well as gravity and collision """
         dx = 0
         dy = 0
-        scroll = 0
+        h_scroll = 0
         
         # If we've been hit, we're invincible - check if it's time to reset
         if self.invincible and self.state['active'] not in (DYING, DEAD):
@@ -433,32 +433,32 @@ class Player(pygame.sprite.Sprite):
         if self.bouncing:
             dx += self.vel_x
 
-        # Watch screen boundaries (effectively world boundaries since the screen scrolls to world edges before player can get to end of screen)
+        # Watch screen boundaries (effectively world boundaries since the screen h_scrolls to world edges before player can get to end of screen)
         if self.rects['hitbox'].left + dx < 0:
             dx = - self.rects['player'].left
         if self.rects['hitbox'].right + dx > SCREEN_WIDTH:
             dx = SCREEN_WIDTH - self.rects['player'].right
         
-        # Check if player has reached scroll threshold to the LEFT (and we're not on the far left) + we're walking left
-        if dx < 0 and self.rects['player'].centerx <= SCROLL_THRESHOLD and self.world_x_pos > SCROLL_THRESHOLD + self.rects['hitbox'].width:
-            scroll = -dx  # We scroll left by the opposite of the player's x speed
+        # Check if player has reached h_scroll threshold to the LEFT (and we're not on the far left) + we're walking left
+        if dx < 0 and self.rects['player'].centerx <= H_SCROLL_THRESHOLD and self.world_x_pos > H_SCROLL_THRESHOLD + self.rects['hitbox'].width:
+            h_scroll = -dx  # We h_scroll left by the opposite of the player's x speed
         
-         # Check if player has reached scroll threshold to the right (and we're not on the far right) + we're walking right
-        if dx > 0 and self.rects['player'].centerx >= SCREEN_WIDTH - SCROLL_THRESHOLD and self.world_x_pos < TILE_SIZE_SCREEN * MAX_COLS - SCROLL_THRESHOLD:
-            scroll = -dx  # We scroll right by the opposite of the player's x speed
+         # Check if player has reached h_scroll threshold to the right (and we're not on the far right) + we're walking right
+        if dx > 0 and self.rects['player'].centerx >= SCREEN_WIDTH - H_SCROLL_THRESHOLD and self.world_x_pos < TILE_SIZE_SCREEN * MAX_COLS - H_SCROLL_THRESHOLD:
+            h_scroll = -dx  # We h_scroll right by the opposite of the player's x speed
 
 
         # Check collision with terrain
         (dx, dy) = self._check_collision(dx, dy, platforms)
         
         # Update rectangle position
-        self.rects['player'].x += dx + scroll
+        self.rects['player'].x += dx + h_scroll
         self.rects['player'].y += dy 
 
         self.world_x_pos += dx
 
 
-        return scroll
+        return h_scroll
     
 
     def get_anim_image(self) -> None:
@@ -600,9 +600,9 @@ class Player(pygame.sprite.Sprite):
         self.get_input()
         self._state_engine()
         self.rect = self.rects['player']
-        scroll = self.actions(platforms)
+        h_scroll = self.actions(platforms)
         self.get_anim_image()
-        return scroll
+        return h_scroll
         
 
 class PlayerInOut(pygame.sprite.Sprite):
@@ -622,8 +622,8 @@ class PlayerInOut(pygame.sprite.Sprite):
         self.image = pygame.Surface((TILE_SIZE_SCREEN, TILE_SIZE_SCREEN))  #  empty surface
         self.rect = self.image.get_rect(center=(x + TILE_SIZE_SCREEN/2, y + TILE_SIZE_SCREEN/2))
 
-    def update(self, scroll) -> None:
-        self.rect.centerx += scroll
+    def update(self, h_scroll) -> None:
+        self.rect.centerx += h_scroll
 
 
 

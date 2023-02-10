@@ -22,11 +22,19 @@
             "scaleInDock": 1
         },
         "Level 1 - Phflorg - mountains.tmx": {
-            "scale": 3.2787,
-            "selectedLayer": 5,
+            "scale": 0.9329,
+            "selectedLayer": 8,
             "viewCenter": {
-                "x": 5241.864153475462,
-                "y": 161.03943636197272
+                "x": 1052.0956158216316,
+                "y": 575.6243970414837
+            }
+        },
+        "Lvl 1 - 16x16 - mountains.tmx": {
+            "scale": 7.9284,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 142.8409262902982,
+                "y": 122.59724534584531
             }
         },
         "Monsters.tsx": {
@@ -86,10 +94,12 @@
         }
     },
     "last.exportedFilePath": "/home/olesk/Nextcloud/CODE/Python/adventures-in-pygame/lvl/lvl 1 - mountains",
-    "last.imagePath": "/home/olesk/Nextcloud/CODE/Python/adventures-in-pygame/assets/tile/trigger-objects",
+    "last.imagePath": "/home/olesk/Nextcloud/CODE/Python/adventures-in-pygame/assets/tile/tilesets",
     "map.height": 30,
     "map.lastUsedExportFilter": "CSV files (*.csv)",
     "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
     "map.width": 250,
     "openFiles": [
         "Trigger objects.tsx",
@@ -100,6 +110,7 @@
     ],
     "project": "Phflorg.tiled-project",
     "recentFiles": [
+        "Lvl 1 - 16x16 - mountains.tmx",
         "Trigger objects.tsx",
         "Pickups.tsx",
         "Decorations.tsx",

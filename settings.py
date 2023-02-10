@@ -27,17 +27,22 @@ DARKGRAY = ( 20,  20,  20)
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 960
 
+# Pixels available is a quarter of that: 480x240, which is the native resolution
+
+# Derived values for scaling
+TILE_SIZE = 32  # x and y native resolution of standard tiles
+TILE_SIZE_SCREEN = SCREEN_WIDTH // TILE_SIZE  # 60 tiles wide, 30 tiles high, with a TILE_SIZE of 32
 
 LEVEL_WIDTH = 4
 GRAVITY = 0.5
 MAX_PLATFORMS = 10
 JUMP_HEIGHT = 15
-SCROLL_THRESHOLD = 400
+H_SCROLL_THRESHOLD = 400
+V_SCROLL_THRESHOLD = 200  # TODO: fix! placeholder!
 ROWS = 16
 MAX_COLS = 250
 
-TILE_SIZE = 32  # x and y native resolution of standard tiles
-TILE_SIZE_SCREEN = SCREEN_WIDTH // TILE_SIZE
+
 SCALE_FACTOR = 1
 TILE_TYPES = 18
 ANIMATION_TYPES = 3

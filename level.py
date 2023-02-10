@@ -35,7 +35,7 @@ class Level():
         self.current_level = current_level
         self.level_complete = False
         self.screen = surface
-        self.scroll = 0
+        self.h_scroll = 0
         self.current_x = None
 
         self.arrow_damage = arrow_damage
@@ -162,6 +162,7 @@ class Level():
             for col_index,val in enumerate(row):
                 if val != '-1':
                     # print(f'{row_index=} {col_index=}')  # DEBUG
+                    # Calculate the on screen coordinates, given that width of each tile, which gives TILE_SIZE_SCREEN many tiles acriss the screen
                     x = col_index * TILE_SIZE_SCREEN
                     y = row_index * TILE_SIZE_SCREEN
                     bottom_pos = (1 + row_index) * (TILE_SIZE_SCREEN)  # this helps anchor sprites that are odd sizes, where we have to check they are on the ground
@@ -170,7 +171,7 @@ class Level():
                     if type == 'pos_terrain':  
                         """ Loading terrain tiles
                             NOTE: there is really no limit to size - the program can accept any size of level,
-                                  but there is currently no vertical scrolling, so stick to 15 32x32 tile with 2x resize
+                                  but there is currently no vertical h_scrolling, so stick to 16 32x32 tile with 2x resize
                         """
 
                         tile_surface = self.terrain_tilesheet_list[int(val)]
@@ -178,8 +179,8 @@ class Level():
                         (x_size, y_size) = tile_surface.get_size()
                         if not x_size == y_size == TILE_SIZE:
                             logging.debug(f'Terrain tiles are of size {x_size}x{y_size}, but we have TILE_SIZE {TILE_SIZE} in settings')
-                        # As we need to scale sprites mostly 32x32px into our screen size, we need the following calculation:
-                        # The allows us non-rectangular sprites, as long as they are a multiple of 32 in both directions
+                        
+                        # Tile-scaling factors: 8 matches 16x16 size sprites while 4 gives 32x32
                         x_size = x_size * 2
                         y_size = y_size * 2
 
@@ -534,80 +535,80 @@ class Level():
         Runs the entire level
         """
         # --> UPDATE BACKGROUND <---
-        self.background.update(self.scroll)
+        self.background.update(self.h_scroll)
         self.background.draw(self.screen)
 
         # --> UPDATE ALL SPRITE GROUPS <---
 
         # terrain
-        self.terrain_sprites.update(self.scroll)
+        self.terrain_sprites.update(self.h_scroll)
         self.terrain_sprites.draw(self.screen)
 
         # decorations  
-        self.decorations_sprites.update(self.scroll)
+        self.decorations_sprites.update(self.h_scroll)
         self.decorations_sprites.draw(self.screen)
 
         # hazards  
-        self.hazards_sprites.update(self.scroll)
+        self.hazards_sprites.update(self.h_scroll)
         self.hazards_sprites.draw(self.screen)
 
         # pickups
-        self.pickups_sprites.update(self.scroll)
+        self.pickups_sprites.update(self.h_scroll)
         self.pickups_sprites.draw(self.screen)
 
         # drops
-        self.drops_sprites.update(self.scroll)
+        self.drops_sprites.update(self.h_scroll)
         self.drops_sprites.draw(self.screen)
 
         # projectiles
-        self.projectile_sprites.update(self.scroll, self.terrain_sprites)
+        self.projectile_sprites.update(self.h_scroll, self.terrain_sprites)
         self.projectile_sprites.draw(self.screen)
 
         # spells
-        self.spell_sprites.update(self.scroll)
+        self.spell_sprites.update(self.h_scroll)
         self.spell_sprites.draw(self.screen)
 
         # triggered_objects 
-        self.triggered_objects_sprites.update(self.scroll)
+        self.triggered_objects_sprites.update(self.h_scroll)
         self.triggered_objects_sprites.draw(self.screen)
 
         # monsters 
-        self.monsters_sprites.update(self.scroll, self.terrain_sprites, self.player)
+        self.monsters_sprites.update(self.h_scroll, self.terrain_sprites, self.player)
         self.monsters_sprites.draw(self.screen)
 
         # stomp shadows
-        self.stomp_shadows.update(self.scroll)
+        self.stomp_shadows.update(self.h_scroll)
         self.stomp_shadows.draw(self.screen)
 
         # stomp effect
-        self.stomp_effects.update(self.scroll)
+        self.stomp_effects.update(self.h_scroll)
         self.stomp_effects.draw(self.screen)
 
         # dust
-        self.dust_sprites.update(self.scroll)
+        self.dust_sprites.update(self.h_scroll)
         self.dust_sprites.draw(self.screen)
 
         # player 
-        self.scroll = self.player.update(self.terrain_sprites)
+        self.h_scroll = self.player.update(self.terrain_sprites)
         self.player_sprites.draw(self.screen)
 
         # entry and exit points
-        self.player_in_out_sprites.update(self.scroll)  
+        self.player_in_out_sprites.update(self.h_scroll)  
         #self.player_in_out_sprites.draw(self.screen)  # normally we do not draw these, but good to have for debugging
 
         # environmental effects
-        self.env_sprites.update(self.scroll)
+        self.env_sprites.update(self.h_scroll)
         self.env_sprites.draw(self.screen)
 
         # particle system
-        self.particle_system.update(self.scroll)
+        self.particle_system.update(self.h_scroll)
         self.particle_system.draw(self.screen)
 
         """ DEMO ZONE """
         # Testing player casting
         if len(self.player.cast_active):
             for cast in self.player.cast_active:
-                cast.update(self.scroll)
+                cast.update(self.h_scroll)
                 cast.draw(self.screen)
                 if cast.done:
                     self.player.cast_active.remove(cast)

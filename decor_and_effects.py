@@ -310,7 +310,7 @@ class ParticleSystem():
     def add(self, particle) -> None:
         self.all_particles.append(particle)
         
-    def update(self, scroll) -> None:
+    def update(self, h_scroll) -> None:
         now = pygame.time.get_ticks()
         if now - self.last_run > self.update_delay:
             for particle in self.all_particles:
@@ -318,7 +318,7 @@ class ParticleSystem():
                 particle['velocity'][1] += GRAVITY * 2  # adding gravity to the velocity (looks better if we add some more gravity/)
 
                 # Updating coordinates as funtion of velocities
-                particle['center'][0] += scroll + particle['velocity'][0] # x
+                particle['center'][0] += h_scroll + particle['velocity'][0] # x
                 particle['center'][1] += particle['velocity'][1]  # y
 
                 # Shrinking the circle radius
@@ -377,7 +377,7 @@ class EnvironmentalEffects(pygame.sprite.Group):
             
     
 
-    def update(self, scroll) -> None:
+    def update(self, h_scroll) -> None:
         # Here we set the x_vel for each sprite to match the wind at their respective vertical position
         # Each particle is assumed to float in the wind, minus the enertia for each category (snow less than leaves etc.)
         now = pygame.time.get_ticks()
@@ -401,7 +401,7 @@ class EnvironmentalEffects(pygame.sprite.Group):
                 if sprite.x_vel > self.base_wind:
                     sprite.x_vel += sprite.x_vel * self.inertia
 
-                sprite.update(scroll)
+                sprite.update(h_scroll)
                 
                 # Removing sprites that have gone off screen
                 if sprite.rect.centery > SCREEN_HEIGHT:
@@ -441,9 +441,9 @@ class ExpandingCircle:
         self.last_update = 0  # for timing
         self.done = False
 
-    def update(self, scroll) -> None:
+    def update(self, h_scroll) -> None:
         # It's fire-and-forget
-        self.x += scroll
+        self.x += h_scroll
         now = pygame.time.get_ticks()
 
         if now - self.last_update > self.frame_delay:
@@ -475,8 +475,8 @@ class SpeedLines:
         self.last_update = 0  # for timing
         self.done = False
 
-    def update(self, scroll) -> None:
-        self.x_start += scroll
+    def update(self, h_scroll) -> None:
+        self.x_start += h_scroll
         self.new_y_pos = self.rect.top
         if self.previous_y == self.new_y_pos:  # the eagle has landed
             self.done = True
@@ -539,16 +539,16 @@ class LightEffect1(pygame.sprite.Sprite):
             
             self.firelines.append(segment_list)
 
-        # We create a working surface were we plot the final result and the scroll that upwards onto self.image
+        # We create a working surface were we plot the final result and the h_scroll that upwards onto self.image
         for step in range (self.steps_total):
                 for count, line in enumerate(self.firelines):     
                     image_x =  count * self.line_width
                     image_y = step * self.line_seg_height 
                     pygame.draw.rect(self.working_image, line[step], (image_x, image_y, self.line_width, self.line_seg_height))
         
-    def update(self, scroll) -> None:
+    def update(self, h_scroll) -> None:
         now = pygame.time.get_ticks()
-        self.start_x += scroll
+        self.start_x += h_scroll
         if now - self.last_run > self.step_delay:
  
             self.image.blit(self.working_image, (0,self.line_max_height - self.steps_in * self.line_seg_height))

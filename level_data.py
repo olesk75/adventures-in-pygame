@@ -16,7 +16,7 @@ level_0 = {
     'pos_monsters': 'lvl/lvl 1 - mountains/level1_monsters.csv',
     'pos_player': 'lvl/lvl 1 - mountains/level1_player.csv',
     'environmental_effect': 'leaves',
-    'terrain_ts': 'assets/tile/tilesets/mountain-tileset.png',
+    'terrain_ts': 'assets/tile/tilesets/terrain-tileset-mountain-16x16.png',
     'background': {
         'near': 'assets/backgrounds/lvl1/near.png',
         'medium': 'assets/backgrounds/lvl1/medium.png',
@@ -50,6 +50,7 @@ level_1 = {
     'pos_monsters': 'lvl/lvl 1 - mountains/level1_monsters.csv',
     'pos_player': 'lvl/lvl 1 - mountains/level1_player.csv',
     'environmental_effect': 'leaves',
+    #'terrain_ts': 'assets/tile/tilesets/terrain-tileset-mountain-16x16.png',
     'terrain_ts': 'assets/tile/tilesets/mountain-tileset.png',
     'background': {
         'near': 'assets/backgrounds/lvl1/near.png',
