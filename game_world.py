@@ -10,7 +10,6 @@ import pygame
 from dataclasses import dataclass
 
 
-
 @dataclass
 class GameData:
     SCREEN_WIDTH: int
@@ -23,6 +22,7 @@ class GameData:
     H_SCROLL_THRESHOLD: int
     ROWS: int
     MAX_COLS: int
+    MAX_ROWS: int
     TILE_SIZE_SCREEN: int
     TILE_TYPES: int
     ANIMATION_TYPES: int
@@ -35,9 +35,10 @@ class GameTile(pygame.sprite.Sprite):
     def __init__(self) -> None:
         super().__init__()
         
-    def update(self, h_scroll) -> None:
+    def update(self, h_scroll, v_scroll) -> None:
         # Moves the rectangle of this sprite 
         self.rect.x += h_scroll
+        self.rect.y += v_scroll
 
 class GameTileAnimation(GameTile):
     """
@@ -51,9 +52,11 @@ class GameTileAnimation(GameTile):
         self.sprites = self.animation.sprites
         self.animation.active = True
         
-    def update(self, h_scroll) -> None:
+    def update(self, h_scroll, v_scroll) -> None:
         # Moves the rectangle of this sprite 
         self.rect.x += h_scroll
+        self.rect.y += v_scroll
+
         #print(f'scrolling {self.dx}, new x_pos: {self.rect.left}')
     
     def draw(self, screen) -> None:

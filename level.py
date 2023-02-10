@@ -36,6 +36,7 @@ class Level():
         self.level_complete = False
         self.screen = surface
         self.h_scroll = 0
+        self.v_scroll = 0
         self.current_x = None
 
         self.arrow_damage = arrow_damage
@@ -371,11 +372,12 @@ class Level():
                 logging.debug('WIN! Level complete')
                 self.level_complete = True
 
-    def check_player_fallen_off(self) -> None:
-        if self.player.rects['player'].top > SCREEN_HEIGHT:
-            self.player.health_current = 0
-            self.player.state['active'] = DEAD  # insta-kill! 
-            logging.debug('Oooops! Player fell off')
+    def check_player_fallen_off(self) -> None:  # TODO: re-enable once v_scrolling is ok
+        pass
+        # if self.player.rects['player'].top > SCREEN_HEIGHT:
+        #     self.player.health_current = 0
+        #     self.player.state['active'] = DEAD  # insta-kill! 
+        #     logging.debug('Oooops! Player fell off')
 
 
     def check_coll_player_hazard(self) -> None:
@@ -535,80 +537,80 @@ class Level():
         Runs the entire level
         """
         # --> UPDATE BACKGROUND <---
-        self.background.update(self.h_scroll)
+        self.background.update(self.h_scroll)  # only scroll horizontally
         self.background.draw(self.screen)
 
         # --> UPDATE ALL SPRITE GROUPS <---
 
         # terrain
-        self.terrain_sprites.update(self.h_scroll)
+        self.terrain_sprites.update(self.h_scroll, self.v_scroll)
         self.terrain_sprites.draw(self.screen)
 
         # decorations  
-        self.decorations_sprites.update(self.h_scroll)
+        self.decorations_sprites.update(self.h_scroll, self.v_scroll)
         self.decorations_sprites.draw(self.screen)
 
         # hazards  
-        self.hazards_sprites.update(self.h_scroll)
+        self.hazards_sprites.update(self.h_scroll, self.v_scroll)
         self.hazards_sprites.draw(self.screen)
 
         # pickups
-        self.pickups_sprites.update(self.h_scroll)
+        self.pickups_sprites.update(self.h_scroll, self.v_scroll)
         self.pickups_sprites.draw(self.screen)
 
         # drops
-        self.drops_sprites.update(self.h_scroll)
+        self.drops_sprites.update(self.h_scroll, self.v_scroll)
         self.drops_sprites.draw(self.screen)
 
         # projectiles
-        self.projectile_sprites.update(self.h_scroll, self.terrain_sprites)
+        self.projectile_sprites.update(self.h_scroll, self.v_scroll, self.terrain_sprites)
         self.projectile_sprites.draw(self.screen)
 
         # spells
-        self.spell_sprites.update(self.h_scroll)
+        self.spell_sprites.update(self.h_scroll, self.v_scroll)
         self.spell_sprites.draw(self.screen)
 
         # triggered_objects 
-        self.triggered_objects_sprites.update(self.h_scroll)
+        self.triggered_objects_sprites.update(self.h_scroll, self.v_scroll)
         self.triggered_objects_sprites.draw(self.screen)
 
         # monsters 
-        self.monsters_sprites.update(self.h_scroll, self.terrain_sprites, self.player)
+        self.monsters_sprites.update(self.h_scroll, self.v_scroll, self.terrain_sprites, self.player)
         self.monsters_sprites.draw(self.screen)
 
         # stomp shadows
-        self.stomp_shadows.update(self.h_scroll)
+        self.stomp_shadows.update(self.h_scroll, self.v_scroll)
         self.stomp_shadows.draw(self.screen)
 
         # stomp effect
-        self.stomp_effects.update(self.h_scroll)
+        self.stomp_effects.update(self.h_scroll, self.v_scroll)
         self.stomp_effects.draw(self.screen)
 
         # dust
-        self.dust_sprites.update(self.h_scroll)
+        self.dust_sprites.update(self.h_scroll, self.v_scroll)
         self.dust_sprites.draw(self.screen)
 
         # player 
-        self.h_scroll = self.player.update(self.terrain_sprites)
+        self.h_scroll, self.v_scroll = self.player.update(self.terrain_sprites)
         self.player_sprites.draw(self.screen)
 
         # entry and exit points
-        self.player_in_out_sprites.update(self.h_scroll)  
+        self.player_in_out_sprites.update(self.h_scroll, self.v_scroll)  
         #self.player_in_out_sprites.draw(self.screen)  # normally we do not draw these, but good to have for debugging
 
         # environmental effects
-        self.env_sprites.update(self.h_scroll)
+        self.env_sprites.update(self.h_scroll, self.v_scroll)
         self.env_sprites.draw(self.screen)
 
         # particle system
-        self.particle_system.update(self.h_scroll)
+        self.particle_system.update(self.h_scroll, self.v_scroll)
         self.particle_system.draw(self.screen)
 
         """ DEMO ZONE """
         # Testing player casting
         if len(self.player.cast_active):
             for cast in self.player.cast_active:
-                cast.update(self.h_scroll)
+                cast.update(self.h_scroll, self.v_scroll)
                 cast.draw(self.screen)
                 if cast.done:
                     self.player.cast_active.remove(cast)
@@ -623,7 +625,6 @@ class Level():
                 pygame.draw.rect(self.screen, (255, 0, 0), self.player.rects['attack'], 4 )  # attack rect - RED
             if self.player.collision_sprite.rect:
                 pygame.draw.rect(self.screen, ('#e75480'), self.player.collision_sprite.rect, 2 )  # Collsion rect - PINK
-
 
 
         # --> Check player condition and actions <--

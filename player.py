@@ -103,7 +103,7 @@ class Player(pygame.sprite.Sprite):
         self.fx_hit.set_volume(0.2)
         self.fx_attack_channel = pygame.mixer.Channel(0)  # we use separate channel to avoid overlapping sounds with repeat attacks
 
-        # Status variables
+        # Status variables - initial values
         self.turned = False  # flip sprite/animations when moving left
         self.on_ground = False  # standing on solid ground
         self.bouncing = False  # hit by something --> small bounce in the opposite direction
@@ -114,6 +114,8 @@ class Player(pygame.sprite.Sprite):
         self.cast_delay = 500
         self.cast_active = []  # all player spells
         self.world_x_pos = x + self.rects['player'].width / 2 # player center x position across the whole world, not just screen
+        self.world_y_pos = y + self.rects['player'].height / 2 # player center y position across the whole world, not just screen
+
 
     def _check_collision(self, dx, dy, platforms) -> tuple:
         """ 
@@ -130,9 +132,6 @@ class Player(pygame.sprite.Sprite):
 
             if not platform.slope and platform.rect.top >= self.hitbox_sprite.rect.bottom:  # we are standing on the platform and it's a _flat_ platform
                 dy = platform.rect.top - self.hitbox_sprite.rect.bottom  # the last y movement will cover the difference
-                self.vel_y = 0
-                self.on_ground = True
-                self.bouncing = False
             
                 if platform.moving == True:  # the platform we're standing on moves, and moves us
                     self.rect.centerx += platform.dist_player_pushed
@@ -162,15 +161,18 @@ class Player(pygame.sprite.Sprite):
                 else:
                     logging.error(f'Invalid value {platform.slope=}')
 
+
+                y = int(y)  
                 dy = platform.rect.bottom - self.rects['hitbox'].bottom - y - adjustment  # from the bottom, as we add y which starts at platform.rect.bottom
                 #print(f'{x=}, {y=}')  # debug
-                self.vel_y = 0
-                self.on_ground = True
-                self.bouncing = False
+            self.vel_y = 0
+            self.on_ground = True
+            self.bouncing = False
 
             if platform.rect.bottom <= self.rects['hitbox'].top:  # we bumped into a platform from below 
                 dy = 0
-                self.vel_y = GRAVITY
+                print('GRAVITY ')
+                self.vel_y = GRAVITY 
                 self.bouncing = False
 
                     
@@ -354,11 +356,12 @@ class Player(pygame.sprite.Sprite):
                 pygame.time.wait(3000)  # we freeze the game to look at your corpse for a moment
 
              
-    def actions(self, platforms) -> int:
+    def actions(self, platforms) -> tuple:
         """ Movement as a result of keypresses as well as gravity and collision """
         dx = 0
         dy = 0
         h_scroll = 0
+        v_scroll = 0
         
         # If we've been hit, we're invincible - check if it's time to reset
         if self.invincible and self.state['active'] not in (DYING, DEAD):
@@ -426,8 +429,10 @@ class Player(pygame.sprite.Sprite):
 
         # Gravity
         self.vel_y += GRAVITY
+        
+
         if dy < STOMP_SPEED:  # we use the STOMP_SPEED as a speed limit
-            dy += self.vel_y
+            dy += int(self.vel_y)
 
         # Bounce (in x-direction, y is handled by gravity)
         if self.bouncing:
@@ -447,18 +452,30 @@ class Player(pygame.sprite.Sprite):
         if dx > 0 and self.rects['player'].centerx >= SCREEN_WIDTH - H_SCROLL_THRESHOLD and self.world_x_pos < TILE_SIZE_SCREEN * MAX_COLS - H_SCROLL_THRESHOLD:
             h_scroll = -dx  # We h_scroll right by the opposite of the player's x speed
 
+         # Check if player has reached v_scroll threshold on top of the screen (and we're not all the way to the top) + we're moving upwards
+        if dy < 0 and self.rects['player'].centery <= V_SCROLL_THRESHOLD and self.world_y_pos > V_SCROLL_THRESHOLD:
+            v_scroll = -dy  # We scroll up by the opposite of the player's y speed
+
+         # Check if player has reached v_scroll threshold at bottom of the screen (and we're not all the way down at the bottom) + we're moving downwards
+        if dy > 0 and self.rects['player'].centery >= SCREEN_HEIGHT - V_SCROLL_THRESHOLD and \
+            self.world_y_pos < TILE_SIZE_SCREEN * MAX_ROWS - V_SCROLL_THRESHOLD:  # the very bottom
+            v_scroll = -dy  # We h_scroll down by the opposite of the player's y speed
+
+
+        
 
         # Check collision with terrain
         (dx, dy) = self._check_collision(dx, dy, platforms)
         
         # Update rectangle position
         self.rects['player'].x += dx + h_scroll
-        self.rects['player'].y += dy 
+        self.rects['player'].y += dy + v_scroll
 
         self.world_x_pos += dx
+        self.world_y_pos += dy
+        print(f"{self.rects['player'].centery=} and {self.world_y_pos=} - scroll threshold towards bottom is: {TILE_SIZE_SCREEN * MAX_ROWS - V_SCROLL_THRESHOLD}")
 
-
-        return h_scroll
+        return h_scroll, v_scroll
     
 
     def get_anim_image(self) -> None:
@@ -596,13 +613,13 @@ class Player(pygame.sprite.Sprite):
 
  
 
-    def update(self, platforms) -> int:
+    def update(self, platforms) -> tuple:
         self.get_input()
         self._state_engine()
         self.rect = self.rects['player']
-        h_scroll = self.actions(platforms)
+        h_scroll, v_scroll = self.actions(platforms)
         self.get_anim_image()
-        return h_scroll
+        return h_scroll, v_scroll
         
 
 class PlayerInOut(pygame.sprite.Sprite):
@@ -622,8 +639,6 @@ class PlayerInOut(pygame.sprite.Sprite):
         self.image = pygame.Surface((TILE_SIZE_SCREEN, TILE_SIZE_SCREEN))  #  empty surface
         self.rect = self.image.get_rect(center=(x + TILE_SIZE_SCREEN/2, y + TILE_SIZE_SCREEN/2))
 
-    def update(self, h_scroll) -> None:
+    def update(self, h_scroll, v_scroll) -> None:
         self.rect.centerx += h_scroll
-
-
-
+        self.rect.centery += v_scroll

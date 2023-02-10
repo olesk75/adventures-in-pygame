@@ -38,9 +38,10 @@ GRAVITY = 0.5
 MAX_PLATFORMS = 10
 JUMP_HEIGHT = 15
 H_SCROLL_THRESHOLD = 400
-V_SCROLL_THRESHOLD = 200  # TODO: fix! placeholder!
-ROWS = 16
-MAX_COLS = 250
+V_SCROLL_THRESHOLD = 200     
+ROWS = 16  # the number of rows we can see on screen at once
+MAX_COLS = 250  # mac columns in the map 
+MAX_ROWS = 32  # max rows in map (we can scroll)
 
 
 SCALE_FACTOR = 1

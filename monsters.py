@@ -271,7 +271,7 @@ class Monster(pygame.sprite.Sprite):
             new_rect.center = self.rect.center
             self.rect = new_rect
 
-    def update(self, h_scroll, platforms_sprite_group, player) -> None:
+    def update(self, h_scroll, v_scroll, platforms_sprite_group, player) -> None:
         dx = 0
         dy = self.vel_y  # Newton would be proud!
 
@@ -311,12 +311,13 @@ class Monster(pygame.sprite.Sprite):
                     self.turned = not self.turned
 
 
-        # we compensate for h_scrolling
+        # we compensate for scrolling
         self.rect.x += h_scroll
+        self.rect.y += v_scroll
 
         # we compensate for graivty
-        self.vel_y += GRAVITY  # allows us to let mobs fall
-        dy += self.vel_y
+        self.vel_y += GRAVITY  # gravity component gets added to the vel_y, which we add to dy at the top
+       
         
         # Update rectangle position
         self.rect.x += dx * self.data.direction
@@ -375,7 +376,7 @@ class Projectile(pygame.sprite.Sprite):
         self.rect = pygame.Rect(x, y, self.width, self.height)
         self.turned = turned
         
-    def update(self, h_scroll, platforms_sprite_group) -> None:
+    def update(self, h_scroll, v_scroll, platforms_sprite_group) -> None:
         
         # we set start speeds for x and y
         dx = self.speed
@@ -384,8 +385,9 @@ class Projectile(pygame.sprite.Sprite):
             
         dy = 0  # projectiles have no gravity
 
-        # we compensate for h_scrolling
+        # we compensate forscrolling
         self.rect.x += h_scroll
+        self.rect.y += v_scroll
 
         # Update rectangle position
         self.rect.x += dx 
@@ -421,8 +423,9 @@ class Spell(pygame.sprite.Sprite):
 
         self.anim.first_done = False
         
-    def update(self, h_scroll) -> None:
-        self.rect.x += h_scroll  # we compensate for h_scrolling
+    def update(self, h_scroll, v_scroll) -> None:
+        self.rect.x += h_scroll
+        self.rect.y += v_scroll
 
         # Done with one cycle, as spell do not repeat (yet!)
         if self.anim.first_done:
@@ -453,7 +456,8 @@ class Drop(pygame.sprite.Sprite):
         self.rect = pygame.Rect(x, y, self.width, self.height)
         self.turned = turned
         
-    def update(self, h_scroll) -> None:
+    def update(self, h_scroll, v_scroll) -> None:
         self.rect.x += h_scroll # we compensate for h_scrolling
+        self.rect.y += v_scroll # we compensate for h_scrolling
 
         self.image = pygame.transform.flip( self.anim.get_image().convert_alpha(), self.turned, False)         

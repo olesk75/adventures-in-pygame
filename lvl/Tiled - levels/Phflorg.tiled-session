@@ -3,10 +3,10 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "Mountain terrain.tsx",
+    "activeFile": "Decorations.tsx",
     "expandedProjectPaths": [
-        "Tilesets",
-        "."
+        ".",
+        "Tilesets"
     ],
     "fileStates": {
         ":/automap-tiles.tsx": {
@@ -15,18 +15,18 @@
         "Decorations.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1,
-            "scaleInEditor": 1
+            "scaleInEditor": 6.05
         },
         "Hazards.tsx": {
             "dynamicWrapping": true,
-            "scaleInDock": 1
+            "scaleInDock": 6.3006
         },
         "Level 1 - Phflorg - mountains.tmx": {
-            "scale": 0.9329,
+            "scale": 1.5464,
             "selectedLayer": 8,
             "viewCenter": {
-                "x": 1052.0956158216316,
-                "y": 575.6243970414837
+                "x": 189.14899120538018,
+                "y": 488.8773926539058
             }
         },
         "Lvl 1 - 16x16 - mountains.tmx": {
@@ -40,12 +40,12 @@
         "Monsters.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1,
-            "scaleInEditor": 5.2762
+            "scaleInEditor": 6.05
         },
         "Mountain terrain.tsx": {
             "dynamicWrapping": false,
-            "scaleInDock": 3.8614,
-            "scaleInEditor": 7.9711
+            "scaleInDock": 6.4496,
+            "scaleInEditor": 6.05
         },
         "Phflorg1.tmx": {
             "scale": 0.5598,
@@ -71,7 +71,7 @@
         "Pickups.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1,
-            "scaleInEditor": 7.93
+            "scaleInEditor": 6.05
         },
         "Player.tsx": {
             "dynamicWrapping": false,
@@ -90,7 +90,7 @@
         "Trigger objects.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1.5,
-            "scaleInEditor": 7.93
+            "scaleInEditor": 6.05
         }
     },
     "last.exportedFilePath": "/home/olesk/Nextcloud/CODE/Python/adventures-in-pygame/lvl/lvl 1 - mountains",
@@ -110,13 +110,13 @@
     ],
     "project": "Phflorg.tiled-project",
     "recentFiles": [
-        "Lvl 1 - 16x16 - mountains.tmx",
         "Trigger objects.tsx",
         "Pickups.tsx",
-        "Decorations.tsx",
-        "Monsters.tsx",
         "Mountain terrain.tsx",
+        "Monsters.tsx",
+        "Decorations.tsx",
         "Level 1 - Phflorg - mountains.tmx",
+        "Lvl 1 - 16x16 - mountains.tmx",
         "Phflorg2.tmx",
         "Phflorg1.tmx",
         "Phflorg1.tsx",

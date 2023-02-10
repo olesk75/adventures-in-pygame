@@ -19,9 +19,10 @@ class GameTile(pygame.sprite.Sprite):
 		self.slope = slope  # if we have a slope, we put 1 for 45 degrees up slope, 2 for 22.5 degrees, and same but negative for sloping down
 		self.slope_pos = slope_pos # -1 for left, 1 for right, can be extended later
 
-	def update(self, h_scroll) -> None:
+	def update(self, h_scroll, v_scroll) -> None:
 		# Moves the rectangle of this sprite 
 		self.rect.centerx += h_scroll
+		self.rect.centery += v_scroll
 
 
 class GameTileAnimation(GameTile):
@@ -46,9 +47,10 @@ class GameTileAnimation(GameTile):
 
 		self.name = ''  # This allows us to store the type (like "health potion") in this object
         
-	def update(self, h_scroll) -> None:
+	def update(self, h_scroll, v_scroll) -> None:
 		# Moves the rectangle of this sprite 
 		self.rect.x += h_scroll
+		self.rect.y += v_scroll
 		self.rect.x += int(self.x_vel)
 		self.rect.y += int(self.y_vel)
 		
@@ -78,9 +80,10 @@ class MovingGameTile(GameTile):
 		self.dist_player_pushed = 0
 		
         
-	def update(self, h_scroll) -> None:
+	def update(self, h_scroll, v_scroll) -> None:
 		# Moves the rectangle of this sprite 
 		self.rect.centerx += h_scroll
+		self.rect.centery += v_scroll
 
 		now = pygame.time.get_ticks()
 		if now - self.last_move > 30:
