@@ -138,6 +138,9 @@ class Level():
         self.player_sprites = pygame.sprite.GroupSingle()
         self.player_sprites.add(self.player)
 
+        # debugging
+        logging.debug(f"Level created {levels[current_level]['size_x']} by {levels[current_level]['size_y']} tiles large, or {levels[current_level]['size_x']*TILE_SIZE} by {levels[current_level]['size_y']*TILE_SIZE} pixels")
+
         
     def _debug_show_state(self) -> None:
         """ DEBUG ZONE """
@@ -299,8 +302,8 @@ class Level():
 
   
     def player_setup(self) -> None:
-        player = Player(self.lvl_entry[0], self.lvl_entry[1], self.screen, self.health_max, self.sounds)
-        logging.debug(f'Payer born at coordinates {self.lvl_entry[0]}, {self.lvl_entry[0]}')
+        player = Player(self.lvl_entry[0], self.lvl_entry[1], self.screen, self.health_max, self.sounds, self.level_data)
+        logging.debug(f'Payer born at coordinates {self.lvl_entry[0]}, {self.lvl_entry[1]}')
         return player
 
 
@@ -627,6 +630,9 @@ class Level():
             if self.player.collision_sprite.rect:
                 pygame.draw.rect(self.screen, ('#e75480'), self.player.collision_sprite.rect, 2 )  # Collsion rect - PINK
 
+        # Vertical scroll lines
+        pygame.draw.line(self.screen, RED, (0, V_SCROLL_THRESHOLD), (SCREEN_WIDTH, V_SCROLL_THRESHOLD), width=3)
+        pygame.draw.line(self.screen, RED, (0, SCREEN_HEIGHT - V_SCROLL_THRESHOLD), (SCREEN_WIDTH, SCREEN_HEIGHT - V_SCROLL_THRESHOLD), width=3)
 
         # --> Check player condition and actions <--
         self.check_player_fallen_off()

@@ -41,7 +41,7 @@ level_0 = {
 
 level_1 = {
     'size_x': 250,
-    'size_y': 15,
+    'size_y': 64,
     'pos_terrain': 'lvl/lvl 1 - mountains/level1_terrain.csv',
     'pos_decorations': 'lvl/lvl 1 - mountains/level1_decorations.csv',
     'pos_hazards':  'lvl/lvl 1 - mountains/level1_hazards.csv',

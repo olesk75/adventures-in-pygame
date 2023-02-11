@@ -8,7 +8,7 @@ from decor_and_effects import ExpandingCircle, SpeedLines
 
 # Player class
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y, surface, health_max, audio) -> None:
+    def __init__(self, x, y, surface, health_max, audio, level_data: dict) -> None:
         # need also walk_anim, attack_anim, death_anim, sounds
         """
         The Player class constructor - note that x and y is only for initialization,
@@ -21,6 +21,8 @@ class Player(pygame.sprite.Sprite):
 
         self.health_max = health_max
         self.health_current = self.health_max
+
+        self.level_data = level_data
 
         self.invincible = False
         self.invincibility_duration = 500
@@ -140,7 +142,7 @@ class Player(pygame.sprite.Sprite):
 
             if platform.slope:
                 """ If we're on a sloped tile, we need to adjust the y position """
-                h = TILE_SIZE * 2
+                h = TILE_SIZE_SCREEN
                 adjustment = 15  # this is critical, as if we go too low, we'll fall through at the bottom
                 x = self.rects['hitbox'].centerx - platform.rect.left
                 # Steep, 45 degree slopes
@@ -162,8 +164,10 @@ class Player(pygame.sprite.Sprite):
                 else:
                     logging.error(f'Invalid value {platform.slope=}')
 
+                import math
+                y = math.ceil(y)  # only integers for coordinate positions
 
-                y = int(y)  
+
                 dy = platform.rect.bottom - self.rects['hitbox'].bottom - y - adjustment  # from the bottom, as we add y which starts at platform.rect.bottom
                 #print(f'{x=}, {y=}')  # debug
             self.vel_y = 0
@@ -204,6 +208,7 @@ class Player(pygame.sprite.Sprite):
 
         if DEBUG_HITBOXES:
                 pygame.draw.rect(self.screen, '#f6e445', self.side_collision_sprite.rect, 6)  # horizontal collision test, re-using collider sprite - YELLOW
+
 
         return dx, dy
 
@@ -357,7 +362,7 @@ class Player(pygame.sprite.Sprite):
                 pygame.time.wait(3000)  # we freeze the game to look at your corpse for a moment
 
              
-    def actions(self, platforms) -> tuple:
+    def actions(self, platforms, ) -> tuple:
         """ Movement as a result of keypresses as well as gravity and collision """
         dx = 0
         dy = 0
@@ -452,30 +457,31 @@ class Player(pygame.sprite.Sprite):
         if self.rects['hitbox'].right + dx > SCREEN_WIDTH:
             dx = SCREEN_WIDTH - self.rects['player'].right
         
+        # Check collision with terrain
+        (dx, dy) = self._check_collision(dx, dy, platforms)
 
         """ Scrolling horizontally or vertically if player reaches either of the four scroll thresholds (left/right/top/bottom) """
         # Check if player has reached h_scroll threshold to the LEFT (and we're not on the far left) + we're walking left
         if dx < 0 and self.rects['player'].centerx <= H_SCROLL_THRESHOLD and self.world_x_pos > H_SCROLL_THRESHOLD + self.rects['hitbox'].width:
-            h_scroll = -dx  # We h_scroll left by the opposite of the player's x speed
+            h_scroll = -dx  # We h_scroll left by the opposite of the player's x movement
         
          # Check if player has reached h_scroll threshold to the right (and we're not on the far right) + we're walking right
-        if dx > 0 and self.rects['player'].centerx >= SCREEN_WIDTH - H_SCROLL_THRESHOLD and self.world_x_pos < TILE_SIZE_SCREEN * MAX_COLS - H_SCROLL_THRESHOLD:
-            h_scroll = -dx  # We h_scroll right by the opposite of the player's x speed
+        if dx > 0 and self.rects['player'].centerx >= SCREEN_WIDTH - H_SCROLL_THRESHOLD and self.world_x_pos < TILE_SIZE_SCREEN * self.level_data['size_x'] - H_SCROLL_THRESHOLD:
+            h_scroll = -dx  # We h_scroll right by the opposite of the player's x movement
 
          # Check if player has reached v_scroll threshold on top of the screen (and we're not all the way to the top) + we're moving upwards
-        if dy < 0 and self.rects['player'].centery <= V_SCROLL_THRESHOLD and self.world_y_pos > V_SCROLL_THRESHOLD:
-            v_scroll = -dy  # We scroll up by the opposite of the player's y speed
+        if dy < 0 and self.rects['player'].centery <= V_SCROLL_THRESHOLD and self.world_y_pos > V_SCROLL_THRESHOLD + + self.rects['hitbox'].height:
+            v_scroll = -dy  # We scroll up by the opposite of the player's y movement
 
          # Check if player has reached v_scroll threshold at bottom of the screen (and we're not all the way down at the bottom) + we're moving downwards
         if dy > 0 and self.rects['player'].centery >= SCREEN_HEIGHT - V_SCROLL_THRESHOLD and \
-            self.world_y_pos < TILE_SIZE_SCREEN * MAX_ROWS - V_SCROLL_THRESHOLD * 2:  # the very bottom
-            v_scroll = -dy  # We h_scroll down by the opposite of the player's y speed
+            self.world_y_pos < TILE_SIZE_SCREEN * self.level_data['size_y'] - V_SCROLL_THRESHOLD - + self.rects['hitbox'].height:  # the very bottom
+            v_scroll = -dy  # We h_scroll down by the opposite of the player's y movement
 
-
+        # NOTE: problem right now: slopes don't create a dy, so we don't catch them in the scrolling
         
 
-        # Check collision with terrain
-        (dx, dy) = self._check_collision(dx, dy, platforms)
+        
         
         # Update rectangle position
         self.rects['player'].x += dx + h_scroll
@@ -483,10 +489,10 @@ class Player(pygame.sprite.Sprite):
 
         self.world_x_pos += dx
         self.world_y_pos += dy
-        print(f"Player's centery: {self.rects['player'].centery} and {self.world_y_pos=} - scroll threshold towards bottom is: {TILE_SIZE_SCREEN * MAX_ROWS - V_SCROLL_THRESHOLD}, and lowest possible point before death is {TILE_SIZE_SCREEN * MAX_ROWS}")
+        #print(f"Player's centerY: {self.rects['player'].centery} and world_y_pos: {self.world_y_pos} - scroll threshold towards bottom is: {TILE_SIZE_SCREEN * self.level_data['size_y'] - V_SCROLL_THRESHOLD}, and death at {TILE_SIZE_SCREEN * self.level_data['size_y']}")
 
         # If we fall off the world we die
-        if self.world_y_pos > TILE_SIZE_SCREEN * MAX_ROWS:
+        if self.world_y_pos > TILE_SIZE_SCREEN * self.level_data['size_y']:
             self.state['next'] = DEAD
             logging.debug('DEAD: fell off the world')
             self._state_engine()  # we call the state engine to get an out-of-turn state update

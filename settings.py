@@ -31,18 +31,14 @@ SCREEN_HEIGHT = 960
 
 # Derived values for scaling
 TILE_SIZE = 32  # x and y native resolution of standard tiles
-TILE_SIZE_SCREEN = SCREEN_WIDTH // TILE_SIZE  # 60 tiles wide, 30 tiles high, with a TILE_SIZE of 32
+TILE_SIZE_SCREEN = SCREEN_WIDTH // TILE_SIZE 
 
-LEVEL_WIDTH = 4
 GRAVITY = 0.5
 MAX_PLATFORMS = 10
 JUMP_HEIGHT = 15
 H_SCROLL_THRESHOLD = 400
-V_SCROLL_THRESHOLD = 200     
+V_SCROLL_THRESHOLD = TILE_SIZE_SCREEN * 3     
 ROWS = 16  # the number of rows we can see on screen at once
-MAX_COLS = 250  # mac columns in the map 
-MAX_ROWS = 32  # max rows in map (we can scroll)
-
 
 SCALE_FACTOR = 1
 TILE_TYPES = 18

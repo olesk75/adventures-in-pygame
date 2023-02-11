@@ -261,6 +261,7 @@ class ParallaxBackground():
         self.screen = screen
         background = levels[level]['background']
         self.bg_scroll = 0
+        self.level_width = levels[level]['size_y'] * TILE_SIZE
         
         # load background images
         self.bg_near = pygame.image.load(background['near']).convert_alpha()
@@ -285,7 +286,7 @@ class ParallaxBackground():
         surface.fill(self.bg_color)
         width = self.bg_clouds.get_width()
         
-        for x in range(LEVEL_WIDTH + 300):
+        for x in range(self.level_width + 300):
             surface.blit(self.bg_clouds, ((x * width) + self.bg_scroll * 0.4, 0 - self.y_adjust['bg']))
             surface.blit(self.bg_further, ((x * width) + self.bg_scroll * 0.5, SCREEN_HEIGHT - self.bg_further.get_height() - self.y_adjust['further']))
             surface.blit(self.bg_far, ((x * width) + self.bg_scroll * 0.6, SCREEN_HEIGHT - self.bg_far.get_height() - self.y_adjust['far']))
