@@ -3,10 +3,10 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "Decorations.tsx",
+    "activeFile": "Level 1 - Phflorg - mountains.tmx",
     "expandedProjectPaths": [
-        ".",
-        "Tilesets"
+        "Tilesets",
+        "."
     ],
     "fileStates": {
         ":/automap-tiles.tsx": {
@@ -22,11 +22,11 @@
             "scaleInDock": 6.3006
         },
         "Level 1 - Phflorg - mountains.tmx": {
-            "scale": 1.5464,
-            "selectedLayer": 8,
+            "scale": 1.5,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 189.14899120538018,
-                "y": 488.8773926539058
+                "x": 762.9999999999999,
+                "y": 656
             }
         },
         "Lvl 1 - 16x16 - mountains.tmx": {
@@ -106,7 +106,8 @@
         "Pickups.tsx",
         "Mountain terrain.tsx",
         "Monsters.tsx",
-        "Decorations.tsx"
+        "Decorations.tsx",
+        "Level 1 - Phflorg - mountains.tmx"
     ],
     "project": "Phflorg.tiled-project",
     "recentFiles": [
