@@ -86,14 +86,17 @@ class Player(pygame.sprite.Sprite):
         self.hitbox_sprite = pygame.sprite.Sprite()
         self.collision_sprite = pygame.sprite.Sprite()
         self.side_collision_sprite = pygame.sprite.Sprite()
+
         empty_surf = pygame.Surface((self.width, self.height)).convert_alpha()
         empty_surf.fill((0, 0, 0, 0))
         self.hitbox_sprite.image = empty_surf
-        self.hitbox_sprite.rect = self.rects['hitbox']
         self.collision_sprite.image = empty_surf
-        self.collision_sprite.rect = pygame.Rect(0, 0, self.width - (x_reduction + 5) , self.height - y_reduction)  # narrower to see better
         self.side_collision_sprite.image = empty_surf
-        self.side_collision_sprite.rect = pygame.Rect(0, 0, 30 , 30)  # small rect when walking up slopes
+
+        self.hitbox_sprite.rect = self.rects['hitbox']
+        self.collision_sprite.rect = pygame.Rect(0, 0, self.width - (x_reduction + 5) , self.height - y_reduction)  # narrower to see better
+        self.side_collision_sprite.rect = self.rects['hitbox']
+        
         # Setting up sound effects
         sounds = audio
         self.fx_attack = sounds.player['attack']
@@ -185,42 +188,20 @@ class Player(pygame.sprite.Sprite):
 
                     
         # Checking horisontal collision with 3 scenarios:
-        # 1 - player is walking into terrain
-        # 2 - player is bumped/hit by a monster into terrain
-        # 3 - player is walking uphill -> NOT a collision
 
         if dx:
-            if self.on_ground:  # on the ground we use a much smaller collision box to avoid trouble with slopes
-                if self.on_slope:
-                    self.side_collision_sprite.rect = pygame.Rect(0, 0, 30 , 30)  # small rect when walking up slopes
-                    self.side_collision_sprite.rect.centery = self.hitbox_sprite.rect.top
-                    if dx > 0:  # going right
-                        self.side_collision_sprite.rect.centerx = self.hitbox_sprite.rect.centerx + 10
-                    if dx < 0:  # going left
-                        self.side_collision_sprite.rect.centerx = self.hitbox_sprite.rect.centerx - 10
-                else:
-                    self.side_collision_sprite.rect = pygame.Rect(0, 0, 30 , self.rects['hitbox'].height)  # small rect when walking up slopes
-                    self.side_collision_sprite.rect.centery = self.hitbox_sprite.rect.centery
-                    if dx > 0:  # going right
-                        self.side_collision_sprite.rect.centerx = self.hitbox_sprite.rect.centerx + 10
-                    if dx < 0:  # going left
-                        self.side_collision_sprite.rect.centerx = self.hitbox_sprite.rect.centerx - 10
+            self.side_collision_sprite.rect.centery = self.hitbox_sprite.rect.centery
+            if dx > 0:  # going right
+                self.side_collision_sprite.rect.centerx = self.hitbox_sprite.rect.centerx + 10
+            if dx < 0:  # going left
+                self.side_collision_sprite.rect.centerx = self.hitbox_sprite.rect.centerx - 10
 
-                platform = pygame.sprite.spritecollideany(self.side_collision_sprite, platforms)
-                if platform and platform.solid == True:  # player has collided with a solid platform
-                    dx = 0
-            else:
-                if dx > 0:  # going right
-                    self.collision_sprite.rect.centerx = self.hitbox_sprite.rect.centerx + 10
-                if dx < 0:  # going left
-                    self.collision_sprite.rect.centerx = self.hitbox_sprite.rect.centerx - 10
-                platform = pygame.sprite.spritecollideany(self.collision_sprite, platforms)
-                if platform and platform.solid == True:  # player has collided with a solid platform
-                    dx = 0
-
-        if DEBUG_HITBOXES:
+            platform = pygame.sprite.spritecollideany(self.side_collision_sprite, platforms)
+            if platform and platform.solid == True and not platform.slope:  # player has collided with a solid platform and is not walking a slope
+                dx = 0
+           
+            if DEBUG_HITBOXES:
                 pygame.draw.rect(self.screen, '#f6e445', self.side_collision_sprite.rect, 6)  # horizontal collision test, re-using collider sprite - YELLOW
-
 
         return dx, dy
 

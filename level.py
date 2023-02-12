@@ -176,7 +176,6 @@ class Level():
                     if type == 'pos_terrain':  
                         """ Loading terrain tiles
                             NOTE: there is really no limit to size - the program can accept any size of level,
-                                  but there is currently no vertical h_scrolling, so stick to 16 32x32 tile with 2x resize
                         """
 
                         tile_surface = self.terrain_tilesheet_list[int(val)]
