@@ -15,6 +15,8 @@ self.world_x_pos = x + self.rects['player'].width / 2 # player center x position
         self.v_scroll_initial = self.world_y_pos - V_SCROLL_THRESHOLD # just for the "camera" to see the player on the initial placement if he's not in the topleft screen
 
 
+![Screenshot](assets/misc/screenshot.png?raw=true "Screenshot 1")
+
 Game assets are credited in [credits.txt](credits.txt).
 
 

@@ -665,7 +665,7 @@ class Level():
                     self.player.cast_active.remove(cast)
 
         # DEBUGGING
-        self._debug_show_state()
+        # self._debug_show_state()
         if DEBUG_HITBOXES:
             pygame.draw.rect(self.screen, (255,255,255), self.player.rect, 4 )  # self.rect - WHITE
             if self.player.rects['hitbox']:
