@@ -73,13 +73,15 @@ anim = {
     'skeleton-boss': {
         'walk': Animation(skeleton_boss_ss, row=11, frames=9, speed=50), 
         'attack': Animation(skeleton_boss_attack_ss, row=3, frames=8, speed=75), 
-        'death': Animation(skeleton_boss_ss, row=20, frames=6, speed=75, repeat=False), 
+        'death': Animation(skeleton_boss_ss, row=20, frames=6, speed=75, repeat=False),
+        'idle': None,
         'cast': Animation(skeleton_boss_ss, row=2, frames=7, speed=100)
     },
     'beholder': {
-        'walk': Animation(beholder_ss_walk, frames=8, speed=100), 
-        'attack': Animation(beholder_ss_attack, frames=8, speed=75),
+        'walk': Animation(beholder_ss_walk, frames=10, speed=25), 
+        'attack': Animation(beholder_ss_attack, frames=8, speed=50),
         'death': Animation(beholder_ss_death, frames=8, speed=100, repeat=False),
+        'idle': None,
         'cast': None
     },
     'fire': {
