@@ -28,7 +28,8 @@ health_potion_ss =  SpriteSheet(pygame.image.load('assets/spritesheets/objects/l
 stomp_potion_ss =  SpriteSheet(pygame.image.load('assets/spritesheets/objects/stomppotion.png').convert_alpha(), 32, 32, 3)
 mana_potion_ss =  SpriteSheet(pygame.image.load('assets/spritesheets/objects/manapotion.png').convert_alpha(), 32, 32, 3)
 key_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/key.png').convert_alpha(), 32, 32, 2)
-door_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/portcullis.png').convert_alpha(), 32, 32, 4)
+door_left_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/door-left.png').convert_alpha(), 32, 64, 2)
+door_right_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/door-right.png').convert_alpha(), 32, 64, 2)
 chest_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/chest.png').convert_alpha(), 32, 32, 4)
 portal_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/portal.png').convert_alpha(), 32, 32, 4)
 
@@ -90,7 +91,8 @@ anim = {
         'spike-trap': Animation(spike_ss, frames=2, speed=100)
     },
     'doors': {
-        'end-of-level': Animation(door_ss, frames=22, speed=100, repeat=False),
+        'left-wood': Animation(door_left_ss, frames=2, speed=1, repeat=False),
+        'right-wood': Animation(door_right_ss, frames=2, speed=1, repeat=False),
     },
     'pickups': {
         'key': Animation(key_ss, frames=10, speed=50, repeat=True),

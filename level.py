@@ -272,13 +272,23 @@ class Level():
                             sprite.animation.active = True
                             sprite.hidden = False  # we can link this to boss death later
                             sprite.name = 'IN portal'
-
                         if int(val) == 3:  # IN portal (teleports)
                             sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['objects']['portal'])
                             sprite.animation.active = True
                             sprite.hidden = False  # we can link this to boss death later
                             sprite.name = 'OUT portal'
                             self.out_portal_coordinates = (x + TILE_SIZE//2, y + TILE_SIZE//2 )
+                        if int(val) == 4:  # Door facing LEFT
+                            sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['doors']['left-wood'])
+                            sprite.animation.active = False
+                            sprite.hidden = False  # we can link this to boss death later
+                            sprite.name = 'door-left'
+                        if int(val) == 5:  # Door facing RIGHT
+                            sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['doors']['right-wood'])
+                            sprite.animation.active = False
+                            sprite.hidden = False  # we can link this to boss death later
+                            sprite.name = 'door-right'
+                            
 
                         sprite.rect.bottom = bottom_pos
 
