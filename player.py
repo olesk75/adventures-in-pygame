@@ -93,7 +93,7 @@ class Player(pygame.sprite.Sprite):
         self.collision_sprite.image = empty_surf
         self.collision_sprite.rect = pygame.Rect(0, 0, self.width - (x_reduction + 5) , self.height - y_reduction)  # narrower to see better
         self.side_collision_sprite.image = empty_surf
-        self.side_collision_sprite.rect = pygame.Rect(0, 0, 30 , 30)  # small rect to not prevent us going uphill and to avoid bumping into underside of platforms
+        self.side_collision_sprite.rect = pygame.Rect(0, 0, 30 , 30)  # small rect when walking up slopes
         # Setting up sound effects
         sounds = audio
         self.fx_attack = sounds.player['attack']
@@ -110,6 +110,7 @@ class Player(pygame.sprite.Sprite):
         # Status variables - initial values
         self.turned = False  # flip sprite/animations when moving left
         self.on_ground = False  # standing on solid ground
+        self.on_slope = False  # we reduce the collision hitbox on slopes
         self.bouncing = False  # hit by something --> small bounce in the opposite direction
         self.last_env_damage = 0  # to manage frequency of damage
         self.last_attack = 0  # slowing down the attack
@@ -136,6 +137,7 @@ class Player(pygame.sprite.Sprite):
                 pygame.draw.rect(self.screen, (128,128,255), platform.rect, 4 )  # self.rect - LIGHT BLUE
 
             if not platform.slope and platform.rect.top >= self.hitbox_sprite.rect.bottom:  # we are standing on the platform and it's a _flat_ platform
+                self.on_slope = False
                 dy = platform.rect.top - self.hitbox_sprite.rect.bottom  # the last y movement will cover the difference
             
                 if platform.moving == True:  # the platform we're standing on moves, and moves us
@@ -144,6 +146,7 @@ class Player(pygame.sprite.Sprite):
 
             if platform.slope:
                 """ If we're on a sloped tile, we need to adjust the y position """
+                self.on_slope = True
                 h = TILE_SIZE_SCREEN
                 adjustment = 15  # this is critical, as if we go too low, we'll fall through at the bottom
                 x = self.rects['hitbox'].centerx - platform.rect.left
@@ -188,11 +191,20 @@ class Player(pygame.sprite.Sprite):
 
         if dx:
             if self.on_ground:  # on the ground we use a much smaller collision box to avoid trouble with slopes
-                self.side_collision_sprite.rect.centery = self.hitbox_sprite.rect.top
-                if dx > 0:  # going right
-                    self.side_collision_sprite.rect.centerx = self.hitbox_sprite.rect.centerx + 10
-                if dx < 0:  # going left
-                    self.side_collision_sprite.rect.centerx = self.hitbox_sprite.rect.centerx - 10
+                if self.on_slope:
+                    self.side_collision_sprite.rect = pygame.Rect(0, 0, 30 , 30)  # small rect when walking up slopes
+                    self.side_collision_sprite.rect.centery = self.hitbox_sprite.rect.top
+                    if dx > 0:  # going right
+                        self.side_collision_sprite.rect.centerx = self.hitbox_sprite.rect.centerx + 10
+                    if dx < 0:  # going left
+                        self.side_collision_sprite.rect.centerx = self.hitbox_sprite.rect.centerx - 10
+                else:
+                    self.side_collision_sprite.rect = pygame.Rect(0, 0, 30 , self.rects['hitbox'].height)  # small rect when walking up slopes
+                    self.side_collision_sprite.rect.centery = self.hitbox_sprite.rect.centery
+                    if dx > 0:  # going right
+                        self.side_collision_sprite.rect.centerx = self.hitbox_sprite.rect.centerx + 10
+                    if dx < 0:  # going left
+                        self.side_collision_sprite.rect.centerx = self.hitbox_sprite.rect.centerx - 10
 
                 platform = pygame.sprite.spritecollideany(self.side_collision_sprite, platforms)
                 if platform and platform.solid == True:  # player has collided with a solid platform
@@ -597,7 +609,7 @@ class Player(pygame.sprite.Sprite):
             self.health_current = self.health_max
         self.health_bar_length = int(SCREEN_WIDTH / 6 * self.health_current / 1000)
 
-    def hit(self, damage: int, turned: bool, platforms) -> None:
+    def hit(self, damage: int, turned: bool, platforms: pygame.sprite.Group) -> None:
         """ Player has been hit by mob or projectile, gets damage and bounces backs"""
         if not self.invincible:  # we have half a sec of invincibility after damage to avoid repeat damage
             if damage:  # we also use hits without damage to bump the player
@@ -617,29 +629,31 @@ class Player(pygame.sprite.Sprite):
                 self._state_engine()  # we call the state engine to get an out-of-turn state update
 
             if self.state['next'] != DYING:  # if we just got killed we skip the bounce
-                direction = 1
-                if turned:
-                    direction = -1
+                self.bounce(5, -15, turned, platforms)
 
-                # Bounce back
-                x_bounce = 5 * direction
-                y_bounce = -15
-                self.on_ground = False
+               
 
-                if not self.bouncing:
-                    self.vel_x = x_bounce
-                    self.vel_y = y_bounce
-                    self.bouncing = True
+    def bounce(self, x: int, y: int, turned: bool, platforms: pygame.sprite.Group) -> None:
+        direction = 1
+        if turned:
+            direction = -1
 
-                # Prevent us getting bounced inside platforms
-                for platform in platforms:
-                    if platform.rect.colliderect(self.rects['hitbox'].x + x_bounce, (self.rects['hitbox'].y + y_bounce), self.rects['hitbox'].width , self.rects['hitbox'].height):
-                        x_bounce = 0
-                        self.vel_x = 0
+        # Bounce back
+        x_bounce = x * direction
+        y_bounce = y
+        self.on_ground = False
 
+        if not self.bouncing:
+            self.vel_x = x_bounce
+            self.vel_y = y_bounce
+            self.bouncing = True
 
+        # Prevent us getting bounced inside platforms
+        for platform in platforms:
+            if platform.rect.colliderect(self.rects['hitbox'].x + x_bounce, (self.rects['hitbox'].y + y_bounce), self.rects['hitbox'].width , self.rects['hitbox'].height):
+                x_bounce = 0
+                self.vel_x = 0
 
- 
 
     def update(self, platforms) -> tuple:
         self.get_input()

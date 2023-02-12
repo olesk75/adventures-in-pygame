@@ -54,4 +54,4 @@ SOUNDS_ON = True
 FIRST_LEVEL = 1  # where to start
 
 # Debug settings
-DEBUG_HITBOXES = False
+DEBUG_HITBOXES = True

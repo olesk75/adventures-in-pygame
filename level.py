@@ -262,7 +262,7 @@ class Level():
                         if int(val) == 0:  # door at end of level
                             sprite = GameTileAnimation(x_size, y_size,x,y - 10 , self.anim['doors']['end-of-level'])
                             sprite.animation.active = False
-                            sprite.name = 'door'
+                            sprite.name = 'enf-of-level'
                         if int(val) == 1:  # treasure chest
                             sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['objects']['chest'])
                             sprite.animation.active = False
@@ -278,16 +278,18 @@ class Level():
                             sprite.hidden = False  # we can link this to boss death later
                             sprite.name = 'OUT portal'
                             self.out_portal_coordinates = (x + TILE_SIZE//2, y + TILE_SIZE//2 )
-                        if int(val) == 4:  # Door facing LEFT
-                            sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['doors']['left-wood'])
-                            sprite.animation.active = False
-                            sprite.hidden = False  # we can link this to boss death later
-                            sprite.name = 'door-left'
-                        if int(val) == 5:  # Door facing RIGHT
+                        if int(val) == 4:  # Door facing RIGHT
                             sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['doors']['right-wood'])
                             sprite.animation.active = False
+                            sprite.animation.frame_number = 1  # Closed
                             sprite.hidden = False  # we can link this to boss death later
                             sprite.name = 'door-right'
+                        if int(val) == 5:  # Door facing LEFT
+                            sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['doors']['left-wood'])
+                            sprite.animation.active = False
+                            sprite.animation.frame_number = 1  # Closed
+                            sprite.hidden = False  # we can link this to boss death later
+                            sprite.name = 'door-left'
                             
 
                         sprite.rect.bottom = bottom_pos
@@ -455,15 +457,16 @@ class Level():
     def check_coll_player_triggered_objects(self) -> None:
         if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.triggered_objects_sprites,False) and self.player.state['active'] != DYING:
             for sprite in pygame.sprite.spritecollide(self.player,self.triggered_objects_sprites,False):
-                if sprite.name == 'door':
+                if sprite.name in ('door-left', 'door-right', 'end-of-level'):
                         if any('key' in sublist for sublist in self.player_inventory): # do we have key?
-                            sprite.animation.active = True
+                            sprite.animation.frame_number = 0
                             self.bubble_list.append(BubbleMessage(self.screen, 'And that was the lock...', 3000, 0, 'exit', self.player))
                         else:
-                            self.player.hit(0, -self.player.turned, self.terrain_sprites)
+                            #self.player.bounce(-10, 0, -self.player.turned, self.terrain_sprites)
                             self.bubble_list.append(BubbleMessage(self.screen, 'I\'m missing a key!', 3000, 0, 'exit', self.player))
                 elif sprite.name == 'chest':
-                    pass
+                    # play some sound effect
+                    sprite.animation.active = True
                 elif sprite.name == 'IN portal':
                     # play some sound effect
                     #print(self.out_portal_coordinates)

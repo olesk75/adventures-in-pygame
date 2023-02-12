@@ -101,7 +101,7 @@ anim = {
         'mana-potion': Animation(mana_potion_ss, frames=7, speed=100, repeat=True),
     },
     'objects': {
-        'chest': Animation(chest_ss, frames=9, speed=100, repeat=True),
+        'chest': Animation(chest_ss, frames=9, speed=100, repeat=False),
         'portal': Animation(portal_ss, frames=5, speed=100, repeat=True),
     },
     'environment': {
