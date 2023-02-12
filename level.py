@@ -103,6 +103,11 @@ class Level():
         monsters_layout = import_csv_layout(self.level_data['pos_monsters'])
         self.monsters_sprites = self.create_tile_group(monsters_layout,'pos_monsters')
 
+        # ---> Composite map groups
+        # group of all (potential) collision sprites for monsters - mostly terrain, but also things like doors, barriers and hazards
+        self.collision_sprites = pygame.sprite.Group()
+        self.collision_sprites.add(self.terrain_sprites.sprites() + self.triggered_objects_sprites.sprites() + self.hazards_sprites.sprites())
+
         # ---> Sprites not loaded from the map (projectiles, spels, panels etc.)
 
         # projectiles (no animation variety)
@@ -266,6 +271,7 @@ class Level():
                             sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['objects']['chest'])
                             sprite.animation.active = False
                             sprite.name = 'chest'
+                            sprite.solid = False
                         if int(val) == 2:  # IN portal (teleports)
                             sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['objects']['portal'])
                             sprite.animation.active = True
@@ -345,7 +351,7 @@ class Level():
         if self.player.vel_y > 0:
             self.previous_vel_y = self.player.vel_y    
             
-        if self.player.vel_y == 0 and self.previous_vel_y > (0.5 + 15):
+        if self.player.vel_y == 0 and self.previous_vel_y > (0.5 + 15) and not self.player.on_slope:
             width = 52
             height = 16
             self.dust_jump = GameTileAnimation(width, height, self.player.rects['hitbox'].centerx - width, self.player.rects['hitbox'].bottom - (height + 4), self.anim['effects']['dust-landing'])
@@ -618,7 +624,7 @@ class Level():
         self.triggered_objects_sprites.draw(self.screen)
 
         # monsters 
-        self.monsters_sprites.update(self.h_scroll, self.v_scroll, self.terrain_sprites, self.player)
+        self.monsters_sprites.update(self.h_scroll, self.v_scroll, self.collision_sprites, self.player)
         self.monsters_sprites.draw(self.screen)
 
         # stomp shadows

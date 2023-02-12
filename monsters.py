@@ -109,19 +109,19 @@ class Monster(pygame.sprite.Sprite):
             else:
                 self.rect_attack = pygame.Rect(x , y, self.data.attack_range, height) 
 
-    def _check_platform_collision(self, dx, dy, platforms_sprite_group) -> None:
+    def _check_platform_collision(self, dx, dy, obstacle_sprite_group) -> None:
          #
         # Checking platform collision to prevent falling and to turn when either at end of platform or hitting a solid tile
         #
-        all_platforms = platforms_sprite_group.sprites()
-        for platform in all_platforms:
-            if platform.solid == True:
+        all_obstacles = obstacle_sprite_group.sprites()
+        for obstacle in all_obstacles:
+            if obstacle.solid == True:
                 # collision in the y direction only, using a collision rect indicating _next_ position (y + dy)
                 moved_hitbox = self.hitbox.move(0, dy - 2)  # move in place - remove 2 to anchor the sprites on the ground properly
             
-                if platform.rect.colliderect(moved_hitbox):  # we are standing on a platform essentially
+                if obstacle.rect.colliderect(moved_hitbox):  # we are standing on a platform essentially
                     # Preventing falling through platforms
-                    if moved_hitbox.bottom > platform.rect.top:  # Is player above platform?
+                    if moved_hitbox.bottom > obstacle.rect.top:  # Is player above platform?
                         if self.vel_y > 0:
                             dy = 0
                             self.at_bottom = True                     
@@ -130,19 +130,19 @@ class Monster(pygame.sprite.Sprite):
                     if self.state != DEAD:  # Corpses should not fall through platforms, but also won't move to the rest here is pointless for the dead
                         # Preventing falling off left/right edge of platforms if there is NO collision (-1) to the side and down (and it's not a jumping mob
                         moved_hitbox = self.hitbox.move(-self.hitbox.width, 40)  # checking left 
-                        if  moved_hitbox.collidelist(all_platforms) == -1 and not self.data.attack_jumper:
+                        if  moved_hitbox.collidelist(all_obstacles) == -1 and not self.data.attack_jumper:
                             self.data.direction = 1
                             self.turned = False
 
                         moved_hitbox = self.hitbox.move(self.hitbox.width, 40)  #checking right
-                        if moved_hitbox.collidelist(all_platforms) == -1 and not self.data.attack_jumper:
+                        if moved_hitbox.collidelist(all_obstacles) == -1 and not self.data.attack_jumper:
                             self.data.direction = -1
                             self.turned = True
                     
                         # Turning around if hitting a solid tile  
                         moved_hitbox = self.hitbox.move(dx * 5 * self.data.direction, 20).inflate(0,-60)
 
-                        if platform.rect.colliderect(moved_hitbox):
+                        if obstacle.rect.colliderect(moved_hitbox):
                             self.data.direction *= -1
                             self.rect.x += dx * 20  * self.data.direction # far enough to avoid re-triggering in an endless loop
                             self.turned = not self.turned
@@ -271,7 +271,7 @@ class Monster(pygame.sprite.Sprite):
             new_rect.center = self.rect.center
             self.rect = new_rect
 
-    def update(self, h_scroll, v_scroll, platforms_sprite_group, player) -> None:
+    def update(self, h_scroll, v_scroll, obstacle_sprite_group, player) -> None:
         dx = 0
         dy = self.vel_y  # Newton would be proud!
 
@@ -325,7 +325,7 @@ class Monster(pygame.sprite.Sprite):
 
         # Checking detection, hitbox and attack rects as well as platform rects for collision
         self.create_rects()
-        self._check_platform_collision(dx, dy, platforms_sprite_group)
+        self._check_platform_collision(dx, dy, obstacle_sprite_group)
         if self.state in (DEAD, DYING):
             self.rect_attack = None
             self.rect_detect = None
