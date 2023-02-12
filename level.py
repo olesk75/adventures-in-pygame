@@ -95,6 +95,7 @@ class Level():
         self.pickups_sprites = self.create_tile_group(pickups_layout,'pos_pickups')
 
         # triggered_objects 
+        self.out_portal_coordinates = None
         triggered_objects_layout = import_csv_layout(self.level_data['pos_triggered_objects'])
         self.triggered_objects_sprites = self.create_tile_group(triggered_objects_layout,'pos_triggered_objects')
 
@@ -263,9 +264,21 @@ class Level():
                             sprite.animation.active = False
                             sprite.name = 'door'
                         if int(val) == 1:  # treasure chest
-                            sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['pickups']['chest'])
+                            sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['objects']['chest'])
                             sprite.animation.active = False
                             sprite.name = 'chest'
+                        if int(val) == 2:  # IN portal (teleports)
+                            sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['objects']['portal'])
+                            sprite.animation.active = True
+                            sprite.hidden = False  # we can link this to boss death later
+                            sprite.name = 'IN portal'
+
+                        if int(val) == 3:  # IN portal (teleports)
+                            sprite = GameTileAnimation(x_size, y_size,x,y, self.anim['objects']['portal'])
+                            sprite.animation.active = True
+                            sprite.hidden = False  # we can link this to boss death later
+                            sprite.name = 'OUT portal'
+                            self.out_portal_coordinates = (x + TILE_SIZE//2, y + TILE_SIZE//2 )
 
                         sprite.rect.bottom = bottom_pos
 
@@ -303,7 +316,7 @@ class Level():
   
     def player_setup(self) -> None:
         player = Player(self.lvl_entry[0], self.lvl_entry[1], self.screen, self.health_max, self.sounds, self.level_data)
-        logging.debug(f'Payer born at coordinates {self.lvl_entry[0]}, {self.lvl_entry[1]}')
+        logging.debug(f'Player spawned at ({self.lvl_entry[0]}, {self.lvl_entry[1]})')
         return player
 
 
@@ -431,13 +444,27 @@ class Level():
 
     def check_coll_player_triggered_objects(self) -> None:
         if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.triggered_objects_sprites,False) and self.player.state['active'] != DYING:
-            for t_object in pygame.sprite.spritecollide(self.player,self.triggered_objects_sprites,False):
-                if any('key' in sublist for sublist in self.player_inventory): # do we have key?
-                    t_object.animation.active = True
-                    self.bubble_list.append(BubbleMessage(self.screen, 'And that was the lock...', 3000, 0, 'exit', self.player))
+            for sprite in pygame.sprite.spritecollide(self.player,self.triggered_objects_sprites,False):
+                if sprite.name == 'door':
+                        if any('key' in sublist for sublist in self.player_inventory): # do we have key?
+                            sprite.animation.active = True
+                            self.bubble_list.append(BubbleMessage(self.screen, 'And that was the lock...', 3000, 0, 'exit', self.player))
+                        else:
+                            self.player.hit(0, -self.player.turned, self.terrain_sprites)
+                            self.bubble_list.append(BubbleMessage(self.screen, 'I\'m missing a key!', 3000, 0, 'exit', self.player))
+                elif sprite.name == 'chest':
+                    pass
+                elif sprite.name == 'IN portal':
+                    # play some sound effect
+                    #print(self.out_portal_coordinates)
+                    self.player.destination = self.out_portal_coordinates
+
+                elif sprite.name == 'OUT portal':
+                    pass  # we ignore the out portals
                 else:
-                    self.player.hit(0, -self.player.turned, self.terrain_sprites)
-                    self.bubble_list.append(BubbleMessage(self.screen, 'I\'m missing a key!', 3000, 0, 'exit', self.player))
+                    logging.error(f'Triggered object "{sprite.name} not know - aborting...')
+                    exit(1)
+
 
     # Dropped objects pickup / collision
     def check_coll_player_drops(self) -> None:
@@ -631,8 +658,9 @@ class Level():
                 pygame.draw.rect(self.screen, ('#e75480'), self.player.collision_sprite.rect, 2 )  # Collsion rect - PINK
 
         # Vertical scroll lines
-        pygame.draw.line(self.screen, RED, (0, V_SCROLL_THRESHOLD), (SCREEN_WIDTH, V_SCROLL_THRESHOLD), width=3)
-        pygame.draw.line(self.screen, RED, (0, SCREEN_HEIGHT - V_SCROLL_THRESHOLD), (SCREEN_WIDTH, SCREEN_HEIGHT - V_SCROLL_THRESHOLD), width=3)
+        #pygame.draw.line(self.screen, RED, (0, V_SCROLL_THRESHOLD), (SCREEN_WIDTH, V_SCROLL_THRESHOLD), width=3)
+        #pygame.draw.line(self.screen, RED, (0, SCREEN_HEIGHT - V_SCROLL_THRESHOLD), (SCREEN_WIDTH, SCREEN_HEIGHT - V_SCROLL_THRESHOLD), width=3)
+        #print(f"Player's centerY: {self.player.rects['player'].centery} and world Y pos: {self.player.world_y_pos} and the delta: {self.player.world_y_pos - self.player.rects['player'].centery}")
 
         # --> Check player condition and actions <--
         self.check_player_fallen_off()

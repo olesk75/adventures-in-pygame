@@ -30,6 +30,7 @@ mana_potion_ss =  SpriteSheet(pygame.image.load('assets/spritesheets/objects/man
 key_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/key.png').convert_alpha(), 32, 32, 2)
 door_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/portcullis.png').convert_alpha(), 32, 32, 4)
 chest_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/chest.png').convert_alpha(), 32, 32, 4)
+portal_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/portal.png').convert_alpha(), 32, 32, 4)
 
 # Hazards
 fire_ss = SpriteSheet(pygame.image.load('assets/spritesheets/hazards/fire-loop-sheet.png').convert_alpha(), 16,24, 4)
@@ -96,7 +97,10 @@ anim = {
         'health-potion': Animation(health_potion_ss, frames=7, speed=100, repeat=True),
         'stomp-potion': Animation(stomp_potion_ss, frames=7, speed=100, repeat=True),
         'mana-potion': Animation(mana_potion_ss, frames=7, speed=100, repeat=True),
+    },
+    'objects': {
         'chest': Animation(chest_ss, frames=9, speed=100, repeat=True),
+        'portal': Animation(portal_ss, frames=5, speed=100, repeat=True),
     },
     'environment': {
         'leaves': Animation(leaves_ss, frames=10, speed=100, repeat=True)  # NOT IN USE - WE NEED INDIVIDUAL NAIMATIONS FFOR EACH INSTANCE

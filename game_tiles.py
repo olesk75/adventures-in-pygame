@@ -35,9 +35,12 @@ class GameTileAnimation(GameTile):
 		super().__init__(size_x, size_y, x, y, pygame.Surface((0,0)))
 		
 		self.animation = animation  # the animation generates images for us
+		self.hidden = False  # we can make things invisible 
 
 		self.image = animation.get_image()
 		self.rect = self.image.get_rect(topleft = (x,y))
+		self.image_tranparent = pygame.Surface((size_x, size_y), pygame.SRCALPHA)  # Creates an empty per-pixel alpha Surface.
+
 
 		self.sprites = self.animation.sprites  # contains all sprites in the animation cycle
 		self.animation.active = True
@@ -54,8 +57,10 @@ class GameTileAnimation(GameTile):
 		self.rect.x += int(self.x_vel)
 		self.rect.y += int(self.y_vel)
 		
-
-		self.image = self.animation.get_image().convert_alpha()
+		if not self.hidden:
+			self.image = self.animation.get_image().convert_alpha()
+		else:
+			self.image = self.image_tranparent
 
 class MovingGameTile(GameTile):
 	"""

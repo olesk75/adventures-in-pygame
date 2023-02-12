@@ -1,6 +1,6 @@
 import pygame
 import logging
-import copy
+import math
 
 from settings import *
 from decor_and_effects import ExpandingCircle, SpeedLines
@@ -67,6 +67,8 @@ class Player(pygame.sprite.Sprite):
         self.vel_x = 0  # we add and substract to this value based on keypresses
         self.vel_y = 0  # jumping or falling
         self.walking = False
+
+        self.destination = None  # we use this teleports and special effects wher the player is moved great distances in a flash (without a flash)
 
         # The main rect for the player sprite
         self.rects['player'] = pygame.Rect(x,y, self.width, self.height)  
@@ -163,8 +165,7 @@ class Player(pygame.sprite.Sprite):
                         y = h/2 + x/2
                 else:
                     logging.error(f'Invalid value {platform.slope=}')
-
-                import math
+                
                 y = math.ceil(y)  # only integers for coordinate positions
 
 
@@ -176,7 +177,6 @@ class Player(pygame.sprite.Sprite):
 
             if platform.rect.bottom <= self.rects['hitbox'].top:  # we bumped into a platform from below 
                 dy = 0
-                print('GRAVITY ')
                 self.vel_y = GRAVITY 
                 self.bouncing = False
 
@@ -277,9 +277,6 @@ class Player(pygame.sprite.Sprite):
                             self.stomp_start_timer = now
 
 
-
-
-
             # --> Jumping
             if self.state['next'] == JUMPING:
                 # Jumping, like attacking, interrupts anything 
@@ -287,7 +284,7 @@ class Player(pygame.sprite.Sprite):
                 self.animation = self.animations['walk']
                 self.animation.frame_number = -1  # last frame of walk anim is also jump anim for stabby
                 self.animation.active = False
-
+               
             # --> Walking
             if self.state['next'] == WALKING:
                 # If we were attacking, and now we're done with the animation (if not, we ignore for now)
@@ -362,7 +359,7 @@ class Player(pygame.sprite.Sprite):
                 pygame.time.wait(3000)  # we freeze the game to look at your corpse for a moment
 
              
-    def actions(self, platforms, ) -> tuple:
+    def actions(self, platforms: pygame.sprite.Group ) -> tuple:
         """ Movement as a result of keypresses as well as gravity and collision """
         dx = 0
         dy = 0
@@ -384,7 +381,6 @@ class Player(pygame.sprite.Sprite):
         # Making sure stomp is limited
         if self.stomp_counter > PLAYER_STOMP:
             self.stomp_counter = PLAYER_STOMP
-
 
         # updating hitbox location to follow player sprite
         self.rects['hitbox'].center = (self.rects['player'].centerx, self.rects['player'].centery) 
@@ -409,6 +405,7 @@ class Player(pygame.sprite.Sprite):
         if self.state['active'] == JUMPING and self.vel_y == 0:
             self.state['next'] = IDLE
 
+          
         # STOMPING
         if self.state['active'] == STOMPING:
             if self.vel_y > 0:  # we're still airborne
@@ -440,9 +437,9 @@ class Player(pygame.sprite.Sprite):
         if self.state['active'] == CASTING and self.animation.on_last_frame:
             self.state['next'] = IDLE
 
+
         # Gravity
         self.vel_y += GRAVITY
-        
 
         if dy < STOMP_SPEED:  # we use the STOMP_SPEED as a speed limit
             dy += int(self.vel_y)
@@ -460,7 +457,20 @@ class Player(pygame.sprite.Sprite):
         # Check collision with terrain
         (dx, dy) = self._check_collision(dx, dy, platforms)
 
-        """ Scrolling horizontally or vertically if player reaches either of the four scroll thresholds (left/right/top/bottom) """
+
+        
+         # Checking if we suddenly have a teleport destination and if so, we plonk straight over
+        if self.destination:
+            dx = -(self.world_x_pos - self.destination[0])  # horizontal distance between portals 
+            dy = -(self.world_y_pos - self.destination[1])  # vertical distance between portals
+            h_scroll = -dx
+            v_scroll = -dy
+            # TODO: we could center screen on player?
+            self.destination = None
+
+        """ Scrolling horizontally or vertically if player reaches either of the four scroll thresholds (left/right/top/bottom)
+            These conditions should not be triggered by teleporting above
+        """
         # Check if player has reached h_scroll threshold to the LEFT (and we're not on the far left) + we're walking left
         if dx < 0 and self.rects['player'].centerx <= H_SCROLL_THRESHOLD and self.world_x_pos > H_SCROLL_THRESHOLD + self.rects['hitbox'].width:
             h_scroll = -dx  # We h_scroll left by the opposite of the player's x movement
@@ -470,19 +480,15 @@ class Player(pygame.sprite.Sprite):
             h_scroll = -dx  # We h_scroll right by the opposite of the player's x movement
 
          # Check if player has reached v_scroll threshold on top of the screen (and we're not all the way to the top) + we're moving upwards
-        if dy < 0 and self.rects['player'].centery <= V_SCROLL_THRESHOLD and self.world_y_pos > V_SCROLL_THRESHOLD + + self.rects['hitbox'].height:
+        if dy < 0 and self.rects['player'].centery <= V_SCROLL_THRESHOLD and self.world_y_pos > V_SCROLL_THRESHOLD + self.rects['hitbox'].height:
             v_scroll = -dy  # We scroll up by the opposite of the player's y movement
 
          # Check if player has reached v_scroll threshold at bottom of the screen (and we're not all the way down at the bottom) + we're moving downwards
+        scroll_buffer_bottom = 320
         if dy > 0 and self.rects['player'].centery >= SCREEN_HEIGHT - V_SCROLL_THRESHOLD and \
-            self.world_y_pos < TILE_SIZE_SCREEN * self.level_data['size_y'] - V_SCROLL_THRESHOLD - + self.rects['hitbox'].height:  # the very bottom
+            self.world_y_pos < TILE_SIZE_SCREEN * self.level_data['size_y']  - scroll_buffer_bottom:  # the very bottom
             v_scroll = -dy  # We h_scroll down by the opposite of the player's y movement
 
-        # NOTE: problem right now: slopes don't create a dy, so we don't catch them in the scrolling
-        
-
-        
-        
         # Update rectangle position
         self.rects['player'].x += dx + h_scroll
         self.rects['player'].y += dy + v_scroll
@@ -496,8 +502,6 @@ class Player(pygame.sprite.Sprite):
             self.state['next'] = DEAD
             logging.debug('DEAD: fell off the world')
             self._state_engine()  # we call the state engine to get an out-of-turn state update
-
-
 
         return h_scroll, v_scroll
     
