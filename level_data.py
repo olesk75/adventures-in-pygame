@@ -51,7 +51,8 @@ level_1 = {
     'pos_player': 'lvl/lvl 1 - mountains/level1_player.csv',
     'environmental_effect': None,
     #'terrain_ts': 'assets/tile/tilesets/terrain-tileset-mountain-16x16.png',
-    'terrain_ts': 'assets/tile/tilesets/mountain-tileset.png',
+    #'terrain_ts': 'assets/tile/tilesets/mountain-tileset.png',
+    'terrain_ts': 'assets/tile/tilesets/mountain-tileset-brown.png',
     'background': {
         'near': 'assets/backgrounds/lvl1/near.png',
         'medium': 'assets/backgrounds/lvl1/medium.png',
