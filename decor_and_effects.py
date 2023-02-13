@@ -68,7 +68,7 @@ class BubbleMessage():
             if self.player.rect.centerx < self.half_screen:  # On the left side of the screen we flip the bubble and move it right of the player
                 surf = pygame.transform.flip(surf, True, False)
                 surf.blit(text_img, (padding_x, padding_y + row * pygame.font.Font.size(self.font, msg_text)[1]))
-                self.screen.blit(surf , (self.player.rect.centerx, self.player.rect.top - self.y_size))
+                self.screen.blit(surf , (self.player.rect.centerx - self.x_size // 5 , self.player.rect.top - self.y_size))
             else:
                 surf.blit(text_img, (padding_x, padding_y + row * pygame.font.Font.size(self.font, msg_text)[1]))
                 self.screen.blit(surf, (self.player.rect.centerx - self.x_size, self.player.rect.top - self.y_size))
