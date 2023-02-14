@@ -70,6 +70,7 @@ class Monster(pygame.sprite.Sprite):
 
         self.invulnerable = False  # we set this right after a hit to ensure we don't get duplicate hits
         self.inv_start = 0  # timer to reset invulnerability
+        self.stun_start = 0
 
         self.currently_casting = None  # if the mob is busy casting, this is what it is casting
         self.cast_anim_list = []  # if the mob casts a spell, we creat animations here
@@ -249,6 +250,13 @@ class Monster(pygame.sprite.Sprite):
                     if self.data.caster:
                         self.data.sound_cast.play()
 
+            elif new_state == STUNNED:
+                # Typically only as a result of a successful player attack
+                self.stun_start = pygame.time.get_ticks()
+                self.animation.active = False  #  monster is frozen for the duration
+                self.rect_attack = pygame.Rect(0,0,0,0)  # not attacking for the duration
+                self.rect_detect = pygame.Rect(0,0,0,0)  # not detecting for the duration
+
             elif new_state == DYING:
                     self.animation = self.animations['death']
                     self.animation.active = True
@@ -310,6 +318,12 @@ class Monster(pygame.sprite.Sprite):
                     self.data.direction *= -1
                     self.turned = not self.turned
 
+            if self.state == STUNNED:
+                dx = 0
+                now = pygame.time.get_ticks()
+                if now - self.stun_start > MONSTER_STUN_TIME:
+                    self.state_change(ATTACKING)
+
 
         # we compensate for scrolling
         self.rect.x += h_scroll
@@ -351,12 +365,11 @@ class Monster(pygame.sprite.Sprite):
         elif self.state == ATTACKING:
             # If we have a diffent size attack sprites, we need to take scale into account
             self.image = self.animations['attack'].get_image(repeat_delay = self.data.attack_delay).convert_alpha()
-        elif self.state == DYING:
+        elif self.state in (WALKING, STUNNED, DYING, DEAD):
             self.image = self.animation.get_image()
-        elif self.state == WALKING:
-            self.image = self.animation.get_image()
-        elif self.state == DEAD:
-            self.image = self.animation.get_image()
+        else:
+            logging.error(f'Monster state {self.state} unknown, aborting...')
+            exit(1)
             
         self.image = pygame.transform.flip(self.image, self.turned, False)        
 

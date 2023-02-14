@@ -102,7 +102,7 @@ class Game:
         if keys[pygame.K_SPACE]:
             self.state = GS_PLAYING
             self.health_current = self.health_max
-            self.create_level(1)  # starting at level 1
+            self.create_level(FIRST_LEVEL)
             fade_to_color(pygame.Color('black'))  # fade to black
             self.faded = False
 
@@ -209,7 +209,7 @@ screen = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 game = Game()
 
-game.create_level(1)
+game.create_level(FIRST_LEVEL)
 
 while True:
     for event in pygame.event.get():

@@ -6,18 +6,19 @@ JUMPING = 2
 STOMPING = 3
 ATTACKING = 4
 CASTING = 5
-DYING = 6
-DEAD = 7
+STUNNED = 6
+DYING = 7
+DEAD = 8
 
 # Game state constants
 GS_WELCOME = 0
 GS_PLAYING = 1
 GS_GAME_OVER = 2
 GS_LEVEL_COMPLETE = 3
-GS_QUIT = 5
-GS_MAP_SCREEN = 6
+GS_QUIT = 4
+GS_MAP_SCREEN = 5
 
-# Color contants
+# Frequently used color contants
 WHITE    = (255, 255, 255)
 BLACK    = (  0,   0,   0)
 RED      = (255,   0,   0)
@@ -52,6 +53,7 @@ STOMP_SPEED = 50
 MUSIC_ON = True
 SOUNDS_ON = True
 FIRST_LEVEL = 1  # where to start
+MONSTER_STUN_TIME = 100  # time a monster is stunned
 
 # Debug settings
 DEBUG_HITBOXES = False

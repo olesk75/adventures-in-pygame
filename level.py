@@ -395,9 +395,7 @@ class Level():
                         monster.inv_start = pygame.time.get_ticks()
                         self.player.rects['attack'] = pygame.Rect(0,0,0,0)  
                         # BLINK WHITE OR RED TODO
-                        monster.state = WALKING
-                        monster.state_change(ATTACKING)
-
+                        monster.state_change(STUNNED)
 
     def check_player_win(self) -> None:
         # Player sprite reaches goal tile
