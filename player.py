@@ -512,7 +512,7 @@ class Player(pygame.sprite.Sprite):
                 self.state['next'] = WALKING
                 self.turned = False
 
-            if self.gs.user_input['left']:
+            elif self.gs.user_input['left']:
                 self.walking = -1  # left
                 self.state['next'] = WALKING
                 self.turned = True
@@ -534,6 +534,7 @@ class Player(pygame.sprite.Sprite):
                 self.fx_stomp.play()
 
             if self.gs.user_input['attack']:
+                print('ATTACKING')
                 now = pygame.time.get_ticks()
                 if now - self.last_attack > self.attack_delay:
                     self.state['next'] = ATTACKING

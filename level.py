@@ -446,7 +446,7 @@ class Level():
         if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.triggered_objects_sprites,False) and self.player.state['active'] != DYING:
             for sprite in pygame.sprite.spritecollide(self.player,self.triggered_objects_sprites,False):
                 if sprite.name in ('door-left', 'door-right', 'end-of-level'):
-                        if any('key' in sublist for sublist in self.player_inventory): # do we have key?
+                        if any('key' in sublist for sublist in self.gs.player_inventory): # do we have key?
                             sprite.animation.frame_number = 0
                             self.bubble_list.append(BubbleMessage(self.screen, 'And that was the lock...', 3000, 0, 'exit', self.player))
                         else:
