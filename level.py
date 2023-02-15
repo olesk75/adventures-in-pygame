@@ -22,23 +22,19 @@ from monsters import Monster, Projectile, Spell, Drop
 from monster_data import arrow_damage
 
 class Level():
-    def __init__(self,current_level,surface, health_max, game_state) -> None:
+    def __init__(self, surface, game_state) -> None:
         
+        self.gs = game_state
         self.last_log = ''  # we do this to only log when something _new_ happens
-
-        # TESTING
-        self.runoncetestflag = False
 
         from animation_data import anim  # we do this late, as we need to have display() up first
         self.anim = anim
 
         # general setup
-        self.current_level = current_level
         self.level_complete = False
         self.screen = surface
         self.h_scroll = 0
         self.v_scroll = 0
-        self.current_x = None
 
         self.arrow_damage = arrow_damage
 
@@ -46,16 +42,12 @@ class Level():
         self.previous_vel_y = 0  # keeping track of player falling for dust effects
         
         # tile data for current level
-        self.level_data = levels[self.current_level]
+        self.level_data = levels[self.gs.level_current]
         self.lvl_entry = (0,0)
         self.lvl_exit = (0,0)
 
-        self.player_score = 0
-        self.player_inventory = []
-        self.health_max = health_max
-
         # audio for current level
-        self.sounds = GameAudio(self.current_level)  # used here and sent to player on creation as well
+        self.sounds = GameAudio(self.gs.level_current)  # used here and sent to player on creation as well
         self.fx_key_pickup = self.sounds.key_pickup_fx
         self.fx_health_pickup = self.sounds.health_pickup_fx
         self.fx_player_stomp = self.sounds.player['stomp']
@@ -125,7 +117,7 @@ class Level():
         self.key_img = pygame.image.load('assets/panel/key.png').convert_alpha()
 
         # sky
-        self.background = ParallaxBackground(self.current_level, self.screen)
+        self.background = ParallaxBackground(self.gs.level_current, self.screen)
 
         # environmental effects (leaves, snow etc.)
         self.env_sprites = EnvironmentalEffects(self.level_data['environmental_effect'], self.screen)  # 'leaves' for lvl1
@@ -141,12 +133,12 @@ class Level():
         self.particle_system = ParticleSystem()
         
         # player
-        self.player = self.player_setup(game_state)
+        self.player = self.player_setup()
         self.player_sprites = pygame.sprite.GroupSingle()
         self.player_sprites.add(self.player)
 
         # debugging
-        logging.debug(f"Level created {levels[current_level]['size_x']} by {levels[current_level]['size_y']} tiles large, or {levels[current_level]['size_x']*TILE_SIZE} by {levels[current_level]['size_y']*TILE_SIZE} pixels")
+        logging.debug(f"Level created {levels[self.gs.level_current]['size_x']} by {levels[self.gs.level_current]['size_y']} tiles large, or {levels[self.gs.level_current]['size_x']*TILE_SIZE} by {levels[self.gs.level_current]['size_y']*TILE_SIZE} pixels")
 
         
     def _debug_show_state(self) -> None:
@@ -332,8 +324,8 @@ class Level():
     
 
   
-    def player_setup(self, game_state) -> None:
-        player = Player(self.lvl_entry[0], self.lvl_entry[1], self.screen, self.health_max, self.sounds, self.level_data, game_state)
+    def player_setup(self) -> Player:
+        player = Player(self.lvl_entry[0], self.lvl_entry[1], self.screen, self.sounds, self.level_data, self.gs)
         logging.debug(f'Player spawned at ({self.lvl_entry[0]}, {self.lvl_entry[1]})')
         return player
 
@@ -381,7 +373,7 @@ class Level():
                         direction = 1
 
                     if monster.data.hitpoints == 0: # monster is dying
-                        self.player_score += monster.data.points_reward
+                        self.gd.player_score += monster.data.points_reward
                         self.player.stomp_counter += 1
                         """ Adding drops from player death """
                         # skeleton-boss is a key carrier
@@ -507,7 +499,7 @@ class Level():
                     if monster.state not in (DYING, DEAD):
                         if pygame.Rect.colliderect(self.stomp_effects.sprite.rect, monster.hitbox): 
                             monster.state_change(DYING)
-                            self.player_score += monster.data.points_reward
+                            self.gd.player_score += monster.data.points_reward
                             self.player.stomp_counter += 1
                             logging.debug(f'{monster.data.monster} killed by player stomp')
 

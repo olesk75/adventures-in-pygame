@@ -211,18 +211,19 @@ class ExpandingCircle:
 # --- Shows panel on top of screen with score and inventory
 class GamePanel:
     """ Class to show a panel on top left corner of the screen """
-    def __init__(self, screen: pygame.display)-> None:
+    def __init__(self, screen: pygame.display, game_state)-> None:
         from animation_data import anim
         self.heart_anim = anim['decor']['beating-heart']
         self.heart_anim.active = False
         self.stomp_anim = anim['decor']['stomping-foot']
         self.heart_anim.active = False
 
+        self.gs = game_state
+
         self.screen = screen
         self.window_size = pygame.display.get_window_size()# screen.get_window_size()
         
         self.inventory = []
-        self.health_current = 0
 
         # Define fonts
         self.font_small = pygame.font.Font("assets/font/Silver.ttf", 36)
@@ -235,10 +236,10 @@ class GamePanel:
         # Panel background image
         self.panel_bg = pygame.image.load('assets/panel/game-panel.png').convert_alpha()
 
-    def setup_bars(self, game_state) -> None:
+    def setup_bars(self) -> None:
         # Health bars + stompometer
-        self.health_bar_length = int(SCREEN_WIDTH / 6 * game_state.player_health / 1000)  # grows when max health grows
-        self.health_bar_max_length = int(SCREEN_WIDTH / 6 * game_state.player_health_max / 1000)  # grows when max health grows
+        self.health_bar_length = int(SCREEN_WIDTH / 6 * self.gs.player_health / 1000)  # grows when max health grows
+        self.health_bar_max_length = int(SCREEN_WIDTH / 6 * self.gs.player_health_max / 1000)  # grows when max health grows
 
     def _blink_bar(self, duration) -> None:
         # Blinks the frame around the health bar red
@@ -250,7 +251,7 @@ class GamePanel:
                 self.blink_counter = 0
                 self.blink = False
         else:
-            if self.health_current < self.last_health: 
+            if self.gs.player_health < self.last_health: 
                 self.blink = True
 
     def _flash_show(self, img, x,y) -> None:
@@ -281,18 +282,17 @@ class GamePanel:
             pygame.display.update()
             pygame.time.wait(75)
         
-    def draw(self, score, current_health, current_stomp) -> None:
-        self.score = score
-        self.health_current = current_health
+    def draw(self) -> None:
 
-        self.health_bar_length = int(SCREEN_WIDTH / 6 * current_health / 1000)
+
+        self.health_bar_length = int(SCREEN_WIDTH / 6 * self.gs.player_health / 1000)
         
         # --> Panel background
         self.screen.blit(self.panel_bg, (0,0))
 
         # --> The score
         WHITE = (255, 255, 255)
-        draw_text(f'SCORE: {self.score}', self.font_small, WHITE, self.window_size[0]/100, self.window_size[1]/100)  # score
+        draw_text(f'SCORE: {self.gs.player_score}', self.font_small, WHITE, self.window_size[0]/100, self.window_size[1]/100)  # score
 
         # --> Health bar, white and semi transparent
         health_bar_frame = pygame.Surface((self.health_bar_max_length+4,20), pygame.SRCALPHA)   # per-pixel alpha
@@ -306,11 +306,11 @@ class GamePanel:
         health_bar = pygame.Surface((self.health_bar_length,16), pygame.SRCALPHA)   # per-pixel alpha
         health_bar.fill((RED,GREEN,BLUE,200))                         # notice the alpha value in the color
         self.screen.blit(health_bar, (22,42))     
-        self.last_health = current_health
+        self.last_health = self.gs.player_health
 
         # --> Heart decoration for health bar
         self.screen.blit(self.heart_anim.get_image(), (5, 33))
-        if self.health_current < PLAYER_HEALTH // 4:
+        if self.gs.player_health < PLAYER_HEALTH // 4:
             self.heart_anim.active = True
         else:
             self.heart_anim.active = False
@@ -324,10 +324,10 @@ class GamePanel:
         ORANGE = pygame.Color('#f7b449')
 
 
-        if current_stomp > PLAYER_STOMP:  # max
-            current_stomp = PLAYER_STOMP
+        if self.gs.player_stomp_counter > PLAYER_STOMP:  # max
+            self.gs.player_stomp_counter = PLAYER_STOMP
 
-        stomp_bar_length = (stomp_bar_length /PLAYER_STOMP) * current_stomp
+        stomp_bar_length = (stomp_bar_length /PLAYER_STOMP) * self.gs.player_stomp_counter
         stomp_bar = pygame.Surface((stomp_bar_length,16), pygame.SRCALPHA)
         stomp_bar.fill(ORANGE)
         self.screen.blit(stomp_bar, (SCREEN_WIDTH - stomp_bar_length -18,42))     
@@ -336,7 +336,7 @@ class GamePanel:
         
         # --> Boot decoration for stomp 
         self.screen.blit(self.stomp_anim.get_image(), (SCREEN_WIDTH - 38, 33))
-        if current_stomp == PLAYER_STOMP:
+        if self.gs.player_stomp_counter == PLAYER_STOMP:
             self.stomp_anim.active = True
         else:
             self.stomp_anim.active = False

@@ -12,26 +12,26 @@ class GameState:
     Used for sending keypresses and joystick input to player ++
     """
     def __init__(self) -> None:
+        # --> Type declarations for all variables
+
         # Player variables
         self.user_input: dict
         self.player_health_max: int
         self.player_health: int
         self.player_invincible: bool
         self.player_hit: bool  # has the player been hit recently
-        self.powers_max: int
-        self.powers_current: int
-        self.score: int
-        self.inventory: list  # player inventory items
-
-
+        self.player_powers_max: int
+        self.player_powers_current: int
+        self.player_score: int
+        self.player_stomp_counter: int
+        self.player_inventory: list  # player inventory items
 
         # Level variables
         self.level_current: int
+        self.level_max: int
     
         # Game variables
         self.state: int  # One of the global GAME_STATE contants
-        self.max_level: int
-        
         
         self.reset()
 
@@ -51,14 +51,15 @@ class GameState:
         self.player_health = PLAYER_HEALTH
         self.player_invincible = False
         self.player_hit = False
-        self.powers_max = 1
-        self.powers_current = self.powers_max
-        self.score = 0
-        self.inventory = []
+        self.player_powers_max = 1
+        self.player_powers_current = self.player_powers_max
+        self.player_score = 0
+        self.player_stomp_counter = 0
+        self.player_inventory = []
 
         # --> Level variables
         self.level_current = FIRST_LEVEL
-        self.max_level = LAST_LEVEL
+        self.level_max = LAST_LEVEL
 
         # --> Game variables
         self.state = GS_WELCOME  # we start with the welcome screen
@@ -80,8 +81,8 @@ class Game:
         self.faded = False
         
         # user interface 
-        self.panel = GamePanel(self.screen)
-        self.panel.setup_bars(self.gs) 
+        self.panel = GamePanel(self.screen, self.gs)
+        self.panel.setup_bars() 
         self.font = pygame.font.Font("assets/font/Silver.ttf", 64)  
 
         # damage overlay (red tendrils)
@@ -98,7 +99,7 @@ class Game:
 
     def create_level(self,current_level) -> None:
         """ Create each level """
-        self.level = Level(current_level,self.screen, self.gs.player_health_max, self.gs)
+        self.level = Level(self.screen, self.gs)
         if MUSIC_ON:
             self.level_audio = GameAudio(current_level)
             self.level_audio.music.play(-1,0.0)
@@ -114,7 +115,7 @@ class Game:
     def check_game_over(self) -> None:
         """ Check if player is DEAD """
         if self.level.player.state['active'] == DEAD:
-            self.max_level = 1
+            self.level_max = 1
             if MUSIC_ON:
                 self.level_audio.music.stop()
 
@@ -154,8 +155,9 @@ class Game:
             self.gs.state = GS_QUIT
             
         if keys[pygame.K_SPACE]:
+            self.gs.reset()
             self.gs.state = GS_PLAYING
-            self.health_current = self.gs.player_health_max
+            self.gs.player_health = self.gs.player_health_max
             self.create_level(FIRST_LEVEL)
             fade_to_color(pygame.Color('black'))  # fade to black
             self.faded = False
@@ -229,9 +231,9 @@ class Game:
         """ Run the game """
         self.level.run()
         self.check_damage_effects()
-        self.health_current = self.level.player.health_current
-        self.panel.inventory = self.level.player_inventory
-        self.panel.draw(self.level.player_score, self.health_current, self.level.player.stomp_counter)
+        self.gs.player_health = self.gs.player_health
+        self.panel.inventory = self.gs.player_inventory
+        self.panel.draw()
         self.check_level_complete()
         self.check_game_over()
 

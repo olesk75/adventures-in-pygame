@@ -8,7 +8,7 @@ from decor_and_effects import ExpandingCircle, SpeedLines
 
 # Player class
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y, surface, health_max, audio, level_data: dict, game_state) -> None:
+    def __init__(self, x, y, surface, audio, level_data: dict, game_state) -> None:
         # need also walk_anim, attack_anim, death_anim, sounds
         """
         The Player class constructor - note that x and y is only for initialization,
@@ -21,16 +21,13 @@ class Player(pygame.sprite.Sprite):
 
         self.gs = game_state  # contains keyboard and joystick events + health
 
-        self.health_max = health_max
-        self.health_current = self.health_max
+        self.gs.player_health_max = PLAYER_HEALTH
+        self.gs.player_health = self.gs.player_health_max
 
         self.level_data = level_data
 
-        self.invincible = False
         self.invincibility_duration = 500
         self.last_damage = 0
-
-        self.stomp_counter = 0 
 
         # Setting up animations
         from animation_data import anim
@@ -367,13 +364,13 @@ class Player(pygame.sprite.Sprite):
             self.v_scroll_initial = False
         
         # If we've been hit, we're invincible - check if it's time to reset
-        if self.invincible and self.state['active'] not in (DYING, DEAD):
+        if self.gs.player_invincible and self.state['active'] not in (DYING, DEAD):
             if pygame.time.get_ticks() - self.last_damage > self.invincibility_duration:
-                self.invincible = False
+                self.gs.player_invincible = False
 
         # Making sure stomp is limited
-        if self.stomp_counter > PLAYER_STOMP:
-            self.stomp_counter = PLAYER_STOMP
+        if self.gs.player_stomp_counter > PLAYER_STOMP:
+            self.gs.player_stomp_counter = PLAYER_STOMP
 
         # updating hitbox location to follow player sprite
         self.rects['hitbox'].center = (self.rects['player'].centerx, self.rects['player'].centery) 
@@ -381,7 +378,7 @@ class Player(pygame.sprite.Sprite):
         # DYING
         if self.state['active'] == DYING:
             self.bouncing = False
-            self.invincible = True  # prevents monsters triggering events on our corpse
+            self.gs.player_invincible = True  # prevents monsters triggering events on our corpse
             if self.animation.on_last_frame:
                 self.state['next'] = DEAD
 
@@ -539,7 +536,7 @@ class Player(pygame.sprite.Sprite):
                 self.on_ground = False
                 self.fx_jump.play()
 
-            if self.gs.user_input['down'] and not self.on_ground and self.stomp_counter == PLAYER_STOMP:
+            if self.gs.user_input['down'] and not self.on_ground and self.gs.player_stomp_counter == PLAYER_STOMP:
                 self.vel_y = 3
                 self.state['next'] = STOMPING
                 self.fx_stomp.play()
@@ -571,43 +568,43 @@ class Player(pygame.sprite.Sprite):
         if now > self.last_env_damage + 1000 / hits_per_second:
             self.fx_hit.play()
             # Adjust health and bars
-            self.health_current -= damage
-            self.stomp_counter = 0  # reset stomp on hit
-            if self.health_current <= 0:
-                self.health_current = 0                                    
+            self.gs.player_health -= damage
+            self.gs.player_stomp_counter = 0  # reset stomp on hit
+            if self.gs.player_health <= 0:
+                self.gs.player_health = 0                                    
                 self.state['next'] = DYING
                 self._state_engine()  # we call the state engine to get an out-of-turn state update
 
-            self.health_bar_length = int(SCREEN_WIDTH / 6 * self.health_current / 1000)
+            self.health_bar_length = int(SCREEN_WIDTH / 6 * self.gs.player_health / 1000)
             self.last_env_damage = now
 
 
     def heal(self, damage) -> None:
         """ Player is being healed """
-        self.health_current += damage
-        if self.health_current > self.health_max:
-            self.health_current = self.health_max
-        self.health_bar_length = int(SCREEN_WIDTH / 6 * self.health_current / 1000)
+        self.gs.player_health += damage
+        if self.gs.player_health > self.gs.player_health_max:
+            self.gs.player_health = self.gs.player_health_max
+        self.health_bar_length = int(SCREEN_WIDTH / 6 * self.gs.player_health / 1000)
 
     def hit(self, damage: int, turned: bool, platforms: pygame.sprite.Group) -> None:
         """ Player has been hit by mob or projectile, gets damage and bounces backs"""
-        if not self.invincible:  # we have half a sec of invincibility after damage to avoid repeat damage
+        if not self.gs.player_invincible:  # we have half a sec of invincibility after damage to avoid repeat damage
             if damage:  # we also use hits without damage to bump the player
                 self._flash()
                 self.fx_hit.play()
                 self.gs.player_invincible = True  # we want 
                 self.gs.player_hit = True
                 self.last_damage = pygame.time.get_ticks()  
-                self.stomp_counter = 0  # reset stomp on hit
+                self.gs.player_stomp_counter = 0  # reset stomp on hit
                 # Adjust health and bars
-                self.health_current -= damage
-                if self.health_current <= 0:
-                    self.health_current = 0
+                self.gs.player_health -= damage
+                if self.gs.player_health <= 0:
+                    self.gs.player_health = 0
                     self.state['next'] = DYING
 
                 
 
-                #self.health_bar_length = int(SCREEN_WIDTH / 6 * self.health_current / 1000)
+                #self.health_bar_length = int(SCREEN_WIDTH / 6 * self.gs.player_health / 1000)
 
                 self._state_engine()  # we call the state engine to get an out-of-turn state update
 
