@@ -8,7 +8,7 @@ from decor_and_effects import ExpandingCircle, SpeedLines
 
 # Player class
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y, surface, health_max, audio, level_data: dict) -> None:
+    def __init__(self, x, y, surface, health_max, audio, level_data: dict, game_state) -> None:
         # need also walk_anim, attack_anim, death_anim, sounds
         """
         The Player class constructor - note that x and y is only for initialization,
@@ -18,6 +18,8 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
 
         self.screen = surface
+
+        self.gs = game_state  # contains keyboard and joystick events + health
 
         self.health_max = health_max
         self.health_current = self.health_max
@@ -50,8 +52,6 @@ class Player(pygame.sprite.Sprite):
         self.rects = {
             'player': pygame.Rect,  # the rect for the full player sprite
             'attack': pygame.Rect,  # the rect for the player attack, to test collision with monsters and projectiles
-            # 'collide': pygame.Rect,  # the rect for testing collisions with 
-            # 'hitbox': pygame.Rect,  # the rect for testing collision with environment, projectiles, spells, hazards and monsters (smaller)
         }
         
         self.animation = self.animations['idle']  # Idle by default
@@ -517,15 +517,13 @@ class Player(pygame.sprite.Sprite):
 
     def get_input(self) -> None:
         """ Registering keypresses and triggering state changes """
-        keys = pygame.key.get_pressed()
-
         if self.state['active'] not in (DYING, DEAD):  # we only do this if we're still alive
-            if keys[pygame.K_RIGHT]:
+            if self.gs.user_input['right']:
                 self.walking = 1  # right
                 self.state['next'] = WALKING
                 self.turned = False
 
-            elif keys[pygame.K_LEFT]:
+            if self.gs.user_input['left']:
                 self.walking = -1  # left
                 self.state['next'] = WALKING
                 self.turned = True
@@ -534,35 +532,36 @@ class Player(pygame.sprite.Sprite):
                 self.walking = False
                 self.state['next'] = IDLE
 
-            if keys[pygame.K_UP] and self.on_ground:
+            if self.gs.user_input['up'] and self.on_ground:
                 self.vel_y = - JUMP_HEIGHT
 
                 self.state['next'] = JUMPING
                 self.on_ground = False
                 self.fx_jump.play()
 
-            if keys[pygame.K_DOWN] and not self.on_ground and self.stomp_counter == PLAYER_STOMP:
+            if self.gs.user_input['down'] and not self.on_ground and self.stomp_counter == PLAYER_STOMP:
                 self.vel_y = 3
                 self.state['next'] = STOMPING
                 self.fx_stomp.play()
 
-            if keys[pygame.K_SPACE]:
+            if self.gs.user_input['attack']:
                 now = pygame.time.get_ticks()
                 if now - self.last_attack > self.attack_delay:
                     self.state['next'] = ATTACKING
                     if not self.fx_attack_channel.get_busy():  # playing sound if not all channels busy
                         self.fx_attack_channel.play(self.fx_attack)
                     self.last_attack = now
-                
-            if keys[pygame.K_LCTRL]:
+
+            if self.gs.user_input['cast']:
                 now = pygame.time.get_ticks()
                 if now - self.last_cast > self.cast_delay:
                     self.state['next'] = CASTING
                     #if not self.fx_attack_channel.get_busy():  # playing sound if not all channels busy
                     #    self.fx_attack_channel.play(self.fx_attack)
                     self.last_cast = now
-                
-        if keys[pygame.K_ESCAPE]:
+        
+        if self.gs.user_input['quit']:
+            logging.debug('Player quested quit - quitting...')
             pygame.quit()
             exit(0)
 
@@ -596,7 +595,8 @@ class Player(pygame.sprite.Sprite):
             if damage:  # we also use hits without damage to bump the player
                 self._flash()
                 self.fx_hit.play()
-                self.invincible = True  # we want 
+                self.gs.player_invincible = True  # we want 
+                self.gs.player_hit = True
                 self.last_damage = pygame.time.get_ticks()  
                 self.stomp_counter = 0  # reset stomp on hit
                 # Adjust health and bars
@@ -605,7 +605,9 @@ class Player(pygame.sprite.Sprite):
                     self.health_current = 0
                     self.state['next'] = DYING
 
-                self.health_bar_length = int(SCREEN_WIDTH / 6 * self.health_current / 1000)
+                
+
+                #self.health_bar_length = int(SCREEN_WIDTH / 6 * self.health_current / 1000)
 
                 self._state_engine()  # we call the state engine to get an out-of-turn state update
 

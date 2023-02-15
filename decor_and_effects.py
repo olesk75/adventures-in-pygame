@@ -1,17 +1,15 @@
 import pygame
 import random
-import logging
-import math
 
 from random import randint
 from level_data import *
 from settings import *
 from game_tiles import GameTileAnimation
-from engine import draw_text
+from game_functions import *
 
 
 # --- Show floating info bubbles ---
-class BubbleMessage():
+class BubbleMessage:
     """ Show floating info bubbles
         Meant to linger - 10 seconds between each message 
     """
@@ -101,8 +99,117 @@ class BubbleMessage():
                     self.expired = True
 
 
+# --- Various environmental effects
+class EnvironmentalEffects(pygame.sprite.Group):
+    """
+    Class for adding non-interactive environmental effects, like blowing leaves, snow, raid etc.
+    """
+    def __init__(self, effect, screen) -> pygame.sprite.Group:
+        super().__init__()
+        from animation_data import leaves_ss
+        from animation import Animation
+        self.Anim = Animation
+        self.ss = leaves_ss
+        self.effect = effect  # 'leaves', 'snow', all found in level_data for each level
+        self.screen = screen
+        self.base_wind = -1  # blowing toward the left of the screen
+        self.gust_strength = 1
+        self.wind = Wind(self.base_wind)  
+        self.fall_from_top = 0
+        self.last_leaf = 0
+        self.last_update = 0 
+        if self.effect == 'leaves':
+            self.inertia = 0.5  # % of wind speed to remove
+        
+        self.last_run = 0
+        self.last_gust_change = 0
+        self.frequency = 10  # times per second we update the environmental effects
+
+    def _add_leaf(self) -> None:
+        now = pygame.time.get_ticks() 
+        if random.random() < 1/30: # making sure we've waited long enough
+            leaf = GameTileAnimation(16,16,randint(SCREEN_WIDTH, SCREEN_WIDTH*3), randint(0, SCREEN_HEIGHT/4), self.Anim(self.ss, frames=10, speed=100, repeat=True))  # TODO: They ALL use the SAME Animation instance, so all animate identically
+            leaf.x_vel = random.uniform(-4, -1)  # starting horisontal speed
+            leaf.y_vel = GRAVITY * 2
+            leaf.animation.active = True
+            leaf.animation.frame_number = randint(0,leaf.animation.frames -1 )
+            self.add(leaf)
+            
+            self.last_leaf = now
+            
+    
+
+    def update(self, h_scroll, v_scroll) -> None:
+        # Here we set the x_vel for each sprite to match the wind at their respective vertical position
+        # Each particle is assumed to float in the wind, minus the enertia for each category (snow less than leaves etc.)
+        now = pygame.time.get_ticks()
+        if now - self.last_run >  1000 / self.frequency:
+            if now - self.last_gust_change > 1000 * 10:
+                self.gust_strength = randint(1,3)  # every 10 seconds we change the wind gust speed 
+                self.last_gust_change = now
+
+            # The wind provides a list of wind speed 
+            wind_field = self.wind.update(self.gust_strength)
+
+            for sprite in self.sprites():
+                # Compensate for wind
+                list_pos = int((sprite.rect.centery / SCREEN_HEIGHT) * 100)  # position in list depending on y position of sprite
+                sprite.x_vel = self.base_wind - wind_field[list_pos]  # we add the wind component for our current height (vertical sine wave)
+
+
+                # Compensating for inertia which alsways tries to slow the sprite down
+                if sprite.x_vel < self.base_wind:  # always the case at first
+                    sprite.x_vel -= sprite.x_vel * self.inertia
+                if sprite.x_vel > self.base_wind:
+                    sprite.x_vel += sprite.x_vel * self.inertia
+
+                sprite.update(h_scroll, v_scroll)
+                
+                # Removing sprites that have gone off screen
+                if sprite.rect.centery > SCREEN_HEIGHT:
+                    sprite.kill()
+                sprite.image = sprite.animation.get_image()
+            
+            # Here we add the leaves
+            if len(self.sprites()) < 100 and self.effect == 'leaves':
+                self._add_leaf()
+
+
+# --- Expanding circle effects for spells
+class ExpandingCircle:
+    def __init__(self, x: int, y: int, color: pygame.Color, thickness: int, radius_max: int, frame_delay: int) -> None:
+        self.x = x
+        self.y = y
+        self.color = color
+        self.wide = thickness
+        self.width = 0
+        self.radius_max = radius_max
+        self.radius = 0
+        self.frame_delay = frame_delay
+
+        self.last_update = 0  # for timing
+        self.done = False
+
+    def update(self, h_scroll, v_scroll) -> None:
+        # It's fire-and-forget
+        self.x += h_scroll
+        self.y += v_scroll
+        now = pygame.time.get_ticks()
+
+        if now - self.last_update > self.frame_delay:
+            self.radius += 3
+            self.width = int((self.radius/self.radius_max) * self.wide)  # scaling width with radius
+            self.last_update = now
+            if self.radius >= self.radius_max:
+                self.done = True
+
+    def draw(self, screen) -> None:
+        if not self.done:
+            pygame.draw.circle(screen, (self.color), (self.x,self.y), self.radius, width=self.width)
+
+
 # --- Shows panel on top of screen with score and inventory
-class GamePanel():
+class GamePanel:
     """ Class to show a panel on top left corner of the screen """
     def __init__(self, screen: pygame.display)-> None:
         from animation_data import anim
@@ -128,10 +235,10 @@ class GamePanel():
         # Panel background image
         self.panel_bg = pygame.image.load('assets/panel/game-panel.png').convert_alpha()
 
-    def setup_bars(self, health_current, health_max) -> None:
+    def setup_bars(self, game_state) -> None:
         # Health bars + stompometer
-        self.health_bar_length = int(SCREEN_WIDTH / 6 * health_current / 1000)  # grows when max health grows
-        self.health_bar_max_length = int(SCREEN_WIDTH / 6 * health_max / 1000)  # grows when max health grows
+        self.health_bar_length = int(SCREEN_WIDTH / 6 * game_state.player_health / 1000)  # grows when max health grows
+        self.health_bar_max_length = int(SCREEN_WIDTH / 6 * game_state.player_health_max / 1000)  # grows when max health grows
 
     def _blink_bar(self, duration) -> None:
         # Blinks the frame around the health bar red
@@ -253,273 +360,34 @@ class GamePanel():
 
             self.old_inv = self.inventory
 
-
-
-class ParallaxBackground():
-    """ Class for showing and scrolling a multi-level parallax background """
-    def __init__(self,level,screen) -> None:
-        self.screen = screen
-        background = levels[level]['background']
-        self.bg_scroll = 0
-        self.level_width = levels[level]['size_x'] * TILE_SIZE
-
-        # We find the scaling factor based only on height, as images cvan be wider than the screen - using cloud texture for this
-        self.bg_clouds = pygame.image.load(background['clouds']).convert_alpha()
-        scale = SCREEN_HEIGHT / self.bg_clouds.get_height()
-        x_size = self.bg_clouds.get_width() * scale
-
-        self.bg_clouds = pygame.transform.scale(self.bg_clouds, (x_size, SCREEN_HEIGHT))
-        
-        # load background images
-        self.bg_near = pygame.transform.scale(pygame.image.load(background['near']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
-        self.bg_medium = pygame.transform.scale(pygame.image.load(background['medium']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
-        self.bg_further = pygame.transform.scale(pygame.image.load(background['further']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
-        self.bg_far = pygame.transform.scale(pygame.image.load(background['far']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
-
-        self.bg_color = background['background_color']
-
-        self.cloud_width = self.bg_clouds.get_width()  # clouds are potentially much larger
-        self.width = self.bg_near.get_width()
-
-        self.y_adjust = {
-            'near': background['y_adjust'][0],
-            'medium': background['y_adjust'][1],
-            'far': background['y_adjust'][2],
-            'further': background['y_adjust'][3],
-            'bg': background['y_adjust'][4],
-        }
-
-        self.cloud_drift =  background['cloud_drift']
-        self.cloud_timer = 0
-        self.cloud_movement = 0
-    
-    def update(self,bg_scroll) -> None:
-        self.bg_scroll += bg_scroll
-        now = pygame.time.get_ticks()
-
-        if now - self.cloud_timer > self.cloud_drift:
-            self.cloud_movement += 1
-            self.cloud_timer = now
-
-    
-    def draw(self, surface) -> None:
-        #surface.fill(self.bg_color)  
-        
-        # for x in range((self.level_width // self.width) + 1) :
-        for x in (-1, 0, 1):
-            surface.blit(self.bg_clouds,  ((x * self.cloud_width) + self.cloud_movement, 0))  # clouds are special  # TODO: too special - they don't move when scrolling left
-
-            surface.blit(self.bg_far,     ((x * self.width) + self.bg_scroll * 0.05, 0))
-            surface.blit(self.bg_further, ((x * self.width) + self.bg_scroll * 0.1,  0))
-            surface.blit(self.bg_medium,  ((x * self.width) + self.bg_scroll * 0.3,  0))
-            surface.blit(self.bg_near,    ((x * self.width) + self.bg_scroll * 0.7,  0))
-
-    # TODO: right now the parallax factor is hard coded; move to level_data.py to allow different factors for different levels
-
-class ParticleSystem():
-    def __init__(self) -> None:
-        """ Particle system with pixel art extension """
-        self.all_particles = []
-        self.particle = {
-                'center': list,
-                'velocity': list,
-                'radius': float,
-                'color':pygame.Color,
-            }
-        self.last_run = 0
-        self.update_delay = 15
-        
-    def add(self, particle) -> None:
-        self.all_particles.append(particle)
-        
-    def update(self, h_scroll, v_scroll) -> None:
-        now = pygame.time.get_ticks()
-        if now - self.last_run > self.update_delay:
-            for particle in self.all_particles:
-                # Updating velocities
-                particle['velocity'][1] += GRAVITY * 2  # adding gravity to the velocity (looks better if we add some more gravity/)
-
-                # Updating coordinates as funtion of velocities
-                particle['center'][0] += h_scroll + particle['velocity'][0] # x
-                particle['center'][1] += v_scroll + particle['velocity'][1]  # y
-
-                # Shrinking the circle radius
-                particle['radius'] -= 0.3
-                if particle['radius'] < 1:
-                    self.all_particles.remove(particle)
-            
-            self.last_run = now
-
-
-    def draw(self, screen) -> None:
-        for particle in self.all_particles:
-            side = int(particle['radius'] * 4)
-            x = int(particle['center'][0] - side/2)
-            y = int(particle['center'][1] - side/2)
-            pygame.draw.rect(screen, particle['color'], pygame.Rect(x, y, side, side ))
-            
-
-
-class EnvironmentalEffects(pygame.sprite.Group):
-    """
-    Class for adding non-interactive environmental effects, like blowing leaves, snow, raid etc.
-    """
-    def __init__(self, effect, screen) -> pygame.sprite.Group:
+# --- Shows info pop-up over doors etc.
+class InfoPopup(pygame.sprite.Sprite):
+    def __init__(self, text, x, y) -> None:
         super().__init__()
-        from animation_data import leaves_ss
-        from animation import Animation
-        self.Anim = Animation
-        self.ss = leaves_ss
-        self.effect = effect  # 'leaves', 'snow', all found in level_data for each level
-        self.screen = screen
-        self.base_wind = -1  # blowing toward the left of the screen
-        self.gust_strength = 1
-        self.wind = Wind(self.base_wind)  
-        self.fall_from_top = 0
-        self.last_leaf = 0
-        self.last_update = 0 
-        if self.effect == 'leaves':
-            self.inertia = 0.5  # % of wind speed to remove
-        
-        self.last_run = 0
-        self.last_gust_change = 0
-        self.frequency = 10  # times per second we update the environmental effects
 
-    def _add_leaf(self) -> None:
-        now = pygame.time.get_ticks() 
-        if random.random() < 1/30: # making sure we've waited long enough
-            leaf = GameTileAnimation(16,16,randint(SCREEN_WIDTH, SCREEN_WIDTH*3), randint(0, SCREEN_HEIGHT/4), self.Anim(self.ss, frames=10, speed=100, repeat=True))  # TODO: They ALL use the SAME Animation instance, so all animate identically
-            leaf.x_vel = random.uniform(-4, -1)  # starting horisontal speed
-            leaf.y_vel = GRAVITY * 2
-            leaf.animation.active = True
-            leaf.animation.frame_number = randint(0,leaf.animation.frames -1 )
-            self.add(leaf)
-            
-            self.last_leaf = now
-            
-    
-
-    def update(self, h_scroll, v_scroll) -> None:
-        # Here we set the x_vel for each sprite to match the wind at their respective vertical position
-        # Each particle is assumed to float in the wind, minus the enertia for each category (snow less than leaves etc.)
-        now = pygame.time.get_ticks()
-        if now - self.last_run >  1000 / self.frequency:
-            if now - self.last_gust_change > 1000 * 10:
-                self.gust_strength = randint(1,3)  # every 10 seconds we change the wind gust speed 
-                self.last_gust_change = now
-
-            # The wind provides a list of wind speed 
-            wind_field = self.wind.update(self.gust_strength)
-
-            for sprite in self.sprites():
-                # Compensate for wind
-                list_pos = int((sprite.rect.centery / SCREEN_HEIGHT) * 100)  # position in list depending on y position of sprite
-                sprite.x_vel = self.base_wind - wind_field[list_pos]  # we add the wind component for our current height (vertical sine wave)
-
-
-                # Compensating for inertia which alsways tries to slow the sprite down
-                if sprite.x_vel < self.base_wind:  # always the case at first
-                    sprite.x_vel -= sprite.x_vel * self.inertia
-                if sprite.x_vel > self.base_wind:
-                    sprite.x_vel += sprite.x_vel * self.inertia
-
-                sprite.update(h_scroll, v_scroll)
-                
-                # Removing sprites that have gone off screen
-                if sprite.rect.centery > SCREEN_HEIGHT:
-                    sprite.kill()
-                sprite.image = sprite.animation.get_image()
-            
-            # Here we add the leaves
-            if len(self.sprites()) < 100 and self.effect == 'leaves':
-                self._add_leaf()
-
-
-class Wind:
-    """
-    Class which simulates wind based on sine waves and returns a list of the wind direction in each vertical lines from 0 to SCREEN_HEIGHT
-    """
-    def __init__(self, base_wind) -> None:
-        self.wind_field = []
-        self.base_wind = base_wind
-
-    def update(self, gust_strength) -> list:
-        # Returns a list of values from 0 to gust_strength. 0 on both ends, just_strength in the middle
-        field = [wind_point * gust_strength for wind_point in sine_wave(points=101)]  # 101 to make sure we have list indices from 0-100 (not 99), which ius easier to work with
-
-        return field      
-
-class ExpandingCircle:
-    def __init__(self, x: int, y: int, color: pygame.Color, thickness: int, radius_max: int, frame_delay: int) -> None:
+        self.text = text
+        self.image = pygame.surface.Surface((TILE_SIZE_SCREEN * 4,TILE_SIZE_SCREEN)).convert_alpha()
+        self.rect = pygame.rect.Rect(x, y, TILE_SIZE_SCREEN * 4,TILE_SIZE_SCREEN)
+        self.ticks_since_last = 0
         self.x = x
         self.y = y
-        self.color = color
-        self.wide = thickness
-        self.width = 0
-        self.radius_max = radius_max
-        self.radius = 0
-        self.frame_delay = frame_delay
 
-        self.last_update = 0  # for timing
-        self.done = False
+        self.name = 'info-popup'
 
     def update(self, h_scroll, v_scroll) -> None:
-        # It's fire-and-forget
-        self.x += h_scroll
-        self.y += v_scroll
-        now = pygame.time.get_ticks()
-
-        if now - self.last_update > self.frame_delay:
-            self.radius += 3
-            self.width = int((self.radius/self.radius_max) * self.wide)  # scaling width with radius
-            self.last_update = now
-            if self.radius >= self.radius_max:
-                self.done = True
-
-    def draw(self, screen) -> None:
-        if not self.done:
-            pygame.draw.circle(screen, (self.color), (self.x,self.y), self.radius, width=self.width)
-
-class SpeedLines:
-    def __init__(self, rect: pygame.rect.Rect, frame_delay: int=100) -> None:
-        self.rect = rect
-        self.x_start = self.rect.left
-        self.y_start = self.rect.top
-        self.max_width = self.rect.width
-        self.height = 0
-
-        self.previous_y = 0
-
-        self.margin = 5
-
-        self.frame_delay = frame_delay
-        self.color = WHITE
-
-        self.last_update = 0  # for timing
-        self.done = False
-
-    def update(self, h_scroll, v_scroll) -> None:
-        self.x_start += h_scroll
-        self.y_start += v_scroll
-        self.new_y_pos = self.rect.top
-        if self.previous_y == self.new_y_pos:  # the eagle has landed
-            self.done = True
-        self.previous_y = self.new_y_pos
+        self.rect.centerx += h_scroll
+        self.rect.centery += v_scroll
+        pygame.draw.line(self.image, WHITE, (1,1), (200,1), width=5)
 
         now = pygame.time.get_ticks()
-        if now - self.last_update > self.frame_delay:
-            self.height = self.new_y_pos - self.y_start 
-            if self.height > self.margin:
-                self.height -= self.margin
+        if now - self.ticks_since_last < 100:
+            pass
+            self.ticks_since_last = now
 
-    def draw(self, screen) -> None:
-        width = 4
-        if not self.done and self.height > 10:
-            for n in range (self.max_width // width):
-                height = randint(0, self.height)
-                pygame.draw.rect(screen, WHITE, ((self.x_start + width * n, self.new_y_pos - height), (width, height)))
+    # draw() in super
+        
 
-
+# --- Stomp splash effect
 class LightEffect1(pygame.sprite.Sprite):
     """
     Class which gives light effect consisting of vertical lines shooting up from the ground
@@ -594,45 +462,166 @@ class LightEffect1(pygame.sprite.Sprite):
             self.rect.centery = self.y - 50
 
 
-"""
-Functions
-"""
+# --- Various particles
+class ParticleSystem:
+    def __init__(self) -> None:
+        """ Particle system with pixel art extension """
+        self.all_particles = []
+        self.particle = {
+                'center': list,
+                'velocity': list,
+                'radius': float,
+                'color':pygame.Color,
+            }
+        self.last_run = 0
+        self.update_delay = 15
+        
+    def add(self, particle) -> None:
+        self.all_particles.append(particle)
+        
+    def update(self, h_scroll, v_scroll) -> None:
+        now = pygame.time.get_ticks()
+        if now - self.last_run > self.update_delay:
+            for particle in self.all_particles:
+                # Updating velocities
+                particle['velocity'][1] += GRAVITY * 2  # adding gravity to the velocity (looks better if we add some more gravity/)
 
-def fade_to_color(color: pygame.color.Color) -> None:
-    # Fades to color (and pauses game while doing so!)
+                # Updating coordinates as funtion of velocities
+                particle['center'][0] += h_scroll + particle['velocity'][0] # x
+                particle['center'][1] += v_scroll + particle['velocity'][1]  # y
+
+                # Shrinking the circle radius
+                particle['radius'] -= 0.3
+                if particle['radius'] < 1:
+                    self.all_particles.remove(particle)
+            
+            self.last_run = now
+
+
+    def draw(self, screen) -> None:
+        for particle in self.all_particles:
+            side = int(particle['radius'] * 4)
+            x = int(particle['center'][0] - side/2)
+            y = int(particle['center'][1] - side/2)
+            pygame.draw.rect(screen, particle['color'], pygame.Rect(x, y, side, side ))
+
+
+# --- Shows the multilevel parallax background
+class ParallaxBackground:
+    """ Class for showing and scrolling a multi-level parallax background """
+    def __init__(self,level,screen) -> None:
+        self.screen = screen
+        background = levels[level]['background']
+        self.bg_scroll = 0
+        self.level_width = levels[level]['size_x'] * TILE_SIZE
+
+        # We find the scaling factor based only on height, as images cvan be wider than the screen - using cloud texture for this
+        self.bg_clouds = pygame.image.load(background['clouds']).convert_alpha()
+        scale = SCREEN_HEIGHT / self.bg_clouds.get_height()
+        x_size = self.bg_clouds.get_width() * scale
+
+        self.bg_clouds = pygame.transform.scale(self.bg_clouds, (x_size, SCREEN_HEIGHT))
+        
+        # load background images
+        self.bg_near = pygame.transform.scale(pygame.image.load(background['near']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.bg_medium = pygame.transform.scale(pygame.image.load(background['medium']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.bg_further = pygame.transform.scale(pygame.image.load(background['further']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.bg_far = pygame.transform.scale(pygame.image.load(background['far']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
+
+        self.bg_color = background['background_color']
+
+        self.cloud_width = self.bg_clouds.get_width()  # clouds are potentially much larger
+        self.width = self.bg_near.get_width()
+
+        self.y_adjust = {
+            'near': background['y_adjust'][0],
+            'medium': background['y_adjust'][1],
+            'far': background['y_adjust'][2],
+            'further': background['y_adjust'][3],
+            'bg': background['y_adjust'][4],
+        }
+
+        self.cloud_drift =  background['cloud_drift']
+        self.cloud_timer = 0
+        self.cloud_movement = 0
     
-    screen = pygame.display.get_surface()
-    rect = screen.get_rect()
-    rectsurf = pygame.Surface(rect.size,pygame.SRCALPHA)
-    color.a = 1
-    for _ in range(0,255):
-        pygame.time.wait(1)
-        rectsurf.fill(color)
-        screen.blit(rectsurf,(0,0))
-        pygame.display.update()
+    def update(self,bg_scroll) -> None:
+        self.bg_scroll += bg_scroll
+        now = pygame.time.get_ticks()
+
+        if now - self.cloud_timer > self.cloud_drift:
+            self.cloud_movement += 1
+            self.cloud_timer = now
+
+    
+    def draw(self, surface) -> None:
+        #surface.fill(self.bg_color)  
+        
+        # for x in range((self.level_width // self.width) + 1) :
+        for x in range(-1, 3):
+            surface.blit(self.bg_clouds,  ((x * self.cloud_width) + self.cloud_movement, 0))  # clouds are special  # TODO: too special - they don't move when scrolling left
+
+            surface.blit(self.bg_far,     ((x * self.width) + self.bg_scroll * 0.05, 0))
+            surface.blit(self.bg_further, ((x * self.width) + self.bg_scroll * 0.1,  0))
+            surface.blit(self.bg_medium,  ((x * self.width) + self.bg_scroll * 0.3,  0))
+            surface.blit(self.bg_near,    ((x * self.width) + self.bg_scroll * 0.7,  0))
+
+    # TODO: right now the parallax factor is hard coded; move to level_data.py to allow different factors for different levels
 
 
-def sine_wave(points=100)-> list:
-    """ Produces the points in a sine wave
-        Values range between 0 and 100, with max value of 1 in the middle and 0 at both ends of the list
+# --- Speed line effect, used by player stomp
+class SpeedLines:
+    def __init__(self, rect: pygame.rect.Rect, frame_delay: int=100) -> None:
+        self.rect = rect
+        self.x_start = self.rect.left
+        self.y_start = self.rect.top
+        self.max_width = self.rect.width
+        self.height = 0
+
+        self.previous_y = 0
+
+        self.margin = 5
+
+        self.frame_delay = frame_delay
+        self.color = WHITE
+
+        self.last_update = 0  # for timing
+        self.done = False
+
+    def update(self, h_scroll, v_scroll) -> None:
+        self.x_start += h_scroll
+        self.y_start += v_scroll
+        self.new_y_pos = self.rect.top
+        if self.previous_y == self.new_y_pos:  # the eagle has landed
+            self.done = True
+        self.previous_y = self.new_y_pos
+
+        now = pygame.time.get_ticks()
+        if now - self.last_update > self.frame_delay:
+            self.height = self.new_y_pos - self.y_start 
+            if self.height > self.margin:
+                self.height -= self.margin
+
+    def draw(self, screen) -> None:
+        width = 4
+        if not self.done and self.height > 10:
+            for n in range (self.max_width // width):
+                height = randint(0, self.height)
+                pygame.draw.rect(screen, WHITE, ((self.x_start + width * n, self.new_y_pos - height), (width, height)))
+
+
+# --- Wind, used by particles and environmental effects
+class Wind:
     """
-    point_list = [] * points
+    Class which simulates wind based on sine waves and returns a list of the wind direction in each vertical lines from 0 to SCREEN_HEIGHT
+    """
+    def __init__(self, base_wind) -> None:
+        self.wind_field = []
+        self.base_wind = base_wind
 
-    # Define the maximum amplitude of the wave
-    amplitude = 50
+    def update(self, gust_strength) -> list:
+        # Returns a list of values from 0 to gust_strength. 0 on both ends, just_strength in the middle
+        field = [wind_point * gust_strength for wind_point in sine_wave(points=101)]  # 101 to make sure we have list indices from 0-100 (not 99), which ius easier to work with
 
-    # Define the start and end points along the x-axis
-    start = math.pi /2
-    end = (5 * math.pi /2) 
+        return field      
 
-    # Define the step size for each point along the x-axis
-    step = (end - start) / points
-
-    # Calculate the x and y coordinates for each point
-    for i in range(points):
-        x = start + i * step
-        y = amplitude * math.sin(x) + 150
-
-        point_list.append(1-(y-100)/100)
-
-    return point_list

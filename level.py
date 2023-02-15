@@ -11,17 +11,18 @@ import logging
 from random import random
 
 from settings import *
+from decor_and_effects import *
+from game_functions import *
 
-from engine import import_csv_layout, import_tile_graphics, import_tile_sheet_graphics
 from game_tiles import GameTile, GameTileAnimation, MovingGameTile
 from level_data import levels, GameAudio
 from player import Player, PlayerInOut
 from monsters import Monster, Projectile, Spell, Drop
-from decor_and_effects import ParallaxBackground, EnvironmentalEffects, BubbleMessage, LightEffect1, ParticleSystem
+
 from monster_data import arrow_damage
 
 class Level():
-    def __init__(self,current_level,surface, health_max) -> None:
+    def __init__(self,current_level,surface, health_max, game_state) -> None:
         
         self.last_log = ''  # we do this to only log when something _new_ happens
 
@@ -133,14 +134,14 @@ class Level():
         self.stomp_shadows = pygame.sprite.Group()
         self.stomp_effects = pygame.sprite.GroupSingle()  # only one stomp effect at a time
 
-        # dust effects 
-        self.dust_sprites = pygame.sprite.Group()
+        # player dust and other effects (catch-all sprite group)
+        self.effect_sprites = pygame.sprite.Group()
 
         # particle system
         self.particle_system = ParticleSystem()
         
         # player
-        self.player = self.player_setup()
+        self.player = self.player_setup(game_state)
         self.player_sprites = pygame.sprite.GroupSingle()
         self.player_sprites.add(self.player)
 
@@ -331,8 +332,8 @@ class Level():
     
 
   
-    def player_setup(self) -> None:
-        player = Player(self.lvl_entry[0], self.lvl_entry[1], self.screen, self.health_max, self.sounds, self.level_data)
+    def player_setup(self, game_state) -> None:
+        player = Player(self.lvl_entry[0], self.lvl_entry[1], self.screen, self.health_max, self.sounds, self.level_data, game_state)
         logging.debug(f'Player spawned at ({self.lvl_entry[0]}, {self.lvl_entry[1]})')
         return player
 
@@ -355,12 +356,13 @@ class Level():
             width = 52
             height = 16
             self.dust_jump = GameTileAnimation(width, height, self.player.rects['hitbox'].centerx - width, self.player.rects['hitbox'].bottom - (height + 4), self.anim['effects']['dust-landing'])
+            self.dust_jump.name = 'dust'
             self.dust_jump.animation.start_over()
-            self.dust_sprites.add(self.dust_jump)
+            self.effect_sprites.add(self.dust_jump)
         
         # Housekeeping
-        for sprite in self.dust_sprites.sprites():
-            if sprite.animation.on_last_frame:
+        for sprite in self.effect_sprites.sprites():
+            if sprite.name == 'dust' and sprite.animation.on_last_frame:
                 sprite.kill()
     
     def check_player_attack(self) -> None:
@@ -467,6 +469,7 @@ class Level():
                         else:
                             #self.player.bounce(-10, 0, -self.player.turned, self.terrain_sprites)
                             self.bubble_list.append(BubbleMessage(self.screen, 'I\'m missing a key!', 3000, 0, 'exit', self.player))
+                            self.effect_sprites.add(InfoPopup('Locked door', sprite.rect.centerx, sprite.rect.centery))
                 elif sprite.name == 'chest':
                     # play some sound effect
                     sprite.animation.active = True
@@ -634,8 +637,8 @@ class Level():
         self.stomp_effects.draw(self.screen)
 
         # dust
-        self.dust_sprites.update(self.h_scroll, self.v_scroll)
-        self.dust_sprites.draw(self.screen)
+        self.effect_sprites.update(self.h_scroll, self.v_scroll)
+        self.effect_sprites.draw(self.screen)
 
         # player 
         self.h_scroll, self.v_scroll = self.player.update(self.terrain_sprites)

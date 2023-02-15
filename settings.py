@@ -50,9 +50,10 @@ ATTACK_SPEED = 1  # UNUSED
 PLAYER_HEALTH = 1000
 PLAYER_STOMP = 5  # monsters to kill before stop recharges
 STOMP_SPEED = 50
-MUSIC_ON = True
+MUSIC_ON = False
 SOUNDS_ON = True
 FIRST_LEVEL = 1  # where to start
+LAST_LEVEL = 2  # where to end
 MONSTER_STUN_TIME = 100  # time a monster is stunned
 
 # Debug settings
