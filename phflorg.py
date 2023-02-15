@@ -97,9 +97,15 @@ while True:
         if event.type == JOYBUTTONDOWN:
             if event.button == 0:
                 gs.user_input['attack'] = True
+            if event.button == 1:
+                # TODO
+                pass
         if event.type == JOYBUTTONUP:
             if event.button == 0:
                 gs.user_input['attack'] = False
+            if event.button == 1:
+                # TODO
+                pass
         if event.type == JOYAXISMOTION:
             print(event)
             if event.axis < 2:

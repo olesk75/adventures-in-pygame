@@ -31,7 +31,6 @@ class Level():
         self.anim = anim
 
         # general setup
-        self.level_complete = False
         self.screen = surface
         self.h_scroll = 0
         self.v_scroll = 0
@@ -396,15 +395,7 @@ class Level():
         if pygame.sprite.spritecollide(self.player,self.player_in_out_sprites,False):
             if pygame.sprite.spritecollide(self.player,self.player_in_out_sprites,False)[0].inout == 'out':  # first colliding sprite
                 logging.debug('WIN! Level complete')
-                self.level_complete = True
-
-    def check_player_fallen_off(self) -> None:  # TODO: re-enable once v_scrolling is ok
-        pass
-        # if self.player.rects['player'].top > SCREEN_HEIGHT:
-        #     self.player.health_current = 0
-        #     self.player.state['active'] = DEAD  # insta-kill! 
-        #     logging.debug('Oooops! Player fell off')
-
+                self.gs.level_complete = True
 
     def check_coll_player_hazard(self) -> None:
         # Player + hazard group collision 
@@ -674,7 +665,6 @@ class Level():
         #print(f"Player's centerY: {self.player.rects['player'].centery} and world Y pos: {self.player.world_y_pos} and the delta: {self.player.world_y_pos - self.player.rects['player'].centery}")
 
         # --> Check player condition and actions <--
-        self.check_player_fallen_off()
         self.check_player_attack()
         self.check_player_stomp()
         self.check_player_dust()

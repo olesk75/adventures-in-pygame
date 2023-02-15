@@ -29,6 +29,7 @@ class GameState:
         # Level variables
         self.level_current: int
         self.level_max: int
+        self.level_complete: bool
     
         # Game variables
         self.state: int  # One of the global GAME_STATE contants
@@ -60,6 +61,7 @@ class GameState:
         # --> Level variables
         self.level_current = FIRST_LEVEL
         self.level_max = LAST_LEVEL
+        self.level_complete = False
 
         # --> Game variables
         self.state = GS_WELCOME  # we start with the welcome screen
@@ -107,7 +109,7 @@ class Game:
 
     def check_level_complete(self) -> None:
         """ Check if player has successfully reached end of the level """
-        if self.level.level_complete == True:
+        if self.gs.level_complete == True:
             self.gs.state = GS_LEVEL_COMPLETE
             logging.debug('GAME state: LEVEL COMPLETE ')
             
@@ -115,7 +117,7 @@ class Game:
     def check_game_over(self) -> None:
         """ Check if player is DEAD """
         if self.level.player.state['active'] == DEAD:
-            self.level_max = 1
+            self.gs.level_max = 1
             if MUSIC_ON:
                 self.level_audio.music.stop()
 
@@ -141,11 +143,11 @@ class Game:
     def game_over(self) -> None:
         """ Go to GAME OVER screen """
         if not self.faded:
-            fade_to_color(pygame.Color('red'))  # fade to red  # TODO: fix! doesn't work
+            fade_to_color(pygame.Color('red'))
             self.faded = True
 
         self.write_text("GAME OVER", WHITE, 0, 200, align='center')
-        self.write_text(f"SCORE : {self.level.player_score}", WHITE, 0, 300, align='center')
+        self.write_text(f"SCORE : {self.gd.player_score}", WHITE, 0, 300, align='center')
         self.write_text(f"HIGH SCORE : 99999", WHITE, 0, 400, align='center')
         self.write_text("Press SPACE to try again,  Q to quit", WHITE, 0, 500, align='center')
 
@@ -168,8 +170,8 @@ class Game:
             fade_to_color(pygame.Color('black'))  # fade to black
             self.faded = True
             
-        self.write_text(f"LEVEL {self.level.current_level} COMPLETE", WHITE, 0, 200, align='center')
-        self.write_text(f"SCORE : {self.level.player_score}", WHITE, 0, 300, align='center')
+        self.write_text(f"LEVEL {self.gs.level_current} COMPLETE", WHITE, 0, 200, align='center')
+        self.write_text(f"SCORE : {self.gs.player_score}", WHITE, 0, 300, align='center')
         self.write_text(f"HIGH SCORE : 99999", WHITE, 0, 400, align='center')
         self.write_text("Press ENTER to continue to the world map,  Q to quit", WHITE, 0, 500, align='center')
 
@@ -195,7 +197,7 @@ class Game:
             self.gs.state = GS_QUIT
             
         if keys[pygame.K_SPACE]:
-            self.create_level(self.level.current_level + 1)  # next level!
+            self.create_level(self.gs.level_current + 1)  # next level!
             fade_to_color(pygame.Color('black'))  # fade to black
             self.faded = False
             self.gs.state = GS_PLAYING
@@ -226,17 +228,13 @@ class Game:
         self.screen.blit(text_img, (x, y))
         pygame.display.update()  # force manual update  # TODO: fix
 
-
     def run(self) -> None:
         """ Run the game """
         self.level.run()
         self.check_damage_effects()
-        self.gs.player_health = self.gs.player_health
-        self.panel.inventory = self.gs.player_inventory
         self.panel.draw()
         self.check_level_complete()
         self.check_game_over()
-
 
 
 class GameTile(pygame.sprite.Sprite):
@@ -250,6 +248,7 @@ class GameTile(pygame.sprite.Sprite):
         # Moves the rectangle of this sprite 
         self.rect.x += h_scroll
         self.rect.y += v_scroll
+
 
 class GameTileAnimation(GameTile):
     """

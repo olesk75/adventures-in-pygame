@@ -19,11 +19,8 @@ class Player(pygame.sprite.Sprite):
 
         self.screen = surface
 
-        self.gs = game_state  # contains keyboard and joystick events + health
-
-        self.gs.player_health_max = PLAYER_HEALTH
-        self.gs.player_health = self.gs.player_health_max
-
+        self.gs = game_state
+        
         self.level_data = level_data
 
         self.invincibility_duration = 500
@@ -401,14 +398,9 @@ class Player(pygame.sprite.Sprite):
             if self.vel_y > 0:  # we're still airborne
                 dy = STOMP_SPEED  # added straight to position, not going via velocity
 
-            if not self.on_ground:
-                x = self.hitbox_sprite.rect.left
-                y = self.hitbox_sprite.rect.top
-
             if self.on_ground:
                 self.state['next'] = IDLE
-        
-
+    
         
         # ATTACKING: make rect
         if self.state['active'] == ATTACKING:
@@ -553,8 +545,9 @@ class Player(pygame.sprite.Sprite):
                 now = pygame.time.get_ticks()
                 if now - self.last_cast > self.cast_delay:
                     self.state['next'] = CASTING
-                    #if not self.fx_attack_channel.get_busy():  # playing sound if not all channels busy
+                    if not self.fx_attack_channel.get_busy():  # playing sound if not all channels busy
                     #    self.fx_attack_channel.play(self.fx_attack)
+                        pass
                     self.last_cast = now
         
         if self.gs.user_input['quit']:
@@ -601,10 +594,6 @@ class Player(pygame.sprite.Sprite):
                 if self.gs.player_health <= 0:
                     self.gs.player_health = 0
                     self.state['next'] = DYING
-
-                
-
-                #self.health_bar_length = int(SCREEN_WIDTH / 6 * self.gs.player_health / 1000)
 
                 self._state_engine()  # we call the state engine to get an out-of-turn state update
 
