@@ -97,22 +97,29 @@ while True:
 
         if event.type == JOYBUTTONDOWN:
             if event.button == 0:
+                gs.user_input['up'] = True
+            if event.button == 2:
                 gs.user_input['attack'] = True
-            if event.button == 1:
-                # TODO
-                pass
         if event.type == JOYBUTTONUP:
             if event.button == 0:
+                gs.user_input['up'] = False
+            if event.button == 2:
                 gs.user_input['attack'] = False
-            if event.button == 1:
-                # TODO
-                pass
+                
         if event.type == JOYAXISMOTION:
-            print(event)
-            if event.axis < 2:
-                motion[event.axis] = event.value
+            #print(event)
+            if event.axis == 0:
+                if event.value < -0.1:
+                    gs.user_input['left'] = True
+                elif event.value > 0.1:
+                    gs.user_input['right'] = True
+                else:
+                    gs.user_input['left'] = False
+                    gs.user_input['right'] = False
+
         if event.type == JOYHATMOTION:
-            print(event)
+            #print(event)
+            pass
 
                 
     if gs.game_state == GS_PLAYING:
@@ -132,12 +139,7 @@ while True:
         game.map_screen()
 
     if gs.game_state == GS_WELCOME:
-        game.welcome_screen()
-
-    if gs.game_state == GS_FADING:
-        game.fade_to_color()
-
-    
+        game.welcome_screen()    
         
     _screen.blit(pygame.transform.scale(screen, (width, height)), (0, 0))
 

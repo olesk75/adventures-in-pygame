@@ -17,7 +17,6 @@ GS_GAME_OVER = 2
 GS_LEVEL_COMPLETE = 3
 GS_QUIT = 4
 GS_MAP_SCREEN = 5
-GS_FADING = 6
 
 # Frequently used color contants
 WHITE    = (255, 255, 255)

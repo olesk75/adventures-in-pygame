@@ -567,16 +567,13 @@ class Player(pygame.sprite.Sprite):
                 self.state['next'] = DYING
                 self._state_engine()  # we call the state engine to get an out-of-turn state update
 
-            self.health_bar_length = int(SCREEN_WIDTH / 6 * self.gs.player_health / 1000)
             self.last_env_damage = now
-
 
     def heal(self, damage) -> None:
         """ Player is being healed """
         self.gs.player_health += damage
         if self.gs.player_health > self.gs.player_health_max:
             self.gs.player_health = self.gs.player_health_max
-        self.health_bar_length = int(SCREEN_WIDTH / 6 * self.gs.player_health / 1000)
 
     def hit(self, damage: int, turned: bool, platforms: pygame.sprite.Group) -> None:
         """ Player has been hit by mob or projectile, gets damage and bounces backs"""
@@ -594,7 +591,7 @@ class Player(pygame.sprite.Sprite):
                     self.gs.player_health = 0
                     self.state['next'] = DYING
 
-                self._state_engine()  # we call the state engine to get an out-of-turn state update
+                    self._state_engine()  # we call the state engine to get an out-of-turn state update
 
             if self.state['next'] != DYING:  # if we just got killed we skip the bounce
                 self.bounce(5, -15, turned, platforms)
