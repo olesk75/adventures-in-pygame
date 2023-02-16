@@ -18,6 +18,7 @@ class GameState:
         self.user_input: dict
         self.player_health_max: int
         self.player_health: int
+        self.player_dot: int  # damage over time, like being on fire, posion etc.
         self.player_invincible: bool
         self.player_hit: bool  # has the player been hit recently
         self.player_powers_max: int
@@ -45,11 +46,12 @@ class GameState:
              'up': False,
              'down': False,
              'attack': False,
-             'cast': False,
+             'cast': False,  
              'quit': False,
         }
         self.player_health_max = PLAYER_HEALTH
         self.player_health = PLAYER_HEALTH
+        self.player_dot = False
         self.player_invincible = False
         self.player_hit = False
         self.player_powers_max = 1

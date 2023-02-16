@@ -511,19 +511,16 @@ class Player(pygame.sprite.Sprite):
                 self.walking = 1  # right
                 self.state['next'] = WALKING
                 self.turned = False
-
             elif self.gs.user_input['left']:
                 self.walking = -1  # left
                 self.state['next'] = WALKING
                 self.turned = True
-
             else:
                 self.walking = False
                 self.state['next'] = IDLE
 
             if self.gs.user_input['up'] and self.on_ground:
                 self.vel_y = - JUMP_HEIGHT
-
                 self.state['next'] = JUMPING
                 self.on_ground = False
                 self.fx_jump.play()
@@ -534,10 +531,10 @@ class Player(pygame.sprite.Sprite):
                 self.fx_stomp.play()
 
             if self.gs.user_input['attack']:
-                print('ATTACKING')
                 now = pygame.time.get_ticks()
                 if now - self.last_attack > self.attack_delay:
                     self.state['next'] = ATTACKING
+                    self.gs.user_input['attack'] = False  # we reset to prevent repeated attacks by holding down the attack key/button
                     if not self.fx_attack_channel.get_busy():  # playing sound if not all channels busy
                         self.fx_attack_channel.play(self.fx_attack)
                     self.last_attack = now

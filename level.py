@@ -8,7 +8,7 @@ GamePanel(class)                    : contans the player information for the scr
 
 import pygame
 import logging
-from random import random
+import random
 
 from settings import *
 from decor_and_effects import *
@@ -372,8 +372,8 @@ class Level():
                         direction = 1
 
                     if monster.data.hitpoints == 0: # monster is dying
-                        self.gd.player_score += monster.data.points_reward
-                        self.player.stomp_counter += 1
+                        self.gs.player_score += monster.data.points_reward
+                        self.gs.player_stomp_counter += 1
                         """ Adding drops from player death """
                         # skeleton-boss is a key carrier
                         if monster.data.monster == 'skeleton-boss':
@@ -473,7 +473,7 @@ class Level():
         if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.drops_sprites,False) and self.player.state['active'] != DYING:
             for drop in pygame.sprite.spritecollide(self.player.hitbox_sprite,self.drops_sprites,False):
                 if drop.drop_type == 'key':
-                    self.player_inventory.append(('key', self.key_img))  # inventory of items and their animations
+                    self.gs.player_inventory.append(('key', self.key_img))  # inventory of items and their animations
                     self.fx_key_pickup.play()            
                     drop.kill()
                     self.bubble_list.append(BubbleMessage(self.screen, 'A key! All I need now is a lock.', 5000, 3000, 'key', self.player))
@@ -555,12 +555,11 @@ class Level():
             direction = -1 
         else: 
             direction = 1
-
         for _ in range(50):   
             self.particle_system.add({
-                'center': [x + random() * 30, y + random() * 30],
-                'velocity': [random() * 10 * direction , random() * -10],
-                'radius': random() * 5,
+                'center': [x + random.random() * 30, y + random.random() * 30],
+                'velocity': [random.random() * 10 * direction , random.random() * -10],
+                'radius': random.random() * 5,
                 'color': color
             })
                 

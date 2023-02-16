@@ -1,4 +1,5 @@
 import pygame
+import logging
 
 # --- Imports sprite sheets for animatons
 # SpriteSheet class
@@ -76,7 +77,7 @@ class Animation():
         try:
             image = self.sprites[self.frame_number].convert_alpha()
         except IndexError:
-            print(f'INDEX ERROR: unable to get frame (frame_number) {self.frame_number} from sprite sheet {self.ss}')
+            logging.error(f'INDEX ERROR: unable to get frame (frame_number) {self.frame_number} from sprite sheet {self.ss}')
             exit(1)
         return image
 

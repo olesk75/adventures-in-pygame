@@ -210,8 +210,15 @@ class Monster(pygame.sprite.Sprite):
             elif self.state == DEAD:
                 self.animation.active = False
 
+            elif self.state == STUNNED:
+                # Typically only as a result of a successful player attack
+                self.stun_start = pygame.time.get_ticks()
+                self.animation.active = False  #  monster is frozen for the duration
+                self.rect_attack = pygame.Rect(0,0,0,0)  # not attacking for the duration
+                self.rect_detect = pygame.Rect(0,0,0,0)  # not detecting for the duration
+
             else:
-                print(f'ERROR, wrong state for monster in boss fight: {self.state}')
+                logging.error(f'ERROR, wrong state for monster in boss fight: {self.state}')
                 exit(1)
 
         return dx, dy
@@ -266,7 +273,6 @@ class Monster(pygame.sprite.Sprite):
                     self.hitbox = pygame.Rect(0,0,0,0)
 
             elif new_state == DEAD:
-                    print('DEAD')
                     self.animation.active = False
                     self.animation.start_over()  # make ready for next death from same monster, as we reuse the same animation instance
                     self.image = self.animation.frame[-1]

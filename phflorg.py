@@ -59,7 +59,6 @@ game.create_level(FIRST_LEVEL)
 
 
 motion = [0, 0]
-attack_again = True
 
 while True:
     for event in pygame.event.get():
@@ -79,10 +78,9 @@ while True:
                 gs.user_input['up'] = True
             if event.key == K_DOWN:
                 gs.user_input['down'] = True
-            if event.key == K_SPACE and attack_again == True:
+            if event.key == K_SPACE:
                 gs.user_input['attack'] = True
-                print('SPACE pressed')
-                attack_again = False
+
 
         # Keyboard - key let go of
         if event.type == KEYUP:
@@ -96,8 +94,6 @@ while True:
                 gs.user_input['down'] = False
             if event.key == K_SPACE:
                 gs.user_input['attack'] = False
-                print('SPACE LIFTED')
-                attack_again = True
 
         if event.type == JOYBUTTONDOWN:
             if event.button == 0:
