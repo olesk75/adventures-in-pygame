@@ -330,7 +330,7 @@ class GamePanel:
         
          # --> The score
         WHITE = (255, 255, 255)
-        draw_text(f'SCORE: {self.gs.player_score}', self.screen, self.font_small, WHITE, self.window_size[0]/100, self.window_size[1]/100)  # score
+        draw_text(f'SCORE: {self.gs.player_score}', self.screen, WHITE, self.window_size[0]/100, self.window_size[1]/100, font=self.font_small)  # score
         
         # --> Boot decoration for stomp 
         self.screen.blit(self.stomp_anim.get_image(), (SCREEN_WIDTH - 38, 33))

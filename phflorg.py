@@ -59,6 +59,7 @@ game.create_level(FIRST_LEVEL)
 
 
 motion = [0, 0]
+previous_state = gs.game_state
 
 while True:
     for event in pygame.event.get():
@@ -139,7 +140,11 @@ while True:
         game.map_screen()
 
     if gs.game_state == GS_WELCOME:
-        game.welcome_screen()    
+        game.welcome_screen()
+
+    if previous_state != gs.game_state:
+        previous_state = gs.game_state
+        gs.game_fade_ready = True
         
     _screen.blit(pygame.transform.scale(screen, (width, height)), (0, 0))
 

@@ -10,10 +10,37 @@ from csv import reader
 from settings import *
 
 # --- Draw on screen ---
-def draw_text(text, surface, font, text_col, x, y)-> None:
+def draw_text(text, surface, text_col, x, y, font: pygame.font.Font=None, align: str=None)-> None:
+    if not font:
+        font = pygame.font.Font("assets/font/Silver.ttf", 32)  # 16, 32, 48
     """ Output text on screen """
     img = font.render(text, True, text_col)
+    
+    if align == 'center':  # we ignore x and calculate x based on length of string
+            x = (SCREEN_WIDTH / 2) - (img.get_width() / 2)  # start half of the text length left of x center
+        
     surface.blit(img, (x, y))
+
+
+def fade_to_color(color, screen, gs) -> None:
+    # Fades to color
+    now = pygame.time.get_ticks()
+
+    if now - gs.game_fade_last_update > 50 and gs.game_fade_ready:
+        color = pygame.Color(color)
+        gs.last_fade_update = now
+        
+        rect = screen.get_rect()
+        rectsurf = pygame.Surface(rect.size,pygame.SRCALPHA)
+        if gs.game_fade_counter < 255:
+            color.a = gs.game_fade_counter  # we set the alpha of the color, from 0 to 255
+            gs.game_fade_counter += 10
+            rectsurf.fill(color)
+            screen.blit(rectsurf,(0,0))      
+        else:
+            gs.game_fade_counter = 0
+            gs.game_fade_ready = False
+
 
 # --- Import CSV data ---
 def import_csv_layout(path :str) -> list:
