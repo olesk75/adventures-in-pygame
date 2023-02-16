@@ -145,7 +145,7 @@ class Game:
     def game_over(self) -> None:
         """ Go to GAME OVER screen """
         if not self.faded:
-            fade_to_color(pygame.Color('red'))
+            fade_to_color(self.screen, RED)
             self.faded = True
 
         self.write_text("GAME OVER", WHITE, 0, 200, align='center')
@@ -163,7 +163,7 @@ class Game:
             self.gs.state = GS_PLAYING
             self.gs.player_health = self.gs.player_health_max
             self.create_level(FIRST_LEVEL)
-            fade_to_color(pygame.Color('black'))  # fade to black
+            fade_to_color(self.screen, BLACK)  # fade to black
             self.faded = False
 
     def level_complete(self) -> None:
@@ -216,7 +216,7 @@ class Game:
             
         if keys[pygame.K_SPACE]:
             self.create_level(FIRST_LEVEL)  # next level!
-            fade_to_color(pygame.Color('black'))  # fade to black
+            fade_to_color(self.screen, BLACK)  # fade to black
             self.faded = False
             self.gs.state = GS_PLAYING
 

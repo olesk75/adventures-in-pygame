@@ -16,10 +16,10 @@ def draw_text(text, surface, font, text_col, x, y)-> None:
     surface.blit(img, (x, y))
 
 # -- Fades to a specific color
-def fade_to_color(color: pygame.color.Color) -> None:
+# TODO: ignores loop, must not (manual display.update won't work after we changed to useing _screen for the _actual_ screen)
+def fade_to_color(screen: pygame.Surface, color: pygame.color.Color) -> None:
     # Fades to color (and pauses game while doing so!)
-    
-    screen = pygame.display.get_surface()
+    color = pygame.color.Color(color)
     rect = screen.get_rect()
     rectsurf = pygame.Surface(rect.size,pygame.SRCALPHA)
     color.a = 1

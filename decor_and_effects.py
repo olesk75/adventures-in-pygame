@@ -41,7 +41,7 @@ class BubbleMessage:
 
         self.bubble_bg = pygame.image.load('assets/panel/bubble.png').convert_alpha()
         
-        self.half_screen = pygame.display.get_surface().get_size()[0] // 2
+        self.half_screen = screen.get_size()[0] // 2
 
         self.msg_list = msg.splitlines()  # splitting the msg into a list of lines
 
