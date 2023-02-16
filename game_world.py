@@ -140,7 +140,7 @@ class Game:
             self.slowmo = True
             self.last_run = pygame.time.get_ticks()
             self.gs.player_hit = False
-            # TODO: add slo-mo for stom as well, and player boss death
+            # TODO: add slo-mo for stomp as well, and player boss death
 
     def game_over(self) -> None:
         """ Go to GAME OVER screen """
@@ -149,7 +149,7 @@ class Game:
             self.faded = True
 
         self.write_text("GAME OVER", WHITE, 0, 200, align='center')
-        self.write_text(f"SCORE : {self.gd.player_score}", WHITE, 0, 300, align='center')
+        self.write_text(f"SCORE : {self.gs.player_score}", WHITE, 0, 300, align='center')
         self.write_text(f"HIGH SCORE : 99999", WHITE, 0, 400, align='center')
         self.write_text("Press SPACE to try again,  Q to quit", WHITE, 0, 500, align='center')
 

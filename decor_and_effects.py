@@ -290,10 +290,6 @@ class GamePanel:
         # --> Panel background
         self.screen.blit(self.panel_bg, (0,0))
 
-        # --> The score
-        WHITE = (255, 255, 255)
-        draw_text(f'SCORE: {self.gs.player_score}', self.font_small, WHITE, self.window_size[0]/100, self.window_size[1]/100)  # score
-
         # --> Health bar, white and semi transparent
         health_bar_frame = pygame.Surface((self.health_bar_max_length+4,20), pygame.SRCALPHA)   # per-pixel alpha
         health_bar_frame.fill((255,255,255,128))  # with alpha
@@ -332,7 +328,9 @@ class GamePanel:
         stomp_bar.fill(ORANGE)
         self.screen.blit(stomp_bar, (SCREEN_WIDTH - stomp_bar_length -18,42))     
         
-
+         # --> The score
+        WHITE = (255, 255, 255)
+        draw_text(f'SCORE: {self.gs.player_score}', self.screen, self.font_small, WHITE, self.window_size[0]/100, self.window_size[1]/100)  # score
         
         # --> Boot decoration for stomp 
         self.screen.blit(self.stomp_anim.get_image(), (SCREEN_WIDTH - 38, 33))
@@ -559,8 +557,7 @@ class ParallaxBackground:
         
         # for x in range((self.level_width // self.width) + 1) :
         for x in range(-1, 3):
-            surface.blit(self.bg_clouds,  ((x * self.cloud_width) + self.cloud_movement, 0))  # clouds are special  # TODO: too special - they don't move when scrolling left
-
+            surface.blit(self.bg_clouds,  ((x * self.cloud_width) + self.cloud_movement, 0))  # clouds are special  
             surface.blit(self.bg_far,     ((x * self.width) + self.bg_scroll * 0.05, 0))
             surface.blit(self.bg_further, ((x * self.width) + self.bg_scroll * 0.1,  0))
             surface.blit(self.bg_medium,  ((x * self.width) + self.bg_scroll * 0.3,  0))

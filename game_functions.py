@@ -10,10 +10,10 @@ from csv import reader
 from settings import *
 
 # --- Draw on screen ---
-def draw_text(text, font, text_col, x, y)-> None:
+def draw_text(text, surface, font, text_col, x, y)-> None:
     """ Output text on screen """
     img = font.render(text, True, text_col)
-    pygame.display.get_surface().blit(img, (x, y))
+    surface.blit(img, (x, y))
 
 # -- Fades to a specific color
 def fade_to_color(color: pygame.color.Color) -> None:
