@@ -115,24 +115,29 @@ while True:
             print(event)
 
                 
-    if gs.state == GS_PLAYING:
+    if gs.game_state == GS_PLAYING:
         game.run() 
     
-    if gs.state == GS_GAME_OVER:
+    if gs.game_state == GS_GAME_OVER:
         game.game_over()
 
-    if gs.state == GS_QUIT:
+    if gs.game_state == GS_QUIT:
        pygame.quit()
        sys.exit()
 
-    if gs.state == GS_LEVEL_COMPLETE:
+    if gs.game_state == GS_LEVEL_COMPLETE:
         game.level_complete()
 
-    if gs.state == GS_MAP_SCREEN:
+    if gs.game_state == GS_MAP_SCREEN:
         game.map_screen()
 
-    if gs.state == GS_WELCOME:
+    if gs.game_state == GS_WELCOME:
         game.welcome_screen()
+
+    if gs.game_state == GS_FADING:
+        game.fade_to_color()
+
+    
         
     _screen.blit(pygame.transform.scale(screen, (width, height)), (0, 0))
 

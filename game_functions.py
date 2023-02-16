@@ -15,20 +15,6 @@ def draw_text(text, surface, font, text_col, x, y)-> None:
     img = font.render(text, True, text_col)
     surface.blit(img, (x, y))
 
-# -- Fades to a specific color
-# TODO: ignores loop, must not (manual display.update won't work after we changed to useing _screen for the _actual_ screen)
-def fade_to_color(screen: pygame.Surface, color: pygame.color.Color) -> None:
-    # Fades to color (and pauses game while doing so!)
-    color = pygame.color.Color(color)
-    rect = screen.get_rect()
-    rectsurf = pygame.Surface(rect.size,pygame.SRCALPHA)
-    color.a = 1
-    for _ in range(0,255):
-        pygame.time.wait(1)
-        rectsurf.fill(color)
-        screen.blit(rectsurf,(0,0))
-        pygame.display.update()
-
 # --- Import CSV data ---
 def import_csv_layout(path :str) -> list:
     # Reads the map CSV files

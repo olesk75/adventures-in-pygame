@@ -33,7 +33,10 @@ class GameState:
         self.level_complete: bool
     
         # Game variables
-        self.state: int  # One of the global GAME_STATE contants
+        self.game_state: int  # One of the global GAME_STATE contants
+        self.game_state_previous: int
+        self.game_fade_counter: int
+        self.game_faded: bool
         
         self.reset()
 
@@ -66,7 +69,10 @@ class GameState:
         self.level_complete = False
 
         # --> Game variables
-        self.state = GS_WELCOME  # we start with the welcome screen
+        self.game_state = GS_WELCOME  # we start with the welcome screen
+        self.game_state_previous = None
+        self.game_fade_counter = 0
+        self.game_faded = False
 
         
         
@@ -99,6 +105,7 @@ class Game:
         self.welcome_img = pygame.image.load('assets/map/welcome-screen.png').convert_alpha()
 
         self.last_run = 0
+        self.last_fade_update = 0
         self.slowmo = False
 
     def create_level(self,current_level) -> None:
@@ -112,7 +119,7 @@ class Game:
     def check_level_complete(self) -> None:
         """ Check if player has successfully reached end of the level """
         if self.gs.level_complete == True:
-            self.gs.state = GS_LEVEL_COMPLETE
+            self.gs.game_state = GS_LEVEL_COMPLETE
             logging.debug('GAME state: LEVEL COMPLETE ')
             
 
@@ -123,7 +130,7 @@ class Game:
             if MUSIC_ON:
                 self.level_audio.music.stop()
 
-            self.gs.state = GS_GAME_OVER
+            self.gs.game_state = GS_GAME_OVER
             logging.debug('GAME state: GAME OVER ')
             
 
@@ -141,12 +148,36 @@ class Game:
             self.last_run = pygame.time.get_ticks()
             self.gs.player_hit = False
             # TODO: add slo-mo for stomp as well, and player boss death
+    
+    def fade_to_color(self, color) -> None:
+        # Fades to color
+
+        now = pygame.time.get_ticks()
+
+        if now - self.last_fade_update > 10:
+            color = pygame.Color(color)
+            self.gs.game_faded = False
+            
+            rect = self.screen.get_rect()
+            rectsurf = pygame.Surface(rect.size,pygame.SRCALPHA)
+            print(self.gs.game_fade_counter)
+            if self.gs.game_fade_counter < 255:
+                color.a = self.gs.game_fade_counter  # we set the alpha of the color, from 0 to 255
+                self.gs.game_fade_counter += 1
+            else:
+                self.gs.game_fade_counter = 0
+                self.gs.game_faded = True
+
+            rectsurf.fill(color)
+            self.screen.blit(rectsurf,(0,0))
+            self.last_fade_update = now
 
     def game_over(self) -> None:
         """ Go to GAME OVER screen """
-        if not self.faded:
-            fade_to_color(self.screen, RED)
-            self.faded = True
+        if self.gs.game_state == GS_FADING:
+            self.gs.game_state_previous = GS_GAME_OVER
+            self.fade_to_color(RED)
+            
 
         self.write_text("GAME OVER", WHITE, 0, 200, align='center')
         self.write_text(f"SCORE : {self.gs.player_score}", WHITE, 0, 300, align='center')
@@ -156,36 +187,36 @@ class Game:
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_q]:
-            self.gs.state = GS_QUIT
+            self.gs.game_state = GS_QUIT
             
         if keys[pygame.K_SPACE]:
             self.gs.reset()
-            self.gs.state = GS_PLAYING
+            self.gs.game_state = GS_PLAYING
             self.gs.player_health = self.gs.player_health_max
             self.create_level(FIRST_LEVEL)
-            fade_to_color(self.screen, BLACK)  # fade to black
-            self.faded = False
+            self.fade_to_color(BLACK)  # fade to black
 
     def level_complete(self) -> None:
         """ Go to LEVEL COMPLETE SCREEN """
-        if not self.faded:
-            fade_to_color(pygame.Color('black'))  # fade to black
-            self.faded = True
+        if self.gs.game_state == GS_FADING:
+            self.fade_to_color(BLACK)  # fade to black
             
-        self.write_text(f"LEVEL {self.gs.level_current} COMPLETE", WHITE, 0, 200, align='center')
-        self.write_text(f"SCORE : {self.gs.player_score}", WHITE, 0, 300, align='center')
-        self.write_text(f"HIGH SCORE : 99999", WHITE, 0, 400, align='center')
-        self.write_text("Press ENTER to continue to the world map,  Q to quit", WHITE, 0, 500, align='center')
+        else:
 
-        keys = pygame.key.get_pressed()
+            self.write_text(f"LEVEL {self.gs.level_current} COMPLETE", WHITE, 0, 200, align='center')
+            self.write_text(f"SCORE : {self.gs.player_score}", WHITE, 0, 300, align='center')
+            self.write_text(f"HIGH SCORE : 99999", WHITE, 0, 400, align='center')
+            self.write_text("Press ENTER to continue to the world map,  Q to quit", WHITE, 0, 500, align='center')
 
-        if keys[pygame.K_q]:
-            self.gs.state = GS_QUIT
-            
-        if keys[pygame.K_RETURN]:
-            self.faded = False
-            fade_to_color(pygame.Color('white'))  # fade to white
-            self.gs.state = GS_MAP_SCREEN
+            keys = pygame.key.get_pressed()
+
+            if keys[pygame.K_q]:
+                self.gs.game_state = GS_QUIT
+                
+            if keys[pygame.K_RETURN]:
+                self.faded = False
+                self.fade_to_color(WHITE)  # fade to white
+                self.gs.game_state = GS_MAP_SCREEN
 
     def map_screen(self) -> None:
         """ Show the worldmap_img map screen """
@@ -196,13 +227,12 @@ class Game:
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_q]:
-            self.gs.state = GS_QUIT
+            self.gs.game_state = GS_QUIT
             
         if keys[pygame.K_SPACE]:
             self.create_level(self.gs.level_current + 1)  # next level!
-            fade_to_color(pygame.Color('black'))  # fade to black
-            self.faded = False
-            self.gs.state = GS_PLAYING
+            self.fade_to_color(BLACK)  # fade to black
+            self.gs.game_state = GS_PLAYING
 
     def welcome_screen(self) -> None:
         """ Show the welcome screen """
@@ -212,13 +242,12 @@ class Game:
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_q]:
-            self.gs.state = GS_QUIT
+            self.gs.game_state = GS_QUIT
             
         if keys[pygame.K_SPACE]:
             self.create_level(FIRST_LEVEL)  # next level!
-            fade_to_color(self.screen, BLACK)  # fade to black
-            self.faded = False
-            self.gs.state = GS_PLAYING
+            self.fade_to_color(BLACK)  # fade to black
+            self.gs.game_state = GS_PLAYING
 
 
     def write_text(self, text: str, color: pygame.Color, x :int, y: int, align: str=None) -> None:

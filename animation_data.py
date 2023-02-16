@@ -58,7 +58,7 @@ stomp_ss = SpriteSheet(pygame.image.load('assets/spritesheets/decor/boot-stompin
 anim = {
     'player': {
         'walk': Animation(stabby_ss_walk, frames=8, speed=75), 
-        'attack': Animation(stabby_ss_attack, frames=5, speed=50), 
+        'attack': Animation(stabby_ss_attack, frames=5, speed=30), 
         'death': Animation(stabby_ss_death, frames=8, speed=150, repeat=False),
         'cast': Animation(stabby_ss_cast, frames=8, speed=100, repeat=False),
         'idle': Animation(stabby_ss_idle, frames=8, speed=50), 

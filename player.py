@@ -124,7 +124,8 @@ class Player(pygame.sprite.Sprite):
         """ 
         Collision detection with terrain 
         """
-        self.collision_sprite.rect.centery = self.hitbox_sprite.rect.centery + dy  # adding next-step y movement
+        y_margin = 5
+        self.collision_sprite.rect.centery = self.hitbox_sprite.rect.centery + dy  + y_margin # adding next-step y movement
         self.collision_sprite.rect.centerx = self.hitbox_sprite.rect.centerx  # aligning center
         
         # Checking vertical collision with terrain (falling), taking slope into account
@@ -145,7 +146,7 @@ class Player(pygame.sprite.Sprite):
                 """ If we're on a sloped tile, we need to adjust the y position """
                 self.on_slope = True
                 h = TILE_SIZE_SCREEN
-                adjustment = 15  # this is critical, as if we go too low, we'll fall through at the bottom
+                adjustment = 25  # this is critical, as if we go too low, we'll fall through at the bottom
                 x = self.rects['hitbox'].centerx - platform.rect.left
                 # Steep, 45 degree slopes
                 if platform.slope == 1:

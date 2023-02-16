@@ -17,6 +17,7 @@ GS_GAME_OVER = 2
 GS_LEVEL_COMPLETE = 3
 GS_QUIT = 4
 GS_MAP_SCREEN = 5
+GS_FADING = 6
 
 # Frequently used color contants
 WHITE    = (255, 255, 255)
@@ -34,9 +35,9 @@ SCREEN_HEIGHT = 960
 TILE_SIZE = 32  # x and y native resolution of standard tiles
 TILE_SIZE_SCREEN = SCREEN_WIDTH // TILE_SIZE 
 
-GRAVITY = 0.5
+GRAVITY = 3
 MAX_PLATFORMS = 10
-JUMP_HEIGHT = 15
+JUMP_HEIGHT = 35
 H_SCROLL_THRESHOLD = 400
 V_SCROLL_THRESHOLD = TILE_SIZE_SCREEN * 3     
 ROWS = 16  # the number of rows we can see on screen at once
@@ -45,7 +46,7 @@ SCALE_FACTOR = 1
 TILE_TYPES = 18
 ANIMATION_TYPES = 3
 OBJECT_TYPES = 9
-WALKING_SPEED = 7
+WALKING_SPEED = 9
 ATTACK_SPEED = 1  # UNUSED
 PLAYER_HEALTH = 1000
 PLAYER_STOMP = 5  # monsters to kill before stop recharges

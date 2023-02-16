@@ -341,14 +341,15 @@ class Level():
 
     def check_player_dust(self) -> None:
         if self.player.vel_y > 0:
-            self.previous_vel_y = self.player.vel_y    
+            self.previous_vel_y = self.player.vel_y
             
-        if self.player.vel_y == 0 and self.previous_vel_y > (0.5 + 15) and not self.player.on_slope:
+        if self.player.vel_y == 0 and self.previous_vel_y > STOMP_SPEED * 0.8 and not self.player.on_slope:
             width = 52
             height = 16
             self.dust_jump = GameTileAnimation(width, height, self.player.rects['hitbox'].centerx - width, self.player.rects['hitbox'].bottom - (height + 4), self.anim['effects']['dust-landing'])
             self.dust_jump.name = 'dust'
             self.dust_jump.animation.start_over()
+            self.previous_vel_y = 0  # to avoid dupes
             self.effect_sprites.add(self.dust_jump)
         
         # Housekeeping
@@ -490,7 +491,7 @@ class Level():
                     if monster.state not in (DYING, DEAD):
                         if pygame.Rect.colliderect(self.stomp_effects.sprite.rect, monster.hitbox): 
                             monster.state_change(DYING)
-                            self.gd.player_score += monster.data.points_reward
+                            self.gs.player_score += monster.data.points_reward
                             self.player.stomp_counter += 1
                             logging.debug(f'{monster.data.monster} killed by player stomp')
 
