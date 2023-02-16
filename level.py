@@ -479,7 +479,7 @@ class Level():
                     self.bubble_list.append(BubbleMessage(self.screen, 'A key! All I need now is a lock.', 5000, 3000, 'key', self.player))
                
                 logging.debug(f'PICKUP: {drop.drop_type}')
-                logging.debug(f'Inventory: {self.player_inventory}')   
+                logging.debug(f'Inventory: {self.gs.player_inventory}')   
 
     def check_coll_stomp_monster(self) -> None:
         # Mobs caught in stomp blast effect
