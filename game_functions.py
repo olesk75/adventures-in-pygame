@@ -9,6 +9,16 @@ from csv import reader
 
 from settings import *
 
+# Check if any values in a nested dict are None type
+def check_none_values(d) -> bool:
+    for _, v in d.items():
+        if isinstance(v, dict):
+            if check_none_values(v):
+                return True
+        elif v is None:
+            return True
+    return False
+
 # --- Draw on screen ---
 def draw_text(text, surface, text_col, x, y, font: pygame.font.Font=None, align: str=None)-> None:
     if not font:

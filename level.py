@@ -211,7 +211,6 @@ class Level():
                         if int(val) not in self.level_data['solid_tiles']:  # Water mostly
                             sprite.solid = False
                         
-                        
                     if type == 'pos_decorations':
                         tile_surface = self.decorations_tile_list[int(val)]
                         (x_size, y_size) = tile_surface.get_size()
@@ -400,7 +399,7 @@ class Level():
 
     def check_coll_player_hazard(self) -> None:
         # Player + hazard group collision 
-        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.hazards_sprites,False) and self.player.state['active'] != DYING:
+        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.hazards_sprites,False) and self.player.state['active'] not in (DYING, DEAD):
             self.player.hazard_damage(100, hits_per_second=10)
             self.bubble_list.append(BubbleMessage(self.screen, 'Ouch! Ouch!', 1000, 0, 'spikes', self.player))
 

@@ -470,7 +470,7 @@ class Player(pygame.sprite.Sprite):
         scroll_buffer_bottom = 320
         if dy > 0 and self.rects['player'].centery >= SCREEN_HEIGHT - V_SCROLL_THRESHOLD and \
             self.world_y_pos < TILE_SIZE_SCREEN * self.level_data['size_y']  - scroll_buffer_bottom:  # the very bottom
-            v_scroll = -dy  # We h_scroll down by the opposite of the player's y movement
+            v_scroll += -dy  # We h_scroll down by the opposite of the player's y movement
 
         # Update rectangle position
         self.rects['player'].x += dx + h_scroll

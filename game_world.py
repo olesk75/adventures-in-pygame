@@ -112,7 +112,9 @@ class Game:
 
     def create_level(self,current_level) -> None:
         """ Create each level """
+        self.gs.level_current = current_level
         self.level = Level(self.screen, self.gs)
+        
         if MUSIC_ON:
             self.level_audio = GameAudio(current_level)
             self.level_audio.music.play(-1,0.0)
@@ -205,7 +207,7 @@ class Game:
     def welcome_screen(self) -> None:
         """ Show the welcome screen """
         welcome_bg = pygame.transform.scale(self.welcome_img, (SCREEN_WIDTH, SCREEN_HEIGHT)).convert_alpha()
-
+        
         self.screen.blit(welcome_bg,(0,0))                      
 
         keys = pygame.key.get_pressed()
@@ -213,7 +215,13 @@ class Game:
             self.gs.game_state = GS_QUIT
             
         if keys[pygame.K_SPACE]:
-            self.create_level(FIRST_LEVEL)  # next level!
+            self.create_level(FIRST_LEVEL)
+            self.gs.game_state = GS_PLAYING
+
+        if keys[pygame.K_a]:
+            # We're going to the arena
+            self.create_level(0)
+            logging.debug('Starting level 0 - the Arena')
             self.gs.game_state = GS_PLAYING
 
 

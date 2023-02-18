@@ -55,11 +55,11 @@ screen = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 
 game = Game(gs, screen)  # Here we pass the GameState instance to game, which will pass it to Level, which will pass it to Player
-game.create_level(FIRST_LEVEL)
-
 
 motion = [0, 0]
 previous_state = gs.game_state
+
+font = pygame.font.Font(None, 36)
 
 while True:
     for event in pygame.event.get():
@@ -147,6 +147,11 @@ while True:
         gs.game_fade_ready = True
         
     _screen.blit(pygame.transform.scale(screen, (width, height)), (0, 0))
+
+
+    fps_text = font.render(f'FPS: {clock.get_fps():.2f}', True, (255, 255, 0))
+    _screen.blit(fps_text, (10, 100))
+
 
     pygame.display.update()
     clock.tick(FPS)

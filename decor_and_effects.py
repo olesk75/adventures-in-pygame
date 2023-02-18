@@ -513,55 +513,60 @@ class ParallaxBackground:
         self.bg_scroll = 0
         self.level_width = levels[level]['size_x'] * TILE_SIZE
 
-        # We find the scaling factor based only on height, as images cvan be wider than the screen - using cloud texture for this
-        self.bg_clouds = pygame.image.load(background['clouds']).convert_alpha()
-        scale = SCREEN_HEIGHT / self.bg_clouds.get_height()
-        x_size = self.bg_clouds.get_width() * scale
+        self.only_bg_color = check_none_values(background)  # if there are one or more maps missing
 
-        self.bg_clouds = pygame.transform.scale(self.bg_clouds, (x_size, SCREEN_HEIGHT))
+        if self.only_bg_color:
+            self.bg_color = background['background_color']
+        else:
+            # We find the scaling factor based only on height, as images cvan be wider than the screen - using cloud texture for this
+            self.bg_clouds = pygame.image.load(background['clouds']).convert_alpha()
+            scale = SCREEN_HEIGHT / self.bg_clouds.get_height()
+            x_size = self.bg_clouds.get_width() * scale
+
+            self.bg_clouds = pygame.transform.scale(self.bg_clouds, (x_size, SCREEN_HEIGHT))
         
-        # load background images
-        self.bg_near = pygame.transform.scale(pygame.image.load(background['near']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
-        self.bg_medium = pygame.transform.scale(pygame.image.load(background['medium']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
-        self.bg_further = pygame.transform.scale(pygame.image.load(background['further']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
-        self.bg_far = pygame.transform.scale(pygame.image.load(background['far']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
+            self.bg_near = pygame.transform.scale(pygame.image.load(background['near']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
+            self.bg_medium = pygame.transform.scale(pygame.image.load(background['medium']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
+            self.bg_further = pygame.transform.scale(pygame.image.load(background['further']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
+            self.bg_far = pygame.transform.scale(pygame.image.load(background['far']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
 
-        self.bg_color = background['background_color']
+            self.cloud_width = self.bg_clouds.get_width()  # clouds are potentially much larger
+            self.width = self.bg_near.get_width()
 
-        self.cloud_width = self.bg_clouds.get_width()  # clouds are potentially much larger
-        self.width = self.bg_near.get_width()
+            self.y_adjust = {
+                'near': background['y_adjust'][0],
+                'medium': background['y_adjust'][1],
+                'far': background['y_adjust'][2],
+                'further': background['y_adjust'][3],
+                'bg': background['y_adjust'][4],
+            }
 
-        self.y_adjust = {
-            'near': background['y_adjust'][0],
-            'medium': background['y_adjust'][1],
-            'far': background['y_adjust'][2],
-            'further': background['y_adjust'][3],
-            'bg': background['y_adjust'][4],
-        }
-
-        self.cloud_drift =  background['cloud_drift']
-        self.cloud_timer = 0
-        self.cloud_movement = 0
+            self.cloud_drift =  background['cloud_drift']
+            self.cloud_timer = 0
+            self.cloud_movement = 0
     
     def update(self,bg_scroll) -> None:
-        self.bg_scroll += bg_scroll
-        now = pygame.time.get_ticks()
+        if not self.only_bg_color:
+            self.bg_scroll += bg_scroll
+            now = pygame.time.get_ticks()
 
-        if now - self.cloud_timer > self.cloud_drift:
-            self.cloud_movement += 1
-            self.cloud_timer = now
+            if now - self.cloud_timer > self.cloud_drift:
+                self.cloud_movement += 1
+                self.cloud_timer = now
 
     
     def draw(self, surface) -> None:
-        #surface.fill(self.bg_color)  
+        if self.only_bg_color:
+            surface.fill(self.bg_color)  
         
-        # for x in range((self.level_width // self.width) + 1) :
-        for x in range(-1, 3):
-            surface.blit(self.bg_clouds,  ((x * self.cloud_width) + self.cloud_movement, 0))  # clouds are special  
-            surface.blit(self.bg_far,     ((x * self.width) + self.bg_scroll * 0.05, 0))
-            surface.blit(self.bg_further, ((x * self.width) + self.bg_scroll * 0.1,  0))
-            surface.blit(self.bg_medium,  ((x * self.width) + self.bg_scroll * 0.3,  0))
-            surface.blit(self.bg_near,    ((x * self.width) + self.bg_scroll * 0.7,  0))
+        else:
+            # for x in range((self.level_width // self.width) + 1) :
+            for x in range(-1, 3):
+                surface.blit(self.bg_clouds,  ((x * self.cloud_width) + self.cloud_movement, 0))  # clouds are special  
+                surface.blit(self.bg_far,     ((x * self.width) + self.bg_scroll * 0.05, 0))
+                surface.blit(self.bg_further, ((x * self.width) + self.bg_scroll * 0.1,  0))
+                surface.blit(self.bg_medium,  ((x * self.width) + self.bg_scroll * 0.3,  0))
+                surface.blit(self.bg_near,    ((x * self.width) + self.bg_scroll * 0.7,  0))
 
     # TODO: right now the parallax factor is hard coded; move to level_data.py to allow different factors for different levels
 
