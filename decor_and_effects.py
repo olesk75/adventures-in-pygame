@@ -361,26 +361,52 @@ class GamePanel:
 
 # --- Shows info pop-up over doors etc.
 class InfoPopup(pygame.sprite.Sprite):
-    def __init__(self, text, x, y) -> None:
+    def __init__(self, msg_text, x, y) -> None:
         super().__init__()
 
-        self.text = text
-        self.image = pygame.surface.Surface((TILE_SIZE_SCREEN * 4,TILE_SIZE_SCREEN)).convert_alpha()
-        self.rect = pygame.rect.Rect(x, y, TILE_SIZE_SCREEN * 4,TILE_SIZE_SCREEN)
+        font = pygame.font.Font("assets/font/Silver.ttf", 48)  # 16, 32, 48
+
+        self.image = pygame.Surface((TILE_SIZE_SCREEN * 4,TILE_SIZE_SCREEN), pygame.SRCALPHA)
+        self.image.fill((0, 0, 0, 0)) # Set the surface to be completely transparent
+        self.full_image = pygame.Surface((TILE_SIZE_SCREEN * 4,TILE_SIZE_SCREEN), pygame.SRCALPHA)
+        self.full_image.fill((0, 0, 0, 0)) 
+
+        pygame.draw.line(self.full_image, WHITE, (1,10), (10,1), width=5)  # diagonal line
+        pygame.draw.line(self.full_image, WHITE, (10,1), (200,1), width=5)  # horizontal line
+        text_img = font.render(msg_text, True, WHITE)
+        self.full_image.blit(text_img, (25,5))
+
+        self.rect = pygame.Rect(x, y - TILE_SIZE_SCREEN, TILE_SIZE_SCREEN * 4,TILE_SIZE_SCREEN)
         self.ticks_since_last = 0
         self.x = x
         self.y = y
 
         self.name = 'info-popup'
 
+        self.state = 'hidden'
+        self.roll_count = 0  # keeping track of how far "rolled out/in" the message is
+
+    def change_state(self, state) -> None:
+        self.state = state
+
     def update(self, h_scroll, v_scroll) -> None:
         self.rect.centerx += h_scroll
         self.rect.centery += v_scroll
-        pygame.draw.line(self.image, WHITE, (1,1), (200,1), width=5)
-
+        
+        if self.state == 'roll-out':
+            direction = 1
+        if self.state == 'roll-in':
+            direction = -1
+        
         now = pygame.time.get_ticks()
-        if now - self.ticks_since_last < 100:
-            pass
+        if now - self.ticks_since_last > 10:
+            if self.state in ('roll-in', 'roll-out'):
+                self.image.fill((0, 0, 0, 0)) # Set the surface to be completely transparent
+                self.image.blit(self.full_image, (0,0), (TILE_SIZE_SCREEN * 4 - self.roll_count, 0, self.roll_count, TILE_SIZE_SCREEN))
+                if self.roll_count < TILE_SIZE_SCREEN * 4 and self.roll_count > -1:  # used to vount both up and down
+                    print(self.roll_count)
+                    self.roll_count += 10 * direction
+
             self.ticks_since_last = now
 
     # draw() in super

@@ -58,3 +58,4 @@ MONSTER_STUN_TIME = 100  # time a monster is stunned
 
 # Debug settings
 DEBUG_HITBOXES = False
+SHOW_FPS = True

@@ -146,11 +146,15 @@ while True:
         previous_state = gs.game_state
         gs.game_fade_ready = True
         
+    
+    if SHOW_FPS:
+        fps_text = font.render(f'FPS: {clock.get_fps():.2f}', True, (255, 255, 0))
+        screen.blit(fps_text, (10, 100))
+
     _screen.blit(pygame.transform.scale(screen, (width, height)), (0, 0))
 
 
-    fps_text = font.render(f'FPS: {clock.get_fps():.2f}', True, (255, 255, 0))
-    _screen.blit(fps_text, (10, 100))
+    
 
 
     pygame.display.update()

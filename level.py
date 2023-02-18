@@ -125,8 +125,11 @@ class Level():
         self.stomp_shadows = pygame.sprite.Group()
         self.stomp_effects = pygame.sprite.GroupSingle()  # only one stomp effect at a time
 
-        # player dust and other effects (catch-all sprite group)
+        # player dust 
         self.effect_sprites = pygame.sprite.Group()
+
+        # information pop-ups
+        self.info_sprites = pygame.sprite.Group()
 
         # particle system
         self.particle_system = ParticleSystem()
@@ -439,7 +442,7 @@ class Level():
                     self.fx_health_pickup.play()
                     self.player.stomp_counter = PLAYER_STOMP
                     pickup.kill()
-                if pickup.name == 'mana potoion':
+                if pickup.name == 'mana potion':
                     self.fx_health_pickup.play()
                     pass
                     pickup.kill()
@@ -455,7 +458,7 @@ class Level():
                         else:
                             self.player.bounce(-10, 0, -self.player.turned, self.terrain_sprites)
                             self.bubble_list.append(BubbleMessage(self.screen, 'I\'m missing a key!', 3000, 0, 'exit', self.player))
-                            self.effect_sprites.add(InfoPopup('Locked door', sprite.rect.centerx, sprite.rect.centery))
+                            self.info_sprites.add(InfoPopup('Locked door', sprite.rect.centerx, sprite.rect.centery))
                 elif sprite.name == 'chest':
                     # play some sound effect
                     sprite.animation.active = True
@@ -624,6 +627,12 @@ class Level():
         # dust
         self.effect_sprites.update(self.h_scroll, self.v_scroll)
         self.effect_sprites.draw(self.screen)
+        
+        # info pop-ups
+        self.info_sprites.update(self.h_scroll, self.v_scroll)
+        self.info_sprites.draw(self.screen)
+
+
 
         # player 
         self.h_scroll, self.v_scroll = self.player.update(self.terrain_sprites)
