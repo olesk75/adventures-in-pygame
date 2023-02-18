@@ -61,7 +61,7 @@ class BubbleMessage:
             surf = pygame.transform.scale(self.bubble_bg,(self.x_size + int(self.x_size * 0.2), self.y_size))
 
             for row, msg_text in enumerate(self.msg_list):
-                text_img = self.font.render(msg_text, True, BLACK)
+                text_img = self.font.render(msg_text, True, WHITE)
                 
             if self.player.rect.centerx < self.half_screen:  # On the left side of the screen we flip the bubble and move it right of the player
                 surf = pygame.transform.flip(surf, True, False)
@@ -357,6 +357,7 @@ class GamePanel:
                     self._flash_show(img, key_x, key_y)
 
             self.old_inv = self.inventory
+
 
 # --- Shows info pop-up over doors etc.
 class InfoPopup(pygame.sprite.Sprite):

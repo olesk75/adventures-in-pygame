@@ -34,9 +34,9 @@ SCREEN_HEIGHT = 960
 TILE_SIZE = 32  # x and y native resolution of standard tiles
 TILE_SIZE_SCREEN = SCREEN_WIDTH // TILE_SIZE 
 
-GRAVITY = 2
+GRAVITY = 1
 MAX_PLATFORMS = 10
-JUMP_HEIGHT = 30
+JUMP_HEIGHT = 20
 H_SCROLL_THRESHOLD = 400
 V_SCROLL_THRESHOLD = TILE_SIZE_SCREEN * 3     
 ROWS = 16  # the number of rows we can see on screen at once

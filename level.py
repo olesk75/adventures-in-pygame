@@ -250,7 +250,11 @@ class Level():
                         
 
                     if type == 'pos_triggered_objects':
-                        tile_surface = self.triggered_objects_tile_list[int(val)]
+                        try:
+                            tile_surface = self.triggered_objects_tile_list[int(val)]
+                        except IndexError:
+                            logging.error(f'Triggered object with index {val} not recognized at position {col_index}, {row_index}, aborting...')
+                            exit(1)
                         (x_size, y_size) = tile_surface.get_size()
                         x_size = x_size * 2 + 3
                         y_size = y_size * 2 + 3
@@ -441,7 +445,6 @@ class Level():
                     pickup.kill()
 
 
-
     def check_coll_player_triggered_objects(self) -> None:
         if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.triggered_objects_sprites,False) and self.player.state['active'] != DYING:
             for sprite in pygame.sprite.spritecollide(self.player,self.triggered_objects_sprites,False):
@@ -450,7 +453,7 @@ class Level():
                             sprite.animation.frame_number = 0
                             self.bubble_list.append(BubbleMessage(self.screen, 'And that was the lock...', 3000, 0, 'exit', self.player))
                         else:
-                            #self.player.bounce(-10, 0, -self.player.turned, self.terrain_sprites)
+                            self.player.bounce(-10, 0, -self.player.turned, self.terrain_sprites)
                             self.bubble_list.append(BubbleMessage(self.screen, 'I\'m missing a key!', 3000, 0, 'exit', self.player))
                             self.effect_sprites.add(InfoPopup('Locked door', sprite.rect.centerx, sprite.rect.centery))
                 elif sprite.name == 'chest':
