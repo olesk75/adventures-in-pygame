@@ -369,7 +369,7 @@ class Level():
                         self.player.hit(monster.data.attack_damage, monster.turned, self.terrain_sprites)  # melee hit
                         self.particles_blood(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery, RED, monster.turned)  # add blood particles whne player is hit
                     elif now - monster.last_arrow > monster.data.attack_delay:  # launching projectile 
-                        arrow = Projectile(monster.hitbox.centerx, monster.hitbox.centery, self.arrow_img, turned = monster.turned, scale = 4)
+                        arrow = Projectile(monster.hitbox.centerx, monster.hitbox.centery-10, self.arrow_img, turned = monster.turned, scale = 3)
                         # We only add the arrow once the bow animation is complete (and we know we're ATTACKING, so attack anim is active)
                         if monster.animation.on_last_frame:
                             self.projectile_sprites.add(arrow)

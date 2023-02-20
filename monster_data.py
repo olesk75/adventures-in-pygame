@@ -26,12 +26,12 @@ class MonsterData():
             self.hitpoints = 2
             self.speed_walking = 4
             self.speed_attacking = 0
-            self.detection_range = 400
+            self.detection_range = 800
             self.attack_jumper = False
             self.detection_range_high = False
-            self.attack_range = 400
+            self.attack_range = 800
             self.attack_instant_damage = False  # the mob spawns an arrow wchi the player can evade
-            self.attack_delay = 2000  # delay between attacks (ms)
+            self.attack_delay = 200  # delay between attacks (ms)
             self.attack_damage = 600
             self.points_reward = 150
             self.random_turns = 0.15
