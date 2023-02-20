@@ -383,7 +383,7 @@ class InfoPopup(pygame.sprite.Sprite):
 
         self.name = 'info-popup'
 
-        self.state = 'hidden'
+        self.state = 'roll-out'  # we start in init
         self.roll_count = 0  # keeping track of how far "rolled out/in" the message is
 
     def change_state(self, state) -> None:

@@ -82,6 +82,19 @@ while True:
             if event.key == K_SPACE:
                 gs.user_input['attack'] = True
 
+            # Additionally, if we're in the arena we have additional shortcuts
+            if gs.level_current == 0:
+                if event.key == K_1:
+                    gs.monster_spawn_queue.append(1)
+                if event.key == K_2:
+                    gs.monster_spawn_queue.append(2)
+                if event.key == K_3:
+                    gs.monster_spawn_queue.append(3)
+                if event.key == K_4:
+                    gs.monster_spawn_queue.append(4)
+                if event.key == K_5:
+                    gs.monster_spawn_queue.append(5)
+
 
         # Keyboard - key let go of
         if event.type == KEYUP:
@@ -152,10 +165,6 @@ while True:
         screen.blit(fps_text, (10, 100))
 
     _screen.blit(pygame.transform.scale(screen, (width, height)), (0, 0))
-
-
-    
-
 
     pygame.display.update()
     clock.tick(FPS)

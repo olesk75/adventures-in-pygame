@@ -5,7 +5,6 @@ GameTileAnimation (GameTile class)  : animated background tiles (flames, torches
 GamePanel(class)                    : contans the player information for the screen - score, health etc.
 """
 
-
 import pygame
 import logging
 import random
@@ -141,8 +140,7 @@ class Level():
 
         # debugging
         logging.debug(f"Level created {levels[self.gs.level_current]['size_x']} by {levels[self.gs.level_current]['size_y']} tiles large, or {levels[self.gs.level_current]['size_x']*TILE_SIZE} by {levels[self.gs.level_current]['size_y']*TILE_SIZE} pixels")
-
-        
+  
     def _debug_show_state(self) -> None:
         """ DEBUG ZONE """
         if self.player.state['active'] == IDLE:
@@ -159,6 +157,223 @@ class Level():
             pygame.draw.rect(self.screen, (255,255,0), (SCREEN_WIDTH - 50,0,50,50))
         if self.player.state['active'] == STOMPING:
             pygame.draw.rect(self.screen, (255,0,255), (SCREEN_WIDTH - 50,0,50,50))
+
+# --> Checking functions
+    def check_arena_spawns(self) -> None:
+        # Checks if player in the arena has requestd monster spawns
+        if self.gs.level_current == 0 and len(self.gs.monster_spawn_queue):
+            known_monsters = ['beholder', 'elven-archer', 'skeleton-boss']
+            for count, monster in enumerate(self.gs.monster_spawn_queue):
+                if monster < len(known_monsters) + 1:
+                    self.monsters_sprites.add(Monster(SCREEN_WIDTH * 0.8, SCREEN_HEIGHT * 0.8, self.screen, known_monsters[monster-1]))
+                self.gs.monster_spawn_queue.pop(count)
+
+    def check_player_stomp(self) -> None:
+        if self.player.stomp_trigger == True and self.player.vel_y == 0:
+            self.stomp_effects.add(LightEffect1(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery + 10))
+            self.player.stomp_trigger = False
+            self.player.stomp_counter = 0
+            # TODO add dust
+        for sprite in self.stomp_effects.sprites():
+            if sprite.done == True:
+                sprite.kill()
+
+    def check_player_dust(self) -> None:
+        if self.player.vel_y > 0:
+            self.previous_vel_y = self.player.vel_y
+            
+        if self.player.vel_y == 0 and self.previous_vel_y > STOMP_SPEED * 0.8 and not self.player.on_slope:
+            width = 52
+            height = 16
+            self.dust_jump = GameTileAnimation(width, height, self.player.rects['hitbox'].centerx - width, self.player.rects['hitbox'].bottom - (height + 4), self.anim['effects']['dust-landing'])
+            self.dust_jump.name = 'dust'
+            self.dust_jump.animation.start_over()
+            self.previous_vel_y = 0  # to avoid dupes
+            self.effect_sprites.add(self.dust_jump)
+        
+        # Housekeeping
+        for sprite in self.effect_sprites.sprites():
+            if sprite.name == 'dust' and sprite.animation.on_last_frame:
+                sprite.kill()
+    
+    def check_player_attack(self) -> None:
+        for monster in self.monsters_sprites.sprites():
+            # --> We check if the player is attacking and if the attack hits a monster
+            if self.player.state['active'] == ATTACKING and monster.state not in (DYING, DEAD) and monster.invulnerable == False:
+                # Check if mob hit
+                if pygame.Rect.colliderect(self.player.rects['attack'], monster.hitbox): 
+                    # Add hit (blood) particles
+                    self.particles_blood(monster.hitbox.centerx, monster.hitbox.centery, monster.data.blood_color, self.player.turned)
+                    monster.data.hitpoints -= 1
+                    logging.debug(f'{monster.data.monster} hit by player attack - hitpoints remaining: {monster.data.hitpoints}')
+                    if self.player.turned:
+                        direction = - 1
+                    else:
+                        direction = 1
+
+                    if monster.data.hitpoints == 0: # monster is dying
+                        self.gs.player_score += monster.data.points_reward
+                        self.gs.player_stomp_counter += 1
+                        """ Adding drops from player death """
+                        # skeleton-boss is a key carrier
+                        if monster.data.monster == 'skeleton-boss':
+                            drop_key = Drop( monster.hitbox.centerx, monster.hitbox.centery - 25 , self.anim['pickups']['key'], turned = False, scale = 2, drop_type='key',)
+                            self.drops_sprites.add(drop_key)
+                            logging.debug(f'{monster.data.monster} dropped a key')
+                        monster.state_change(DYING)  # we do this _after_ key drop, as the hitbox disappears when the mob enters DYING state
+
+                    else:  # monster still has hitpoints left
+                        monster.rect.centerx += 20 * (monster.data.speed_attacking + 1) * direction  # small bump back
+                        monster.invulnerable = True
+                        monster.inv_start = pygame.time.get_ticks()
+                        self.player.rects['attack'] = pygame.Rect(0,0,0,0)  
+                        # BLINK WHITE OR RED TODO
+                        monster.state_change(STUNNED)
+
+    def check_player_win(self) -> None:
+        # Player sprite reaches goal tile
+        if pygame.sprite.spritecollide(self.player,self.player_in_out_sprites,False):
+            if pygame.sprite.spritecollide(self.player,self.player_in_out_sprites,False)[0].inout == 'out':  # first colliding sprite
+                logging.debug('WIN! Level complete')
+                self.gs.level_complete = True
+
+    def check_coll_player_hazard(self) -> None:
+        # Player + hazard group collision 
+        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.hazards_sprites,False) and self.player.state['active'] not in (DYING, DEAD):
+            self.player.hazard_damage(100, hits_per_second=10)
+            self.bubble_list.append(BubbleMessage(self.screen, 'Ouch! Ouch!', 1000, 0, 'spikes', self.player))
+
+    def check_coll_player_projectile(self) -> None:
+    # Player + projectile collision (arrows etc.) AND player's attack collision (so attacking arrows in flight for example)
+        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.projectile_sprites,False) and self.player.state['active'] != DYING:
+            for projectile in pygame.sprite.spritecollide(self.player.hitbox_sprite,self.projectile_sprites,False):
+                self.particles_blood(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery, RED, projectile.turned)  # add blood particles whne player is hit
+                self.player.hit(self.arrow_damage, projectile.turned, self.terrain_sprites)
+                projectile.kill()
+        for projectile in self.projectile_sprites.sprites():
+            # We can attack and destroy projectiles as well
+            if self.player.state['active'] == ATTACKING:
+                if  pygame.Rect.colliderect(self.player.rects['attack'], projectile.rect):
+                    # play some sound # TODO
+                    projectile.kill()
+
+    def check_coll_player_spell(self) -> None:
+        # Player + spell collision
+        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.spell_sprites,False) and self.player.state['active'] != DYING:
+            for _ in pygame.sprite.spritecollide(self.player,self.spell_sprites,False):
+                self.player.hazard_damage(100, hits_per_second=2)
+    
+    def check_coll_player_pickup(self) -> None:
+        # Animated objects pickup / collision
+        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.pickups_sprites,False) and self.player.state['active'] != DYING:
+            for pickup in pygame.sprite.spritecollide(self.player,self.pickups_sprites,False):
+                if pickup.name == 'health potion':
+                    self.fx_health_pickup.play()
+                    self.player.heal(500)
+                    pickup.kill()
+                if pickup.name == 'stomp potion':
+                    self.fx_health_pickup.play()
+                    self.player.stomp_counter = PLAYER_STOMP
+                    pickup.kill()
+                if pickup.name == 'mana potion':
+                    self.fx_health_pickup.play()
+                    pass
+                    pickup.kill()
+
+    def check_coll_player_triggered_objects(self) -> None:
+        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.triggered_objects_sprites,False) and self.player.state['active'] != DYING:
+            for sprite in pygame.sprite.spritecollide(self.player,self.triggered_objects_sprites,False):
+                if sprite.name in ('door-left', 'door-right', 'end-of-level'):
+                        if any('key' in sublist for sublist in self.gs.player_inventory): # do we have key?
+                            sprite.animation.frame_number = 0
+                            self.bubble_list.append(BubbleMessage(self.screen, 'And that was the lock...', 3000, 0, 'exit', self.player))
+                        else:
+                            self.player.bounce(-10, 0, -self.player.turned, self.terrain_sprites)
+                            self.bubble_list.append(BubbleMessage(self.screen, 'I\'m missing a key!', 3000, 0, 'exit', self.player))
+                            self.info_sprites.add(InfoPopup('Locked door', sprite.rect.centerx, sprite.rect.centery))
+                elif sprite.name == 'chest':
+                    # play some sound effect
+                    sprite.animation.active = True
+                elif sprite.name == 'IN portal':
+                    # play some sound effect
+                    #print(self.out_portal_coordinates)
+                    self.player.destination = self.out_portal_coordinates
+
+                elif sprite.name == 'OUT portal':
+                    pass  # we ignore the out portals
+                else:
+                    logging.error(f'Triggered object "{sprite.name} not know - aborting...')
+                    exit(1)
+
+    def check_coll_player_drops(self) -> None:
+    # Dropped objects pickup / collision
+        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.drops_sprites,False) and self.player.state['active'] != DYING:
+            for drop in pygame.sprite.spritecollide(self.player.hitbox_sprite,self.drops_sprites,False):
+                if drop.drop_type == 'key':
+                    self.gs.player_inventory.append(('key', self.key_img))  # inventory of items and their animations
+                    self.fx_key_pickup.play()            
+                    drop.kill()
+                    self.bubble_list.append(BubbleMessage(self.screen, 'A key! All I need now is a lock.', 5000, 3000, 'key', self.player))
+               
+                logging.debug(f'PICKUP: {drop.drop_type}')
+                logging.debug(f'Inventory: {self.gs.player_inventory}')   
+
+    def check_coll_stomp_monster(self) -> None:
+        # Mobs caught in stomp blast effect
+        if self.stomp_effects.sprite:
+            stomp_collision = pygame.sprite.spritecollide(self.stomp_effects.sprite, self.monsters_sprites,False)
+            if stomp_collision:
+                for monster in stomp_collision:
+                    if monster.state not in (DYING, DEAD):
+                        if pygame.Rect.colliderect(self.stomp_effects.sprite.rect, monster.hitbox): 
+                            monster.state_change(DYING)
+                            self.gs.player_score += monster.data.points_reward
+                            self.player.stomp_counter += 1
+                            logging.debug(f'{monster.data.monster} killed by player stomp')
+
+    def check_coll_player_monster(self) -> None:
+        # Player + mobs group collision
+        monster_collisions = pygame.sprite.spritecollide(self.player.hitbox_sprite, self.monsters_sprites,False)
+        if monster_collisions and self.player.state['active'] not in (DYING, STOMPING):
+            for monster in monster_collisions:
+                if monster.state != DYING and monster.state != DEAD:  # we only deal with the living
+                    if pygame.Rect.colliderect(self.player.rects['hitbox'], monster.hitbox):  # sprite collision not enough, we now check hitboxes
+                       if monster.state not in (DYING, STOMPING):  # check to avoid repeat damage
+                            # Player gets bumped _away_ from mob:
+                            self.player.hit(100, monster.turned, self.terrain_sprites)  # bump player _away_ from monster
+
+    def check_monsters(self) -> None:
+        # Monsters can be up to several things, which we check for here
+        now = pygame.time.get_ticks()
+        for monster in self.monsters_sprites.sprites():
+            if monster.state != DYING and monster.state != DEAD:  # only dealing with the living
+                #  --> casting spells=
+                if monster.cast_anim_list:
+                    for spell in monster.cast_anim_list:
+                        if spell[0] == 'fire':
+                            x, y = spell[1:3]
+                            self.spell_sprites.add(Spell(x,y, self.anim['fire']['fire-spell'], False, scale=1))
+                    monster.cast_anim_list = []
+
+                # --> detecting (or no longer detecting) the player and switch to/from ATTACK mode
+                if pygame.Rect.colliderect(self.player.rects['hitbox'], monster.rect_detect) and self.player.state['active'] not in (DYING, DEAD):
+                    if monster.state == WALKING:
+                        monster.state_change(ATTACKING)    
+                else:  # Mob not detecting player
+                    if monster.state == ATTACKING:
+                        monster.state_change(WALKING)  # if we move out of range, the mob will stop attacking
+
+                # --> attacking the player and hitting or not the player's hitbox (or launching arrow or not)                
+                if pygame.Rect.colliderect(self.player.rects['hitbox'], monster.rect_attack) and monster.state == ATTACKING and self.player.state['active'] != STOMPING:
+                    if monster.data.attack_instant_damage:  
+                        self.player.hit(monster.data.attack_damage, monster.turned, self.terrain_sprites)  # melee hit
+                        self.particles_blood(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery, RED, monster.turned)  # add blood particles whne player is hit
+                    elif now - monster.last_arrow > monster.data.attack_delay:  # launching projectile 
+                        arrow = Projectile(monster.hitbox.centerx, monster.hitbox.centery, self.arrow_img, turned = monster.turned, scale = 4)
+                        # We only add the arrow once the bow animation is complete (and we know we're ATTACKING, so attack anim is active)
+                        if monster.animation.on_last_frame:
+                            self.projectile_sprites.add(arrow)
+                            monster.last_arrow = now
 
     def create_tile_group(self,layout,type) -> pygame.sprite.Group:
         sprite_group = pygame.sprite.Group()
@@ -326,236 +541,8 @@ class Level():
                         logging.error(f'Tile type "{type}" not recognized during level import')
                         exit(1)
         return sprite_group
-    
 
-  
-    def player_setup(self) -> Player:
-        player = Player(self.lvl_entry[0], self.lvl_entry[1], self.screen, self.sounds, self.level_data, self.gs)
-        logging.debug(f'Player spawned at ({self.lvl_entry[0]}, {self.lvl_entry[1]})')
-        return player
-
-
-    def check_player_stomp(self) -> None:
-        if self.player.stomp_trigger == True and self.player.vel_y == 0:
-            self.stomp_effects.add(LightEffect1(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery + 10))
-            self.player.stomp_trigger = False
-            self.player.stomp_counter = 0
-            # TODO add dust
-        for sprite in self.stomp_effects.sprites():
-            if sprite.done == True:
-                sprite.kill()
-
-    def check_player_dust(self) -> None:
-        if self.player.vel_y > 0:
-            self.previous_vel_y = self.player.vel_y
-            
-        if self.player.vel_y == 0 and self.previous_vel_y > STOMP_SPEED * 0.8 and not self.player.on_slope:
-            width = 52
-            height = 16
-            self.dust_jump = GameTileAnimation(width, height, self.player.rects['hitbox'].centerx - width, self.player.rects['hitbox'].bottom - (height + 4), self.anim['effects']['dust-landing'])
-            self.dust_jump.name = 'dust'
-            self.dust_jump.animation.start_over()
-            self.previous_vel_y = 0  # to avoid dupes
-            self.effect_sprites.add(self.dust_jump)
-        
-        # Housekeeping
-        for sprite in self.effect_sprites.sprites():
-            if sprite.name == 'dust' and sprite.animation.on_last_frame:
-                sprite.kill()
-    
-    def check_player_attack(self) -> None:
-        for monster in self.monsters_sprites.sprites():
-            # --> We check if the player is attacking and if the attack hits a monster
-            if self.player.state['active'] == ATTACKING and monster.state not in (DYING, DEAD) and monster.invulnerable == False:
-                # Check if mob hit
-                if pygame.Rect.colliderect(self.player.rects['attack'], monster.hitbox): 
-                    # Add hit (blood) particles
-                    self.particles_blood(monster.hitbox.centerx, monster.hitbox.centery, monster.data.blood_color, self.player.turned)
-                    monster.data.hitpoints -= 1
-                    logging.debug(f'{monster.data.monster} hit by player attack - hitpoints remaining: {monster.data.hitpoints}')
-                    if self.player.turned:
-                        direction = - 1
-                    else:
-                        direction = 1
-
-                    if monster.data.hitpoints == 0: # monster is dying
-                        self.gs.player_score += monster.data.points_reward
-                        self.gs.player_stomp_counter += 1
-                        """ Adding drops from player death """
-                        # skeleton-boss is a key carrier
-                        if monster.data.monster == 'skeleton-boss':
-                            drop_key = Drop( monster.hitbox.centerx, monster.hitbox.centery - 25 , self.anim['pickups']['key'], turned = False, scale = 2, drop_type='key',)
-                            self.drops_sprites.add(drop_key)
-                            logging.debug(f'{monster.data.monster} dropped a key')
-                        monster.state_change(DYING)  # we do this _after_ key drop, as the hitbox disappears when the mob enters DYING state
-
-                    else:  # monster still has hitpoints left
-                        monster.rect.centerx += 20 * (monster.data.speed_attacking + 1) * direction  # small bump back
-                        monster.invulnerable = True
-                        monster.inv_start = pygame.time.get_ticks()
-                        self.player.rects['attack'] = pygame.Rect(0,0,0,0)  
-                        # BLINK WHITE OR RED TODO
-                        monster.state_change(STUNNED)
-
-    def check_player_win(self) -> None:
-        # Player sprite reaches goal tile
-        if pygame.sprite.spritecollide(self.player,self.player_in_out_sprites,False):
-            if pygame.sprite.spritecollide(self.player,self.player_in_out_sprites,False)[0].inout == 'out':  # first colliding sprite
-                logging.debug('WIN! Level complete')
-                self.gs.level_complete = True
-
-    def check_coll_player_hazard(self) -> None:
-        # Player + hazard group collision 
-        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.hazards_sprites,False) and self.player.state['active'] not in (DYING, DEAD):
-            self.player.hazard_damage(100, hits_per_second=10)
-            self.bubble_list.append(BubbleMessage(self.screen, 'Ouch! Ouch!', 1000, 0, 'spikes', self.player))
-
-    def check_coll_player_projectile(self) -> None:
-    # Player + projectile collision (arrows etc.) AND player's attack collision (so attacking arrows in flight for example)
-        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.projectile_sprites,False) and self.player.state['active'] != DYING:
-            for projectile in pygame.sprite.spritecollide(self.player.hitbox_sprite,self.projectile_sprites,False):
-                self.particles_blood(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery, RED, projectile.turned)  # add blood particles whne player is hit
-                self.player.hit(self.arrow_damage, projectile.turned, self.terrain_sprites)
-                projectile.kill()
-        for projectile in self.projectile_sprites.sprites():
-            # We can attack and destroy projectiles as well
-            if self.player.state['active'] == ATTACKING:
-                if  pygame.Rect.colliderect(self.player.rects['attack'], projectile.rect):
-                    # play some sound # TODO
-                    projectile.kill()
-
-    # Player + spell collision
-    def check_coll_player_spell(self) -> None:
-        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.spell_sprites,False) and self.player.state['active'] != DYING:
-            for _ in pygame.sprite.spritecollide(self.player,self.spell_sprites,False):
-                self.player.hazard_damage(100, hits_per_second=2)
-
-    # Animated objects pickup / collision
-    def check_coll_player_pickup(self) -> None:
-        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.pickups_sprites,False) and self.player.state['active'] != DYING:
-            for pickup in pygame.sprite.spritecollide(self.player,self.pickups_sprites,False):
-                if pickup.name == 'health potion':
-                    self.fx_health_pickup.play()
-                    self.player.heal(500)
-                    pickup.kill()
-                if pickup.name == 'stomp potion':
-                    self.fx_health_pickup.play()
-                    self.player.stomp_counter = PLAYER_STOMP
-                    pickup.kill()
-                if pickup.name == 'mana potion':
-                    self.fx_health_pickup.play()
-                    pass
-                    pickup.kill()
-
-
-    def check_coll_player_triggered_objects(self) -> None:
-        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.triggered_objects_sprites,False) and self.player.state['active'] != DYING:
-            for sprite in pygame.sprite.spritecollide(self.player,self.triggered_objects_sprites,False):
-                if sprite.name in ('door-left', 'door-right', 'end-of-level'):
-                        if any('key' in sublist for sublist in self.gs.player_inventory): # do we have key?
-                            sprite.animation.frame_number = 0
-                            self.bubble_list.append(BubbleMessage(self.screen, 'And that was the lock...', 3000, 0, 'exit', self.player))
-                        else:
-                            self.player.bounce(-10, 0, -self.player.turned, self.terrain_sprites)
-                            self.bubble_list.append(BubbleMessage(self.screen, 'I\'m missing a key!', 3000, 0, 'exit', self.player))
-                            self.info_sprites.add(InfoPopup('Locked door', sprite.rect.centerx, sprite.rect.centery))
-                elif sprite.name == 'chest':
-                    # play some sound effect
-                    sprite.animation.active = True
-                elif sprite.name == 'IN portal':
-                    # play some sound effect
-                    #print(self.out_portal_coordinates)
-                    self.player.destination = self.out_portal_coordinates
-
-                elif sprite.name == 'OUT portal':
-                    pass  # we ignore the out portals
-                else:
-                    logging.error(f'Triggered object "{sprite.name} not know - aborting...')
-                    exit(1)
-
-
-    # Dropped objects pickup / collision
-    def check_coll_player_drops(self) -> None:
-        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.drops_sprites,False) and self.player.state['active'] != DYING:
-            for drop in pygame.sprite.spritecollide(self.player.hitbox_sprite,self.drops_sprites,False):
-                if drop.drop_type == 'key':
-                    self.gs.player_inventory.append(('key', self.key_img))  # inventory of items and their animations
-                    self.fx_key_pickup.play()            
-                    drop.kill()
-                    self.bubble_list.append(BubbleMessage(self.screen, 'A key! All I need now is a lock.', 5000, 3000, 'key', self.player))
-               
-                logging.debug(f'PICKUP: {drop.drop_type}')
-                logging.debug(f'Inventory: {self.gs.player_inventory}')   
-
-    def check_coll_stomp_monster(self) -> None:
-        # Mobs caught in stomp blast effect
-        if self.stomp_effects.sprite:
-            stomp_collision = pygame.sprite.spritecollide(self.stomp_effects.sprite, self.monsters_sprites,False)
-            if stomp_collision:
-                for monster in stomp_collision:
-                    if monster.state not in (DYING, DEAD):
-                        if pygame.Rect.colliderect(self.stomp_effects.sprite.rect, monster.hitbox): 
-                            monster.state_change(DYING)
-                            self.gs.player_score += monster.data.points_reward
-                            self.player.stomp_counter += 1
-                            logging.debug(f'{monster.data.monster} killed by player stomp')
-
-    def check_coll_player_monster(self) -> None:
-        # Player + mobs group collision
-        monster_collisions = pygame.sprite.spritecollide(self.player.hitbox_sprite, self.monsters_sprites,False)
-        if monster_collisions and self.player.state['active'] not in (DYING, STOMPING):
-            for monster in monster_collisions:
-                if monster.state != DYING and monster.state != DEAD:  # we only deal with the living
-                    if pygame.Rect.colliderect(self.player.rects['hitbox'], monster.hitbox):  # sprite collision not enough, we now check hitboxes
-                       if monster.state not in (DYING, STOMPING):  # check to avoid repeat damage
-                            # Player gets bumped _away_ from mob:
-                            self.player.hit(100, monster.turned, self.terrain_sprites)  # bump player _away_ from monster
-
-    def check_monsters(self) -> None:
-        # Monsters can be up to several things, which we check for here
-        now = pygame.time.get_ticks()
-        for monster in self.monsters_sprites.sprites():
-            if monster.state != DYING and monster.state != DEAD:  # only dealing with the living
-                #  --> casting spells=
-                if monster.cast_anim_list:
-                    for spell in monster.cast_anim_list:
-                        if spell[0] == 'fire':
-                            x, y = spell[1:3]
-                            self.spell_sprites.add(Spell(x,y, self.anim['fire']['fire-spell'], False, scale=1))
-                    monster.cast_anim_list = []
-
-                # --> detecting (or no longer detecting) the player and switch to/from ATTACK mode
-                if pygame.Rect.colliderect(self.player.rects['hitbox'], monster.rect_detect) and self.player.state['active'] not in (DYING, DEAD):
-                    if monster.state == WALKING:
-                        monster.state_change(ATTACKING)    
-                else:  # Mob not detecting player
-                    if monster.state == ATTACKING:
-                        monster.state_change(WALKING)  # if we move out of range, the mob will stop attacking
-
-                # --> attacking the player and hitting or not the player's hitbox (or launching arrow or not)                
-                if pygame.Rect.colliderect(self.player.rects['hitbox'], monster.rect_attack) and monster.state == ATTACKING and self.player.state['active'] != STOMPING:
-                    if monster.data.attack_instant_damage:  
-                        self.player.hit(monster.data.attack_damage, monster.turned, self.terrain_sprites)  # melee hit
-                        self.particles_blood(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery, RED, monster.turned)  # add blood particles whne player is hit
-                    elif now - monster.last_arrow > monster.data.attack_delay:  # launching projectile 
-                        arrow = Projectile(monster.hitbox.centerx, monster.hitbox.centery, self.arrow_img, turned = monster.turned, scale = 4)
-                        # We only add the arrow once the bow animation is complete (and we know we're ATTACKING, so attack anim is active)
-                        if monster.animation.on_last_frame:
-                            self.projectile_sprites.add(arrow)
-                            monster.last_arrow = now
-
-
-    def show_bubbles(self) -> None:
-        msg_types = []
-        for bubble in self.bubble_list:
-            if bubble.msg_type in msg_types or bubble.expired:  # we already have a bubble message of this type in the list, or it's expired
-                self.bubble_list.remove(bubble)
-            else:
-                msg_types.append(bubble.msg_type)
-                bubble.show()
-
-
-       
+# --> Effect funtions 
     def particles_blood(self, x, y, color, turned) -> None:
         if turned is True:
             direction = -1 
@@ -569,6 +556,20 @@ class Level():
                 'color': color
             })
                 
+    def show_bubbles(self) -> None:
+        msg_types = []
+        for bubble in self.bubble_list:
+            if bubble.msg_type in msg_types or bubble.expired:  # we already have a bubble message of this type in the list, or it's expired
+                self.bubble_list.remove(bubble)
+            else:
+                msg_types.append(bubble.msg_type)
+                bubble.show()
+
+# --> Main functions
+    def player_setup(self) -> Player:
+        player = Player(self.lvl_entry[0], self.lvl_entry[1], self.screen, self.sounds, self.level_data, self.gs)
+        logging.debug(f'Player spawned at ({self.lvl_entry[0]}, {self.lvl_entry[1]})')
+        return player
 
     def run(self) -> None:
         """ 
@@ -693,6 +694,9 @@ class Level():
 
         # --> Check monster condition and actions <--
         self.check_monsters()  # this check mob detection + attack as well as player attack against all mobs
+
+        # --> Check if we're in the arena and player has requested monster spawns
+        self.check_arena_spawns()
         
         # --> Check effects and particle system <--
         self.show_bubbles()

@@ -92,11 +92,11 @@ class MonsterData():
             self.random_turns = 0.15
             self.hitbox_width = 65 
             self.hitbox_height = 110
-            self.sound_attack = pygame.mixer.Sound('assets/sound/monster/elven-caster/attack.mp3')
+            self.sound_attack = None,
             self.sound_attack_volume = 0.5
-            self.sound_death = pygame.mixer.Sound('assets/sound/monster/elven-caster/death.mp3')
+            self.sound_death = pygame.mixer.Sound('assets/sound/monster/elven-caster/death.ogg')
             self.sound_death_volume = 0.5
-            self.sound_cast = pygame.mixer.Sound('assets/sound/monster/elven-caster/cast.mp3')
+            self.sound_cast = pygame.mixer.Sound('assets/sound/monster/elven-caster/cast.wav')
             self.sound_cast_volume = 0.5
             self.blood_color = pygame.Color('#ac3232')
 

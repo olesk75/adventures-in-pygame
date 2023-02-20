@@ -38,6 +38,9 @@ class GameState:
         self.game_fade_counter: int
         self.game_fade_ready: bool
         self.game_fade_last_update: int
+
+        # Specific arena variables to manually spawn monsters
+        self.monster_spawn_queue: list
         
         self.reset()
 
@@ -76,6 +79,8 @@ class GameState:
         self.game_fade_ready = False
         self.game_fade_last_update = 0
 
+        # Specific arena variables to manually spawn monsters
+        self.monster_spawn_queue = []
         
         
 
