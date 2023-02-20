@@ -55,7 +55,8 @@ level_1 = {
     'terrain_ts': 'assets/tile/tilesets/mountain-tileset-brown.png',
     'background': {
         #'drop_background': None,  # DEBUG: just to remove background
-        'near': 'assets/backgrounds/lvl1/near.png',
+        #'near': 'assets/backgrounds/lvl1/near.png',
+        'near': 'assets/backgrounds/lvl1/medium.png',  # diabling for now, as the trees are ugly and distracting (repeat the medium tecture, as None cancels all)
         'medium': 'assets/backgrounds/lvl1/medium.png',
         'further': 'assets/backgrounds/lvl1/further.png',
         'far': 'assets/backgrounds/lvl1/far.png',
@@ -78,17 +79,17 @@ level_1 = {
 }
 
 level_2 = {
-    'size_x': 250,
-    'size_y': 15,
-    'pos_terrain': 'lvl/lvl 1 - mountains/level1_terrain.csv',
-    'pos_decorations': 'lvl/lvl 1 - mountains/level1_decorations.csv',
-    'pos_hazards':  'lvl/lvl 1 - mountains/level1_hazards.csv',
-    'pos_pickups': 'lvl/lvl 1 - mountains/level1_pickups.csv',
-    'pos_triggered_objects': 'lvl/lvl 1 - mountains/level1_triggered_objects.csv',
-    'pos_monsters': 'lvl/lvl 1 - mountains/level1_monsters.csv',
-    'pos_player': 'lvl/lvl 1 - mountains/level1_player.csv',
+    'size_x': 120,
+    'size_y': 40,
+    'pos_terrain': 'lvl/lvl 2 - snowy mountains/level2_terrain.csv',
+    'pos_decorations': 'lvl/lvl 2 - snowy mountains/level2_decorations.csv',
+    'pos_hazards':  'lvl/lvl 2 - snowy mountains/level2_hazards.csv',
+    'pos_pickups': 'lvl/lvl 2 - snowy mountains/level2_pickups.csv',
+    'pos_triggered_objects': 'lvl/lvl 2 - snowy mountains/level2_triggered_objects.csv',
+    'pos_monsters': 'lvl/lvl 2 - snowy mountains/level2_monsters.csv',
+    'pos_player': 'lvl/lvl 2 - snowy mountains/level2_player.csv',
     'environmental_effect': 'leaves',
-    'terrain_ts': 'assets/tile/tilesets/mountain-tileset.png',
+    'terrain_ts': 'assets/tile/tilesets/terrain-tileset-snow-rocks.png',
     'background': {
         'near': 'assets/backgrounds/lvl1/near.png',
         'medium': 'assets/backgrounds/lvl1/medium.png',
