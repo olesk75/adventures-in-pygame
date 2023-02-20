@@ -96,6 +96,7 @@ level_2 = {
         'further': 'assets/backgrounds/lvl1/further.png',
         'far': 'assets/backgrounds/lvl1/far.png',
         'clouds': 'assets/backgrounds/lvl1/clouds.png',
+        'cloud_drift': 50,  # ticks between each scroll value
         'background_color': (130, 181, 255),
         'y_adjust': [0,150,400,450,0],
     },

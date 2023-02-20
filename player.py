@@ -599,9 +599,7 @@ class Player(pygame.sprite.Sprite):
                
 
     def bounce(self, x: int, y: int, turned: bool, platforms: pygame.sprite.Group) -> None:
-        direction = 1
-        if turned:
-            direction = -1
+        direction = -1 if turned else 1
 
         # Bounce back
         x_bounce = x * direction

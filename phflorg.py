@@ -1,4 +1,4 @@
-import pygame
+import pygame as pg
 from pygame.locals import *
 
 import sys
@@ -22,18 +22,18 @@ if len(sys.argv):
         SOUNDS_ON = False
         logging.debug('Sound effects are OFF')
 
-# Pygame setup
-pygame.init()
+# pg setup
+pg.init()
 
 gs = GameState()
 
 # Checking for controllers/joysticks
-joysticks = [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
+joysticks = [pg.joystick.Joystick(x) for x in range(pg.joystick.get_count())]
 
 if joysticks:
-    logging.debug(f'Found {pygame.joystick.get_count()} available game controllers: {joysticks}')
-    for n in range(pygame.joystick.get_count()):
-        joys = pygame.joystick.Joystick(n)
+    logging.debug(f'Found {pg.joystick.get_count()} available game controllers: {joysticks}')
+    for n in range(pg.joystick.get_count()):
+        joys = pg.joystick.Joystick(n)
         logging.debug(joys.get_name())
         logging.debug(joys.get_numaxes())
         logging.debug(joys.get_numhats())
@@ -42,83 +42,70 @@ else:
     logging.debug(f'No game controllers found')
 
 # Resolution and screen setup
-current_screen = pygame.display.Info()
+current_screen = pg.display.Info()
 monitor_res = ( current_screen.current_w, current_screen.current_h)
 width, height = SCREEN_WIDTH, SCREEN_HEIGHT
 if current_screen.current_w < SCREEN_WIDTH or current_screen.current_h < SCREEN_HEIGHT:
     width  = SCREEN_WIDTH // 1.5
     height  = SCREEN_HEIGHT // 1.5
     print(width,height, monitor_res)
-_screen = pygame.display.set_mode((width, height)) 
-screen = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+_screen = pg.display.set_mode((width, height)) 
+screen = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-clock = pygame.time.Clock()
+clock = pg.time.Clock()
 
 game = Game(gs, screen)  # Here we pass the GameState instance to game, which will pass it to Level, which will pass it to Player
 
 motion = [0, 0]
 previous_state = gs.game_state
 
-font = pygame.font.Font(None, 36)
+font = pg.font.Font(None, 36)
 
 while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
+            pg.quit()
             sys.exit()
 
         # Keyboard - key pressed
         if event.type == KEYDOWN:
-            if event.key in(K_q, K_ESCAPE):
-                gs.user_input['quit'] = True
-            if event.key == K_RIGHT:
-                gs.user_input['right'] = True
-            if event.key == K_LEFT:
-                gs.user_input['left'] = True
-            if event.key == K_UP:
-                gs.user_input['up'] = True
-            if event.key == K_DOWN:
-                gs.user_input['down'] = True
-            if event.key == K_SPACE:
-                gs.user_input['attack'] = True
+            match event.key:
+                case pg.K_q | pg.K_ESCAPE: gs.user_input['quit'] = True
+                case pg.K_RIGHT: gs.user_input['right'] = True
+                case pg.K_LEFT: gs.user_input['left'] = True
+                case pg.K_UP: gs.user_input['up'] = True
+                case pg.K_DOWN: gs.user_input['down'] = True
+                case pg.K_SPACE: gs.user_input['attack'] = True
 
             # Additionally, if we're in the arena we have additional shortcuts
             if gs.level_current == 0:
-                if event.key == K_1:
-                    gs.monster_spawn_queue.append(1)
-                if event.key == K_2:
-                    gs.monster_spawn_queue.append(2)
-                if event.key == K_3:
-                    gs.monster_spawn_queue.append(3)
-                if event.key == K_4:
-                    gs.monster_spawn_queue.append(4)
-                if event.key == K_5:
-                    gs.monster_spawn_queue.append(5)
-
+                match event.key:
+                    case pg.K_1: gs.monster_spawn_queue.append(1)
+                    case pg.K_2: gs.monster_spawn_queue.append(2)
+                    case pg.K_3: gs.monster_spawn_queue.append(3)
+                    case pg.K_4: gs.monster_spawn_queue.append(4)
+                    case pg.K_5: gs.monster_spawn_queue.append(5)
 
         # Keyboard - key let go of
         if event.type == KEYUP:
-            if event.key == K_RIGHT:
-                gs.user_input['right'] = False
-            if event.key == K_LEFT:
-                gs.user_input['left'] = False
-            if event.key == K_UP:
-                gs.user_input['up'] = False
-            if event.key == K_DOWN:
-                gs.user_input['down'] = False
-            if event.key == K_SPACE:
-                gs.user_input['attack'] = False
+            match event.key:
+                case pg.K_RIGHT: gs.user_input['right'] = False
+                case pg.K_LEFT: gs.user_input['left'] = False
+                case pg.K_UP: gs.user_input['up'] = False
+                case pg.K_DOWN: gs.user_input['down'] = False
+                case pg.K_SPACE: gs.user_input['attack'] = False
 
         if event.type == JOYBUTTONDOWN:
-            if event.button == 0:
-                gs.user_input['up'] = True
-            if event.button == 2:
-                gs.user_input['attack'] = True
+            match event.button:
+                case 0: gs.user_input['up'] = True
+                case 1: gs.user_input['cast'] = True
+                case 2: gs.user_input['attack'] = True
+
         if event.type == JOYBUTTONUP:
-            if event.button == 0:
-                gs.user_input['up'] = False
-            if event.button == 2:
-                gs.user_input['attack'] = False
+            match event.button:
+                case 0: gs.user_input['up'] = False
+                case 1: gs.user_input['cast'] = False
+                case 2: gs.user_input['attack'] = False
                 
         if event.type == JOYAXISMOTION:
             #print(event)
@@ -135,7 +122,7 @@ while True:
             #print(event)
             pass
 
-                
+    
     if gs.game_state == GS_PLAYING:
         game.run() 
     
@@ -143,7 +130,7 @@ while True:
         game.game_over()
 
     if gs.game_state == GS_QUIT:
-       pygame.quit()
+       pg.quit()
        sys.exit()
 
     if gs.game_state == GS_LEVEL_COMPLETE:
@@ -164,7 +151,7 @@ while True:
         fps_text = font.render(f'FPS: {clock.get_fps():.2f}', True, (255, 255, 0))
         screen.blit(fps_text, (10, 100))
 
-    _screen.blit(pygame.transform.scale(screen, (width, height)), (0, 0))
+    _screen.blit(pg.transform.scale(screen, (width, height)), (0, 0))
 
-    pygame.display.update()
+    pg.display.update()
     clock.tick(FPS)
