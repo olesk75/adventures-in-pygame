@@ -178,6 +178,7 @@ class Level():
             self.stomp_effects.add(LightEffect1(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery + 10))
             self.player.stomp_trigger = False
             self.player.stomp_counter = 0
+            self.gs.game_slowmo = True
             # TODO add dust
         for sprite in self.stomp_effects.sprites():
             if sprite.done == True:
@@ -211,10 +212,6 @@ class Level():
                     self.particles_blood(monster.hitbox.centerx, monster.hitbox.centery, monster.data.blood_color, self.player.turned)
                     monster.data.hitpoints -= 1
                     logging.debug(f'{monster.data.monster} hit by player attack - hitpoints remaining: {monster.data.hitpoints}')
-                    if self.player.turned:
-                        direction = - 1
-                    else:
-                        direction = 1
 
                     if monster.data.hitpoints == 0: # monster is dying
                         self.gs.player_score += monster.data.points_reward
@@ -328,8 +325,12 @@ class Level():
                 for monster in stomp_collision:
                     if monster.state not in (DYING, DEAD):
                         if pygame.Rect.colliderect(self.stomp_effects.sprite.rect, monster.hitbox): 
-
-                            monster.state_change(DYING)
+                            # if self.player.rect.centerx < monster.hitbox.centerx:
+                            #     monster.vel_x = 10 #self.player.turned 
+                            # else: 
+                            #     monster.vel_x = -10 #self.player.turned 
+                            # monster.vel_y = -25
+                            monster.state_change(STUNNED, player_pos=self.player.rect.center, deadly=True)
                             self.gs.player_score += monster.data.points_reward
                             self.player.stomp_counter += 1
                             logging.debug(f'{monster.data.monster} killed by player stomp')

@@ -39,6 +39,7 @@ class GameState:
         self.game_fade_counter: int
         self.game_fade_ready: bool
         self.game_fade_last_update: int
+        self.game_slowmo: bool
 
         # Specific arena variables to manually spawn monsters
         self.monster_spawn_queue: list
@@ -80,6 +81,7 @@ class GameState:
         self.game_fade_counter = 0
         self.game_fade_ready = False
         self.game_fade_last_update = 0
+        self.game_slowmo = False
 
         # Specific arena variables to manually spawn monsters
         self.monster_spawn_queue = []
@@ -115,7 +117,6 @@ class Game:
 
         self.last_run = 0
         self.last_fade_update = 0
-        self.slowmo = False
 
     def create_level(self,current_level) -> None:
         """ Create each level """
@@ -146,14 +147,14 @@ class Game:
     def check_damage_effects(self) -> None:
         """ Slow-motion effect after player loses health """
         global FPS
-        if self.slowmo == True:
+        if self.gs.game_slowmo == True:
             self.screen.blit(self.damage_img, (0,0))
             if pygame.time.get_ticks() - self.last_run > 500:  # 1 second of slow-motion after a hit
                 FPS = 60
-                self.slowmo = False 
+                self.gs.game_slowmo = False 
         elif self.gs.player_hit:
             FPS = 10
-            self.slowmo = True
+            self.gs.game_slowmo = True
             self.last_run = pygame.time.get_ticks()
             self.gs.player_hit = False
             # TODO: add slo-mo for stomp as well, and player boss death

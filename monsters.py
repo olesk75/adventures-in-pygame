@@ -63,6 +63,7 @@ class Monster(pg.sprite.Sprite):
 
         self.invulnerable = False  # we set this right after a hit to ensure we don't get duplicate hits
         self.stun_start = 0
+        self.die_after_stun = False  # if we get stomped by the player, we get stunned, but when we land/wake, we die
 
         self.currently_casting = None  # if the mob is busy casting, this is what it is casting
         self.cast_anim_list = []  # if the mob casts a spell, we creat animations here
@@ -214,7 +215,7 @@ class Monster(pg.sprite.Sprite):
 
         return dx, dy
 
-    def state_change(self, new_state:int, attack_type:str=None, player_pos:tuple=None) -> None:
+    def state_change(self, new_state:int, attack_type:str=None, player_pos:tuple=None, deadly:bool=False) -> None:
         """
         Manages all state changes for mobs, betweeh ATTACKING, WALKING and CASTING
         Can take attack type and player position if we're switching into CASTING
@@ -252,6 +253,7 @@ class Monster(pg.sprite.Sprite):
                 # Typically only as a result of a successful player attack
                 self.stun_start = pg.time.get_ticks()
                 self.invulnerable = True
+                self.die_after_stun = True if deadly else False
 
                 direction = 1 if player_pos[0] < self.rect.centerx else -1
                 self.vel_x = -5 * direction
@@ -327,7 +329,10 @@ class Monster(pg.sprite.Sprite):
                     self.vel_x = 0
                     self.invulnerable = False
                     self.create_rects()
-                    self.state_change(ATTACKING)
+                    if not self.die_after_stun:
+                        self.state_change(ATTACKING)
+                    else: 
+                        self.state_change(DYING)
 
 
         # we compensate for scrolling
