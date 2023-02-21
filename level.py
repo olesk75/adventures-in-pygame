@@ -279,7 +279,7 @@ class Level():
                     pickup.kill()
                 if pickup.name == 'mana potion':
                     self.fx_health_pickup.play()
-                    pass
+                    self.player.mana += 100
                     pickup.kill()
 
     def check_coll_player_triggered_objects(self) -> None:

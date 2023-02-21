@@ -630,7 +630,7 @@ class Weather():
         if weather in ('lightning storm', 'rain'):
             self.weather_type = 'rain'
             self.weather_delay = 100
-            self.drops_on_screen = 30
+            self.drops_on_screen = 60
             self.drops = []
             # Movement used both for initial line values and for later animations (x>0 means right, y>0 means down)
             self.x_movement = -3
@@ -653,6 +653,7 @@ class Weather():
         if self.weather_type == 'rain' and self.started:
             now = pygame.time.get_ticks()
             if now - self.weather_timer > self.weather_delay:
+
                 for i, particle in enumerate(self.drops):
                     #print(particle['x1'])
                     pygame.draw.line(surface, particle['color'], (particle['x1'], particle['y1']), \
@@ -664,16 +665,19 @@ class Weather():
 
                     # Checking if the particle is out of bounds and we need to spawn a new one
                     if not (0 < self.drops[i]['x2'] < SCREEN_WIDTH) or not (0 < self.drops[i]['y2'] < SCREEN_HEIGHT):
+                        if len(self.drops) <= self.drops_on_screen:
+                            x1 = randint(0, SCREEN_WIDTH)
+                            y1 = 0
+                            x2 = x1 + self.x_movement
+                            y2 = y1 + self.y_movement
+                            color = WHITE
+                            width = 3
+                            
+                            self.drops[i] = {'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2, 'color': color, 'width': width}
+                        else:
+                            self.drops.remove(self.drops[i])
 
-                        x1 = randint(0, SCREEN_WIDTH)
-                        y1 = 0
-                        x2 = x1 + self.x_movement
-                        y2 = y1 + self.y_movement
-                        color = WHITE
-                        width = 3
-                        
-                        self.drops[i] = {'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2, 'color': color, 'width': width}
-
+        
 
 # --- Speed line effect, used by player stomp
 class SpeedLines:

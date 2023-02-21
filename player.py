@@ -105,6 +105,7 @@ class Player(pygame.sprite.Sprite):
         self.fx_attack_channel = pygame.mixer.Channel(0)  # we use separate channel to avoid overlapping sounds with repeat attacks
 
         # Status variables - initial values
+        self.mana = 0  # TODO: for later
         self.turned = False  # flip sprite/animations when moving left
         self.on_ground = False  # standing on solid ground
         self.on_slope = False  # we reduce the collision hitbox on slopes
