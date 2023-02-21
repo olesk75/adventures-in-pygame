@@ -255,8 +255,15 @@ class Monster(pg.sprite.Sprite):
                 self.invulnerable = True
                 self.die_after_stun = True if deadly else False
 
-                direction = 1 if player_pos[0] < self.rect.centerx else -1
-                self.vel_x = -5 * direction
+                if player_pos[0] < self.rect.centerx:
+                    self.data.direction = -1
+                    self.turned = True
+                else:
+                    self.data.direction = 1
+                    self.turned = False
+                
+                print(self.data.direction)
+                self.vel_x = 5 * self.data.direction
                 self.vel_y = -10
                 self.on_bottom = False
 
@@ -313,7 +320,7 @@ class Monster(pg.sprite.Sprite):
             if self.state == WALKING:
                 dx = self.data.speed_walking  #  we start at walking speed
 
-                # We throw in random cahnges in direction, different by mod type, as long as we're on the ground
+                # We throw in random changes in direction, different by mod type, as long as we're on the ground
                 if self.data.random_turns / 100  > random.random() and self.vel_y == 0:
                     dx *= -1
                     self.data.direction *= -1
