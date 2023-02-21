@@ -592,7 +592,7 @@ class ParallaxBackground:
                 self.cloud_timer = now
             
             # We replace the sky tecture with a bright white surface to indicate lightning
-            if self.env_effect == 'lightning':
+            if self.env_effect == 'lightning storm':
                 if now - self.last_lighting > self.lightning_timer + randint(5000, 15000):
                     self.bg_sky = self.bg_white
                     self.last_lighting = now
