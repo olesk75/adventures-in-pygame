@@ -228,12 +228,9 @@ class Level():
                         monster.state_change(DYING)  # we do this _after_ key drop, as the hitbox disappears when the mob enters DYING state
 
                     else:  # monster still has hitpoints left
-                        monster.rect.centerx += 20 * (monster.data.speed_attacking + 1) * direction  # small bump back
-                        monster.invulnerable = True
-                        monster.inv_start = pygame.time.get_ticks()
-                        self.player.rects['attack'] = pygame.Rect(0,0,0,0)  
-                        # BLINK WHITE OR RED TODO
-                        monster.state_change(STUNNED)
+                        monster.state_change(STUNNED, player_pos=self.player.rect.center)
+                        self.player.rects['attack'] = pygame.Rect(0,0,0,0)
+                        self.player.state['next'] = IDLE
 
     def check_player_win(self) -> None:
         # Player sprite reaches goal tile
@@ -278,7 +275,7 @@ class Level():
                     pickup.kill()
                 if pickup.name == 'stomp potion':
                     self.fx_health_pickup.play()
-                    self.player.stomp_counter = PLAYER_STOMP
+                    self.gs.player_stomp_counter = PLAYER_STOMP
                     pickup.kill()
                 if pickup.name == 'mana potion':
                     self.fx_health_pickup.play()
@@ -331,6 +328,7 @@ class Level():
                 for monster in stomp_collision:
                     if monster.state not in (DYING, DEAD):
                         if pygame.Rect.colliderect(self.stomp_effects.sprite.rect, monster.hitbox): 
+
                             monster.state_change(DYING)
                             self.gs.player_score += monster.data.points_reward
                             self.player.stomp_counter += 1

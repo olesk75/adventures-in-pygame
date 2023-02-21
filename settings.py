@@ -54,7 +54,7 @@ MUSIC_ON = False
 SOUNDS_ON = True
 FIRST_LEVEL = 1  # where to start
 LAST_LEVEL = 2  # where to end
-MONSTER_STUN_TIME = 100  # time a monster is stunned
+MONSTER_STUN_TIME = 500  # time a monster is stunned
 
 # Debug settings
 DEBUG_HITBOXES = False

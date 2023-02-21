@@ -1,13 +1,5 @@
-"""
-Monster (pygame Sprite class)       : base class for all mobs
-Projectile (pygame Sprite class)    : class for all projectiles (arrows etc.)
-Spell (pygame Sprite class)         : class for spells - player and monster spells both
-Drop (pygame Sprite class)          : dropped items, like keys dropped by bosses
-"""
-
-
 import random
-import pygame
+import pygame as pg
 import logging
 import copy
 
@@ -15,7 +7,7 @@ from settings import *
 from monster_data import MonsterData
 
 
-class Monster(pygame.sprite.Sprite):
+class Monster(pg.sprite.Sprite):
     def __init__(self,x, y, surface, monster_type) -> None:
         """
         The Player class constructor - note that x and y is only for initialization,
@@ -53,11 +45,12 @@ class Monster(pygame.sprite.Sprite):
         self.rect.center = (x ,y)
 
         # Hitbox rect and sprite
-        self.hitbox = pygame.Rect(x,y, self.width - self.X_ADJ, self.height - self.Y_ADJ)
+        self.hitbox = pg.Rect(x,y, self.width - self.X_ADJ, self.height - self.Y_ADJ)
         
-        self.rect_detect = pygame.Rect(0,0,0,0)
-        self.rect_attack = pygame.Rect(0,0,0,0)
+        self.rect_detect = pg.Rect(0,0,0,0)
+        self.rect_attack = pg.Rect(0,0,0,0)
    
+        self.vel_x = 0
         self.vel_y = 0
         self.turned = False
         self.at_bottom = False
@@ -69,12 +62,10 @@ class Monster(pygame.sprite.Sprite):
         self.prev_y_lvl = self.rect.y  # Tracking vertical progress
 
         self.invulnerable = False  # we set this right after a hit to ensure we don't get duplicate hits
-        self.inv_start = 0  # timer to reset invulnerability
         self.stun_start = 0
 
         self.currently_casting = None  # if the mob is busy casting, this is what it is casting
         self.cast_anim_list = []  # if the mob casts a spell, we creat animations here
-
 
     def create_rects(self) -> None:
         """
@@ -83,7 +74,7 @@ class Monster(pygame.sprite.Sprite):
         we always draw from sprite centerx and centery as reference.
         """
         # Updating the HITBOX collision rectangle
-        self.hitbox = pygame.Rect(self.rect.centerx - self.data.hitbox_width / 2, self.rect.centery - self.data.hitbox_height / 2, \
+        self.hitbox = pg.Rect(self.rect.centerx - self.data.hitbox_width / 2, self.rect.centery - self.data.hitbox_height / 2, \
             self.data.hitbox_width, self.data.hitbox_height)
 
         # Creating a DETECTION rect where to mob will attack if the player rect collides
@@ -96,9 +87,9 @@ class Monster(pygame.sprite.Sprite):
             height = self.rect.height
 
         if self.turned:       
-            self.rect_detect = pygame.Rect(x - width, y, width, height) 
+            self.rect_detect = pg.Rect(x - width, y, width, height) 
         else:
-            self.rect_detect = pygame.Rect(x, y,width, height) 
+            self.rect_detect = pg.Rect(x, y,width, height) 
         
         # Creating an ATTACK rect 
         if self.state == ATTACKING:
@@ -106,9 +97,9 @@ class Monster(pygame.sprite.Sprite):
             y = self.rect.centery
             height = self.height / 2
             if self.turned:
-                self.rect_attack = pygame.Rect(x - self.data.attack_range, y, self.data.attack_range, height) 
+                self.rect_attack = pg.Rect(x - self.data.attack_range, y, self.data.attack_range, height) 
             else:
-                self.rect_attack = pygame.Rect(x , y, self.data.attack_range, height) 
+                self.rect_attack = pg.Rect(x , y, self.data.attack_range, height) 
 
     def _check_platform_collision(self, dx, dy, obstacle_sprite_group) -> None:
          #
@@ -141,12 +132,12 @@ class Monster(pygame.sprite.Sprite):
                             self.turned = True
                     
                         # Turning around if hitting a solid tile  
-                        moved_hitbox = self.hitbox.move(dx * 5 * self.data.direction, 20).inflate(0,-60)
-
-                        if obstacle.rect.colliderect(moved_hitbox):
+                        if obstacle.rect.colliderect(self.hitbox.move(dx * 5 * self.data.direction, 20).inflate(0,-60)):
                             self.data.direction *= -1
                             self.rect.x += dx * 20  * self.data.direction # far enough to avoid re-triggering in an endless loop
                             self.turned = not self.turned
+                            self.vel_x = 0
+
 
     def _boss_battle(self, player) -> tuple:
         """ Movement and attacks for specific bosess 
@@ -202,7 +193,7 @@ class Monster(pygame.sprite.Sprite):
                         self.turned = not self.turned
 
             elif self.state == DYING:
-                self.hitbox = pygame.Rect(0,0,0,0)
+                self.hitbox = pg.Rect(0,0,0,0)
                 if self.animation.on_last_frame:
                     logging.debug(f'BOSS {self.data.monster} dies')
                     self.state = DEAD
@@ -212,10 +203,10 @@ class Monster(pygame.sprite.Sprite):
 
             elif self.state == STUNNED:
                 # Typically only as a result of a successful player attack
-                self.stun_start = pygame.time.get_ticks()
+                self.stun_start = pg.time.get_ticks()
                 self.animation.active = False  #  monster is frozen for the duration
-                self.rect_attack = pygame.Rect(0,0,0,0)  # not attacking for the duration
-                self.rect_detect = pygame.Rect(0,0,0,0)  # not detecting for the duration
+                self.rect_attack = pg.Rect(0,0,0,0)  # not attacking for the duration
+                self.rect_detect = pg.Rect(0,0,0,0)  # not detecting for the duration
 
             else:
                 logging.error(f'ERROR, wrong state for monster in boss fight: {self.state}')
@@ -236,7 +227,7 @@ class Monster(pygame.sprite.Sprite):
                     self.animation = self.animations['attack']
                     self.animation.active = True
 
-                    self.last_attack = pygame.time.get_ticks()  # recording time of last attack
+                    self.last_attack = pg.time.get_ticks()  # recording time of last attack
 
                     if self.data.sound_attack:
                         self.data.sound_attack.set_volume(self.data.sound_attack_volume)
@@ -245,7 +236,7 @@ class Monster(pygame.sprite.Sprite):
             elif new_state == WALKING:
                     self.animation = self.animations['walk']
                     self.animation.active = True
-                    self.rect_attack = pygame.Rect(0,0,0,0)  # disabling attack rect
+                    self.rect_attack = pg.Rect(0,0,0,0)  # disabling attack rect
 
             elif new_state == CASTING:
                     self.animation = self.animations['cast']
@@ -259,18 +250,25 @@ class Monster(pygame.sprite.Sprite):
 
             elif new_state == STUNNED:
                 # Typically only as a result of a successful player attack
-                self.stun_start = pygame.time.get_ticks()
+                self.stun_start = pg.time.get_ticks()
+                self.invulnerable = True
+
+                direction = 1 if player_pos[0] < self.rect.centerx else -1
+                self.vel_x = -5 * direction
+                self.vel_y = -10
+                self.on_bottom = False
+
                 self.animation.active = False  #  monster is frozen for the duration
-                self.rect_attack = pygame.Rect(0,0,0,0)  # not attacking for the duration
-                self.rect_detect = pygame.Rect(0,0,0,0)  # not detecting for the duration
+                self.rect_attack = pg.Rect(0,0,0,0)  # not attacking for the duration
+                self.rect_detect = pg.Rect(0,0,0,0)  # not detecting for the duration
 
             elif new_state == DYING:
                     self.animation = self.animations['death']
                     self.animation.active = True
                     self.animation.start_over()
-                    self.rect_attack = pygame.Rect(0,0,0,0)
-                    self.rect_detect = pygame.Rect(0,0,0,0)
-                    self.hitbox = pygame.Rect(0,0,0,0)
+                    self.rect_attack = pg.Rect(0,0,0,0)
+                    self.rect_detect = pg.Rect(0,0,0,0)
+                    self.hitbox = pg.Rect(0,0,0,0)
 
             elif new_state == DEAD:
                     self.animation.active = False
@@ -286,14 +284,9 @@ class Monster(pygame.sprite.Sprite):
             self.rect = new_rect
 
     def update(self, h_scroll, v_scroll, obstacle_sprite_group, player) -> None:
-        dx = 0
+        dx = self.vel_x
         dy = self.vel_y  # Newton would be proud!
 
-        # Check invulnerabiliy
-        if self.invulnerable:
-            now = pygame.time.get_ticks()
-            if now - self.inv_start > 500:
-                self.invulnerable = False
 
         """ Boss battles have separate logic depending on each boss - if they cast anything, we get a list of animations back as well
             the boss_battle function updates self.vel_y directly and adds self.
@@ -304,7 +297,7 @@ class Monster(pygame.sprite.Sprite):
         # Regular mobs simply walk around mostly
 
             if self.state == ATTACKING:
-                dx = self.data.speed_attacking
+                dx += self.data.speed_attacking
             
                 # Sometimes a jumping mob can jump if player is higher than the mob and mob is attacking
                 #print(f'player.rect.centery: {player.rect.centery}, self.rect.center: {self.rect.centery }')
@@ -318,16 +311,22 @@ class Monster(pygame.sprite.Sprite):
             if self.state == WALKING:
                 dx = self.data.speed_walking  #  we start at walking speed
 
-                # We throw in random cahnges in direction, different by mod type
-                if self.data.random_turns / 100  > random.random():
+                # We throw in random cahnges in direction, different by mod type, as long as we're on the ground
+                if self.data.random_turns / 100  > random.random() and self.vel_y == 0:
                     dx *= -1
                     self.data.direction *= -1
                     self.turned = not self.turned
 
             if self.state == STUNNED:
-                dx = 0
-                now = pygame.time.get_ticks()
+                if self.on_bottom:
+                    self.vel_x = 0
+
+                dx = self.vel_x
+                now = pg.time.get_ticks()
                 if now - self.stun_start > MONSTER_STUN_TIME:
+                    self.vel_x = 0
+                    self.invulnerable = False
+                    self.create_rects()
                     self.state_change(ATTACKING)
 
 
@@ -357,7 +356,7 @@ class Monster(pygame.sprite.Sprite):
 
 
         # Updating the ready_to_attack flag 
-        now = pygame.time.get_ticks()
+        now = pg.time.get_ticks()
         if now - self.last_attack > self.data.attack_delay:
             self.ready_to_attack = True
         else:
@@ -377,9 +376,9 @@ class Monster(pygame.sprite.Sprite):
             logging.error(f'Monster state {self.state} unknown, aborting...')
             exit(1)
             
-        self.image = pygame.transform.flip(self.image, self.turned, False)        
+        self.image = pg.transform.flip(self.image, self.turned, False)        
 
-class Projectile(pygame.sprite.Sprite):
+class Projectile(pg.sprite.Sprite):
     def __init__(self,x, y, image, turned, scale = 1) -> None:
         """
         The Projector class constructor - note that x and y is only for initialization,
@@ -387,12 +386,12 @@ class Projectile(pygame.sprite.Sprite):
         NOTE: no animation - one image only!
         """
         super().__init__()
-        self.image = pygame.transform.scale(image, (image.get_width() * scale, image.get_height() * scale))
+        self.image = pg.transform.scale(image, (image.get_width() * scale, image.get_height() * scale))
 
         self.speed = 10
         self.width = image.get_width()
         self.height = image.get_height()
-        self.rect = pygame.Rect(x, y, self.width, self.height)
+        self.rect = pg.Rect(x, y, self.width, self.height)
         self.turned = turned
         
     def update(self, h_scroll, v_scroll, platforms_sprite_group) -> None:
@@ -413,14 +412,13 @@ class Projectile(pygame.sprite.Sprite):
         self.rect.y += dy 
 
         # Collision with platform
-        if pygame.sprite.spritecollideany(self, platforms_sprite_group):
+        if pg.sprite.spritecollideany(self, platforms_sprite_group):
             self.kill()
         
         # Ready for super.draw()
-        self.image = pygame.transform.flip( self.image.convert_alpha(), self.turned, False)
+        self.image = pg.transform.flip( self.image.convert_alpha(), self.turned, False)
 
-
-class Spell(pygame.sprite.Sprite):
+class Spell(pg.sprite.Sprite):
     def __init__(self, x, y, anim, turned, scale = 1) -> None:
         """
         The Spell class constructor - note that x and y is only for initialization,
@@ -433,11 +431,11 @@ class Spell(pygame.sprite.Sprite):
         self.anim.counter = 0
         image = anim.get_image()
 
-        self.image = pygame.transform.scale(image, (image.get_width() * scale, image.get_height() * scale))
+        self.image = pg.transform.scale(image, (image.get_width() * scale, image.get_height() * scale))
 
         self.width = image.get_width()
         self.height = image.get_height()
-        self.rect = pygame.Rect(x, y, self.width, self.height)
+        self.rect = pg.Rect(x, y, self.width, self.height)
         self.turned = turned
 
         self.anim.first_done = False
@@ -451,10 +449,9 @@ class Spell(pygame.sprite.Sprite):
             self.currently_casting = False
             self.kill()
 
-        self.image = pygame.transform.flip( self.anim.get_image().convert_alpha(), self.turned, False)
+        self.image = pg.transform.flip( self.anim.get_image().convert_alpha(), self.turned, False)
 
-
-class Drop(pygame.sprite.Sprite):
+class Drop(pg.sprite.Sprite):
     def __init__(self, x, y, anim, turned= False, scale = 1, drop_type=None) -> None:
         """
         The Drop class constructor - object animates in place until kill()
@@ -468,15 +465,15 @@ class Drop(pygame.sprite.Sprite):
         self.anim.counter = 0
         image = anim.get_image()
 
-        self.image = pygame.transform.scale(image, (image.get_width() * scale, image.get_height() * scale))
+        self.image = pg.transform.scale(image, (image.get_width() * scale, image.get_height() * scale))
 
         self.width = image.get_width()
         self.height = image.get_height()
-        self.rect = pygame.Rect(x, y, self.width, self.height)
+        self.rect = pg.Rect(x, y, self.width, self.height)
         self.turned = turned
         
     def update(self, h_scroll, v_scroll) -> None:
         self.rect.x += h_scroll # we compensate for h_scrolling
         self.rect.y += v_scroll # we compensate for h_scrolling
 
-        self.image = pygame.transform.flip( self.anim.get_image().convert_alpha(), self.turned, False)         
+        self.image = pg.transform.flip( self.anim.get_image().convert_alpha(), self.turned, False)         
