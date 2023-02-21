@@ -51,7 +51,7 @@ level_1 = {
     'pos_triggered_objects':    'lvl/lvl 1 - mountains/level1_triggered_objects.csv',
     'pos_monsters':             'lvl/lvl 1 - mountains/level1_monsters.csv',
     'pos_player':               'lvl/lvl 1 - mountains/level1_player.csv',
-    'environmental_effect': None,
+    'environmental_effect': 'lightning storm',
     'terrain_ts': 'assets/tile/tilesets/mountain-tileset-brown.png',
     'background': {
         #'drop_background': None,  # DEBUG: just to remove background

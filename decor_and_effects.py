@@ -1,5 +1,5 @@
 import pygame
-import random
+from random import random, randint
 
 from random import randint
 from level_data import *
@@ -540,6 +540,12 @@ class ParallaxBackground:
         self.bg_scroll = 0
         self.level_width = levels[level]['size_x'] * TILE_SIZE
 
+        self.env_effect = levels[level]['environmental_effect']
+        if self.env_effect == 'lightning storm':
+            logging.debug(f'Active environmental effect: {self.env_effect}')
+            self.last_lighting = 0
+            self.lightning_timer = 3000
+
         self.only_bg_color = check_none_values(background)  # if there are one or more maps missing
 
         if self.only_bg_color:
@@ -551,6 +557,10 @@ class ParallaxBackground:
             x_size = self.bg_clouds.get_width() * scale
 
             self.bg_clouds = pygame.transform.scale(self.bg_clouds, (x_size, SCREEN_HEIGHT))
+            self.bg_white = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            self.bg_white.fill(WHITE)
+
+            self.bg_sky = self.bg_clouds  # we can replace this to create effects
         
             self.bg_near = pygame.transform.scale(pygame.image.load(background['near']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
             self.bg_medium = pygame.transform.scale(pygame.image.load(background['medium']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -580,6 +590,14 @@ class ParallaxBackground:
             if now - self.cloud_timer > self.cloud_drift:
                 self.cloud_movement += 1
                 self.cloud_timer = now
+            
+            # We replace the sky tecture with a bright white surface to indicate lightning
+            if self.env_effect == 'lightning':
+                if now - self.last_lighting > self.lightning_timer + randint(5000, 15000):
+                    self.bg_sky = self.bg_white
+                    self.last_lighting = now
+                else:
+                    self.bg_sky = self.bg_clouds
 
     
     def draw(self, surface) -> None:
@@ -589,13 +607,72 @@ class ParallaxBackground:
         else:
             # for x in range((self.level_width // self.width) + 1) :
             for x in range(-1, 3):
-                surface.blit(self.bg_clouds,  ((x * self.cloud_width) + self.cloud_movement, 0))  # clouds are special  
+                surface.blit(self.bg_sky,  ((x * self.cloud_width) + self.cloud_movement, 0))  # clouds are special  
                 surface.blit(self.bg_far,     ((x * self.width) + self.bg_scroll * 0.05, 0))
                 surface.blit(self.bg_further, ((x * self.width) + self.bg_scroll * 0.1,  0))
                 surface.blit(self.bg_medium,  ((x * self.width) + self.bg_scroll * 0.3,  0))
                 surface.blit(self.bg_near,    ((x * self.width) + self.bg_scroll * 0.7,  0))
 
     # TODO: right now the parallax factor is hard coded; move to level_data.py to allow different factors for different levels
+
+
+class Weather():
+    """ We do not use sprites for weather, but rather draw the rain/snow/whatever using pygame's draw function"""
+    def __init__(self, weather) -> None:
+        super().__init__()
+        self.started = False
+
+        self.weather_timer = 0
+
+
+        self.weather_type = None
+
+        if weather in ('lightning storm', 'rain'):
+            self.weather_type = 'rain'
+            self.weather_delay = 100
+            self.drops_on_screen = 30
+            self.drops = []
+            # Movement used both for initial line values and for later animations (x>0 means right, y>0 means down)
+            self.x_movement = -3
+            self.y_movement =  15
+            
+            for _ in range(self.drops_on_screen):
+                x1 = randint(0, SCREEN_WIDTH)
+                y1 = randint(0, SCREEN_HEIGHT)
+                x2 = x1 + self.x_movement
+                y2 = y1 + self.y_movement
+                color = WHITE
+                width = 3
+                
+                self.drops.append({'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2, 'color': color, 'width': width})
+
+    def update_and_draw(self, h_scroll, v_scroll, surface) -> None:
+        if not v_scroll:  # we wait until the player is done with the initial scrolling upon starting a new level
+            self.started = True
+
+        if self.weather_type == 'rain' and self.started:
+            now = pygame.time.get_ticks()
+            if now - self.weather_timer > self.weather_delay:
+                for i, particle in enumerate(self.drops):
+                    #print(particle['x1'])
+                    pygame.draw.line(surface, particle['color'], (particle['x1'], particle['y1']), \
+                                    (particle['x2'], particle['y2']), particle['width'])
+                    self.drops[i]['x1'] += self.x_movement + h_scroll
+                    self.drops[i]['y1'] += self.y_movement + v_scroll
+                    self.drops[i]['x2'] += self.x_movement + h_scroll
+                    self.drops[i]['y2'] += self.y_movement + v_scroll
+
+                    # Checking if the particle is out of bounds and we need to spawn a new one
+                    if not (0 < self.drops[i]['x2'] < SCREEN_WIDTH) or not (0 < self.drops[i]['y2'] < SCREEN_HEIGHT):
+
+                        x1 = randint(0, SCREEN_WIDTH)
+                        y1 = 0
+                        x2 = x1 + self.x_movement
+                        y2 = y1 + self.y_movement
+                        color = WHITE
+                        width = 3
+                        
+                        self.drops[i] = {'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2, 'color': color, 'width': width}
 
 
 # --- Speed line effect, used by player stomp

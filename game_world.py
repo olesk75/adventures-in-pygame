@@ -31,6 +31,7 @@ class GameState:
         self.level_current: int
         self.level_max: int
         self.level_complete: bool
+        self.level_weather: str
     
         # Game variables
         self.game_state: int  # One of the global GAME_STATE contants
@@ -71,6 +72,7 @@ class GameState:
         self.level_current = FIRST_LEVEL
         self.level_max = LAST_LEVEL
         self.level_complete = False
+        self.level_weather = None
 
         # --> Game variables
         self.game_state = GS_WELCOME  # we start with the welcome screen

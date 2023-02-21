@@ -118,7 +118,11 @@ class Level():
         self.background = ParallaxBackground(self.gs.level_current, self.screen)
 
         # environmental effects (leaves, snow etc.)
+        self.gs.level_weather = self.level_data['environmental_effect']
         self.env_sprites = EnvironmentalEffects(self.level_data['environmental_effect'], self.screen)  # 'leaves' for lvl1
+        
+        
+        self.weather_effets = Weather(self.gs.level_weather)
 
         # stomp self image shadows and effect
         self.stomp_shadows = pygame.sprite.Group()
@@ -132,6 +136,7 @@ class Level():
 
         # particle system
         self.particle_system = ParticleSystem()
+
         
         # player
         self.player = self.player_setup()
@@ -550,9 +555,9 @@ class Level():
             direction = 1
         for _ in range(50):   
             self.particle_system.add({
-                'center': [x + random.random() * 30, y + random.random() * 30],
-                'velocity': [random.random() * 10 * direction , random.random() * -10],
-                'radius': random.random() * 5,
+                'center': [x + random() * 30, y + random() * 30],
+                'velocity': [random() * 10 * direction , random() * -10],
+                'radius': random() * 5,
                 'color': color
             })
                 
@@ -651,6 +656,9 @@ class Level():
         self.particle_system.update(self.h_scroll, self.v_scroll)
         self.particle_system.draw(self.screen)
 
+        # weather
+        self.weather_effets.update_and_draw(self.h_scroll, self.v_scroll, self.screen)
+
         """ DEMO ZONE """
         # Testing player casting
         if len(self.player.cast_active):
@@ -696,7 +704,7 @@ class Level():
         self.check_monsters()  # this check mob detection + attack as well as player attack against all mobs
 
         # --> Check if we're in the arena and player has requested monster spawns
-        self.check_arena_spawns()
+        self.check_arena_spawns() 
         
         # --> Check effects and particle system <--
         self.show_bubbles()

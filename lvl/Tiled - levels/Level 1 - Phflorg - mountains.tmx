@@ -6,6 +6,7 @@
  </editorsettings>
  <properties>
   <property name="level number" type="int" value="1"/>
+  <property name="weather" value="lightning, rain"/>
  </properties>
  <tileset firstgid="1" source="Pickups.tsx"/>
  <tileset firstgid="4" source="Mountain terrain.tsx"/>
