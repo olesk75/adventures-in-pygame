@@ -222,7 +222,10 @@ class Level():
                             drop_key = Drop( monster.hitbox.centerx, monster.hitbox.centery - 25 , self.anim['pickups']['key'], turned = False, scale = 2, drop_type='key',)
                             self.drops_sprites.add(drop_key)
                             logging.debug(f'{monster.data.monster} dropped a key')
-                        monster.state_change(DYING)  # we do this _after_ key drop, as the hitbox disappears when the mob enters DYING state
+                            monster.state_change(DYING)  # we do this _after_ key drop, as the hitbox disappears when the mob enters DYING state
+                        else:
+                            monster.state_change(STUNNED, player_pos=self.player.rect.center, deadly=True)
+                        
 
                     else:  # monster still has hitpoints left
                         monster.state_change(STUNNED, player_pos=self.player.rect.center)

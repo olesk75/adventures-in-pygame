@@ -261,9 +261,10 @@ class Monster(pg.sprite.Sprite):
                 else:
                     self.data.direction = 1
                     self.turned = False
-                
-                print(self.data.direction)
-                self.vel_x = 5 * self.data.direction
+
+                direction = 1 if self.turned else -1
+
+                self.vel_x = 5 * self.data.direction * direction
                 self.vel_y = -10
                 self.on_bottom = False
 
