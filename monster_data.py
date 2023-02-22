@@ -37,7 +37,7 @@ class MonsterData():
             self.random_turns = 0.15
             self.hitbox_width = 65 
             self.hitbox_height = 110
-            self.sound_attack = pygame.mixer.Sound('assets/sound/monster/elven-archer/attack.ogg')
+            self.sound_attack = pygame.mixer.Sound('assets/sound/monster/elven-archer/attack.wav')
             self.sound_attack_volume = 0.5
             self.sound_death = pygame.mixer.Sound('assets/sound/monster/elven-archer/death.wav') 
             self.sound_death_volume = 0.3

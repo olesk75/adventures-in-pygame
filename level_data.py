@@ -135,11 +135,11 @@ class GameAudio():
         # Load audio for player
         self.player = {
             'attack': Sound('assets/sound/player/attack.wav'),
-            'jump': Sound('assets/sound/Jump/OGG/Jump 5 - Sound effects Pack 2.ogg'),
-            'die': Sound('assets/sound/Lose/OGG/Lose 7 - Sound effects Pack 2.ogg'),
-            'hit': Sound('assets/sound/Laser-weapon/OGG/Laser-weapon 8 - Sound effects Pack 2.ogg'),
-            'stomp': Sound('assets/sound/player/stomp.flac'),
-            'cast': Sound('assets/sound/player/stomp.flac'),
+            'jump': Sound('assets/sound/player/jump.wav'),
+            'die': Sound('assets/sound/player/death.wav'),
+            'hit': Sound('assets/sound/player/hit.wav'),
+            'stomp': Sound('assets/sound/player/stomp.wav'),
+            'cast': Sound('assets/sound/player/cast.wav'),
         }
 
         # Load audio for world
@@ -151,7 +151,7 @@ class GameAudio():
         }
 
         self.triggers = {
-            'portal:': Sound('assets/sound/triggered-objects/portal.wav'),
+            'portal': Sound('assets/sound/triggered-objects/portal.wav'),
             }
 
         # Game music
