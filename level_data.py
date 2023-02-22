@@ -3,7 +3,8 @@ Level data for all levels
 Level 0 is a special test level and not part of the game normally
 """
 
-import pygame
+import pygame as pg
+from pygame.mixer import Sound
 
 level_0 = {
     # Level 0 is the arena - available from the opening screen
@@ -128,28 +129,44 @@ class GameAudio():
     def __init__(self, level) -> None:
 
         # Initializing
-        pygame.mixer.pre_init(44100, -16, 2, 512)
-        pygame.init()
-        pygame.mixer.init()
-        pygame.init()
+        pg.mixer.pre_init(44100, -16, 2, 512)
+        pg.mixer.init()
 
         # Load audio for player
         self.player = {
-            'attack': pygame.mixer.Sound('assets/sound/player/attack.wav'),
-            'jump': pygame.mixer.Sound('assets/sound/Jump/OGG/Jump 5 - Sound effects Pack 2.ogg'),
-            'die': pygame.mixer.Sound('assets/sound/Lose/OGG/Lose 7 - Sound effects Pack 2.ogg'),
-            'hit': pygame.mixer.Sound('assets/sound/Laser-weapon/OGG/Laser-weapon 8 - Sound effects Pack 2.ogg'),
-            'stomp': pygame.mixer.Sound('assets/sound/player/stomp.flac')                            
+            'attack': Sound('assets/sound/player/attack.wav'),
+            'jump': Sound('assets/sound/Jump/OGG/Jump 5 - Sound effects Pack 2.ogg'),
+            'die': Sound('assets/sound/Lose/OGG/Lose 7 - Sound effects Pack 2.ogg'),
+            'hit': Sound('assets/sound/Laser-weapon/OGG/Laser-weapon 8 - Sound effects Pack 2.ogg'),
+            'stomp': Sound('assets/sound/player/stomp.flac'),
+            'cast': Sound('assets/sound/player/stomp.flac'),
         }
 
         # Load audio for world
-        self.key_pickup_fx = pygame.mixer.Sound('assets/sound/objects/key_pickup.wav')
-        self.health_pickup_fx = pygame.mixer.Sound('assets/sound/objects/health_pickup.wav')
-        self.stomp_pickup_fx = pygame.mixer.Sound('assets/sound/objects/health_pickup.wav')
-        self.mana_pickup_fx = pygame.mixer.Sound('assets/sound/objects/health_pickup.wav')
+        self.pickups = {
+            'key': Sound('assets/sound/objects/key_pickup.wav'),
+            'health': Sound('assets/sound/objects/health_pickup.wav'),
+            'stomp': Sound('assets/sound/objects/health_pickup.wav'),
+            'mana': Sound('assets/sound/objects/health_pickup.wav'),
+        }
+
+        self.triggers = {
+            'portal:': Sound('assets/sound/triggered-objects/portal.wav'),
+            }
 
         # Game music
-        if level == 2 or level == 1 or level == 0:
-            self.music = pygame.mixer.music
+        if level in (0, 1, 2):
+            self.music = pg.mixer.music
             self.music.load("assets/music/Hidden-Agenda.mp3")
-            pygame.mixer.music.set_volume(0.3)
+
+        # Setting default volume for sound effects
+        self.pickups['health'].set_volume(0.5)
+        self.pickups['stomp'].set_volume(0.5)
+        self.pickups['mana'].set_volume(0.5)
+        self.pickups['key'].set_volume(0.5)
+
+        self.player['attack'].set_volume(0.5)
+        self.player['jump'].set_volume(0.5)
+        self.player['die'].set_volume(0.5)
+        self.player['hit'].set_volume(0.2)
+        self.player['stomp'].set_volume(1)

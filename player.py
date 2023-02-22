@@ -67,9 +67,6 @@ class Player(pygame.sprite.Sprite):
         # The main rect for the player sprite
         self.rects['player'] = pygame.Rect(x,y, self.width, self.height)  
 
-        # Manual adjustments of hitbox rect - as we use general draw() method from SpriteGroup(), the rect will position the surface, so need to be full size
-        # self.X_ADJ = self.animations['walk'].ss.scale * 44
-        # self.Y_ADJ = self.animations['walk'].ss.scale * 10
         x_reduction = 150  # making the hitbox narrower
         y_reduction = 28  # making the hitbox shorter to better fit player
 
@@ -92,18 +89,8 @@ class Player(pygame.sprite.Sprite):
         self.side_collision_sprite.rect = self.rects['hitbox']
         
         # Setting up sound effects
-        sounds = audio
-        self.fx_attack = sounds.player['attack']
-        self.fx_jump = sounds.player['jump']
-        self.fx_die = sounds.player['die']
-        self.fx_hit = sounds.player['hit']
-        self.fx_stomp = sounds.player['stomp']
-        self.fx_attack.set_volume(0.5)
-        self.fx_jump.set_volume(0.5)
-        self.fx_die.set_volume(0.5)
-        self.fx_hit.set_volume(0.2)
-        self.fx_attack_channel = pygame.mixer.Channel(0)  # we use separate channel to avoid overlapping sounds with repeat attacks
-
+        self.audio = audio
+        
         # Status variables - initial values
         self.mana = 0  # TODO: for later
         self.turned = False  # flip sprite/animations when moving left
@@ -525,20 +512,19 @@ class Player(pygame.sprite.Sprite):
                 self.vel_y = - JUMP_HEIGHT
                 self.state['next'] = JUMPING
                 self.on_ground = False
-                self.fx_jump.play()
+                self.audio.player['jump'].play()
 
             if self.gs.user_input['down'] and not self.on_ground and self.gs.player_stomp_counter == PLAYER_STOMP:
                 self.vel_y = 3
                 self.state['next'] = STOMPING
-                self.fx_stomp.play()
+                self.audio.player['stomp'].play()
 
             if self.gs.user_input['attack']:
                 now = pygame.time.get_ticks()
                 if now - self.last_attack > self.attack_delay:
                     self.state['next'] = ATTACKING
                     self.gs.user_input['attack'] = False  # we reset to prevent repeated attacks by holding down the attack key/button
-                    if not self.fx_attack_channel.get_busy():  # playing sound if not all channels busy
-                        self.fx_attack_channel.play(self.fx_attack)
+                    self.audio.player['attack'].play()
                     self.last_attack = now
 
             if self.gs.user_input['cast']:
@@ -546,8 +532,7 @@ class Player(pygame.sprite.Sprite):
                 if now - self.last_cast > self.cast_delay:
                     self.state['next'] = CASTING
                     if not self.fx_attack_channel.get_busy():  # playing sound if not all channels busy
-                    #    self.fx_attack_channel.play(self.fx_attack)
-                        pass
+                        self.audio.player['cast'].play()
                     self.last_cast = now
         
         if self.gs.user_input['quit']:
@@ -559,7 +544,7 @@ class Player(pygame.sprite.Sprite):
         """ Player has been in contact with enviromnmental damage, gets damage once or frequency per second """
         now = pygame.time.get_ticks()
         if now > self.last_env_damage + 1000 / hits_per_second:
-            self.fx_hit.play()
+            self.audio.player['hit'].play()
             # Adjust health and bars
             self.gs.player_health -= damage
             self.gs.player_stomp_counter = 0  # reset stomp on hit
@@ -581,7 +566,7 @@ class Player(pygame.sprite.Sprite):
         if not self.gs.player_invincible:  # we have half a sec of invincibility after damage to avoid repeat damage
             if damage:  # we also use hits without damage to bump the player
                 self._flash()
-                self.fx_hit.play()
+                self.audio.player['hit'].play()
                 self.gs.player_invincible = True  # we want 
                 self.gs.player_hit = True
                 self.last_damage = pygame.time.get_ticks()  

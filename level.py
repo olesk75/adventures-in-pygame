@@ -45,13 +45,7 @@ class Level():
         self.lvl_exit = (0,0)
 
         # audio for current level
-        self.sounds = GameAudio(self.gs.level_current)  # used here and sent to player on creation as well
-        self.fx_key_pickup = self.sounds.key_pickup_fx
-        self.fx_health_pickup = self.sounds.health_pickup_fx
-        self.fx_player_stomp = self.sounds.player['stomp']
-        self.fx_key_pickup.set_volume(0.5)
-        self.fx_health_pickup.set_volume(0.5)
-        self.fx_player_stomp.set_volume(0.5)
+        self.audio = GameAudio(self.gs.level_current)  # used here and sent to player on creation as well
 
         # Import all the tile PNGs
         self.terrain_tilesheet_list = import_tile_sheet_graphics(self.level_data['terrain_ts'])  # these are the new format tiles
@@ -270,15 +264,15 @@ class Level():
         if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.pickups_sprites,False) and self.player.state['active'] != DYING:
             for pickup in pygame.sprite.spritecollide(self.player,self.pickups_sprites,False):
                 if pickup.name == 'health potion':
-                    self.fx_health_pickup.play()
+                    self.audio.pickups['health'].play()
                     self.player.heal(500)
                     pickup.kill()
                 if pickup.name == 'stomp potion':
-                    self.fx_health_pickup.play()
+                    self.audio.pickups['stomp'].play()
                     self.gs.player_stomp_counter = PLAYER_STOMP
                     pickup.kill()
                 if pickup.name == 'mana potion':
-                    self.fx_health_pickup.play()
+                    self.audio.pickups['mana'].play()
                     self.player.mana += 100
                     pickup.kill()
 
@@ -297,7 +291,8 @@ class Level():
                     # play some sound effect
                     sprite.animation.active = True
                 elif sprite.name == 'IN portal':
-                    # play some sound effect
+                    self.audio.triggers['portal'].play()
+
                     #print(self.out_portal_coordinates)
                     self.player.destination = self.out_portal_coordinates
 
@@ -313,7 +308,7 @@ class Level():
             for drop in pygame.sprite.spritecollide(self.player.hitbox_sprite,self.drops_sprites,False):
                 if drop.drop_type == 'key':
                     self.gs.player_inventory.append(('key', self.key_img))  # inventory of items and their animations
-                    self.fx_key_pickup.play()            
+                    self.audio.pickups['key'].play()
                     drop.kill()
                     self.bubble_list.append(BubbleMessage(self.screen, 'A key! All I need now is a lock.', 5000, 3000, 'key', self.player))
                
@@ -569,7 +564,7 @@ class Level():
 
 # --> Main functions
     def player_setup(self) -> Player:
-        player = Player(self.lvl_entry[0], self.lvl_entry[1], self.screen, self.sounds, self.level_data, self.gs)
+        player = Player(self.lvl_entry[0], self.lvl_entry[1], self.screen, self.audio, self.level_data, self.gs)
         logging.debug(f'Player spawned at ({self.lvl_entry[0]}, {self.lvl_entry[1]})')
         return player
 
