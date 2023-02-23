@@ -5,7 +5,7 @@ GameTileAnimation (GameTile class)  : animated background tiles (flames, torches
 GamePanel(class)                    : contans the player information for the screen - score, health etc.
 """
 
-import pygame
+import pygame as pg
 import logging
 import random
 
@@ -90,23 +90,23 @@ class Level():
 
         # ---> Composite map groups
         # group of all (potential) collision sprites for monsters - mostly terrain, but also things like doors, barriers and hazards
-        self.collision_sprites = pygame.sprite.Group()
+        self.collision_sprites = pg.sprite.Group()
         self.collision_sprites.add(self.terrain_sprites.sprites() + self.triggered_objects_sprites.sprites() + self.hazards_sprites.sprites())
 
         # ---> Sprites not loaded from the map (projectiles, spels, panels etc.)
 
         # projectiles (no animation variety)
-        self.arrow_img = pygame.image.load('assets/sprites/arrow.png').convert_alpha()
-        self.projectile_sprites = pygame.sprite.Group()
+        self.arrow_img = pg.image.load('assets/sprites/arrow.png').convert_alpha()
+        self.projectile_sprites = pg.sprite.Group()
 
         # spells
-        self.spell_sprites = pygame.sprite.Group()
+        self.spell_sprites = pg.sprite.Group()
 
         # drops (keys, health potions etc.)
-        self.drops_sprites = pygame.sprite.Group()
+        self.drops_sprites = pg.sprite.Group()
 
         # load panel images 
-        self.key_img = pygame.image.load('assets/panel/key.png').convert_alpha()
+        self.key_img = pg.image.load('assets/panel/key.png').convert_alpha()
 
         # sky
         self.background = ParallaxBackground(self.gs.level_current, self.screen)
@@ -115,18 +115,21 @@ class Level():
         self.gs.level_weather = self.level_data['environmental_effect']
         self.env_sprites = EnvironmentalEffects(self.level_data['environmental_effect'], self.screen)  # 'leaves' for lvl1
         
-        
         self.weather_effets = Weather(self.gs.level_weather)
+        
+        # ambient audio
+        self.audio.ambient['rainstorm'].set_volume(0.3)
+        self.audio.ambient['rainstorm'].play(loops=-1)
 
         # stomp self image shadows and effect
-        self.stomp_shadows = pygame.sprite.Group()
-        self.stomp_effects = pygame.sprite.GroupSingle()  # only one stomp effect at a time
+        self.stomp_shadows = pg.sprite.Group()
+        self.stomp_effects = pg.sprite.GroupSingle()  # only one stomp effect at a time
 
         # player dust 
-        self.effect_sprites = pygame.sprite.Group()
+        self.effect_sprites = pg.sprite.Group()
 
         # information pop-ups
-        self.info_sprites = pygame.sprite.Group()
+        self.info_sprites = pg.sprite.Group()
 
         # particle system
         self.particle_system = ParticleSystem()
@@ -134,8 +137,10 @@ class Level():
         
         # player
         self.player = self.player_setup()
-        self.player_sprites = pygame.sprite.GroupSingle()
+        self.player_sprites = pg.sprite.GroupSingle()
         self.player_sprites.add(self.player)
+
+        
 
         # debugging
         logging.debug(f"Level created {levels[self.gs.level_current]['size_x']} by {levels[self.gs.level_current]['size_y']} tiles large, or {levels[self.gs.level_current]['size_x']*TILE_SIZE} by {levels[self.gs.level_current]['size_y']*TILE_SIZE} pixels")
@@ -143,19 +148,19 @@ class Level():
     def _debug_show_state(self) -> None:
         """ DEBUG ZONE """
         if self.player.state['active'] == IDLE:
-            pygame.draw.rect(self.screen, (0,255,0), (SCREEN_WIDTH - 50,0,50,50))
+            pg.draw.rect(self.screen, (0,255,0), (SCREEN_WIDTH - 50,0,50,50))
         if self.player.state['active'] == JUMPING:
-            pygame.draw.rect(self.screen, (0,255,255), (SCREEN_WIDTH - 50,0,50,50))
+            pg.draw.rect(self.screen, (0,255,255), (SCREEN_WIDTH - 50,0,50,50))
         if self.player.state['active'] == ATTACKING:
-            pygame.draw.rect(self.screen, (255,0,0), (SCREEN_WIDTH - 50,0,50,50))
+            pg.draw.rect(self.screen, (255,0,0), (SCREEN_WIDTH - 50,0,50,50))
         if self.player.state['active'] == WALKING:
-            pygame.draw.rect(self.screen, (0,0,255), (SCREEN_WIDTH - 50,0,50,50))
+            pg.draw.rect(self.screen, (0,0,255), (SCREEN_WIDTH - 50,0,50,50))
         if self.player.state['active'] == DYING:
-            pygame.draw.rect(self.screen, (0,0,0), (SCREEN_WIDTH - 50,0,50,50))
+            pg.draw.rect(self.screen, (0,0,0), (SCREEN_WIDTH - 50,0,50,50))
         if self.player.state['active'] == CASTING:
-            pygame.draw.rect(self.screen, (255,255,0), (SCREEN_WIDTH - 50,0,50,50))
+            pg.draw.rect(self.screen, (255,255,0), (SCREEN_WIDTH - 50,0,50,50))
         if self.player.state['active'] == STOMPING:
-            pygame.draw.rect(self.screen, (255,0,255), (SCREEN_WIDTH - 50,0,50,50))
+            pg.draw.rect(self.screen, (255,0,255), (SCREEN_WIDTH - 50,0,50,50))
 
 # --> Checking functions
     def check_arena_spawns(self) -> None:
@@ -201,7 +206,7 @@ class Level():
             # --> We check if the player is attacking and if the attack hits a monster
             if self.player.state['active'] == ATTACKING and monster.state not in (DYING, DEAD) and monster.invulnerable == False:
                 # Check if mob hit
-                if pygame.Rect.colliderect(self.player.rects['attack'], monster.hitbox): 
+                if pg.Rect.colliderect(self.player.rects['attack'], monster.hitbox): 
                     # Add hit (blood) particles
                     self.particles_blood(monster.hitbox.centerx, monster.hitbox.centery, monster.data.blood_color, self.player.turned)
                     monster.data.hitpoints -= 1
@@ -223,46 +228,46 @@ class Level():
 
                     else:  # monster still has hitpoints left
                         monster.state_change(STUNNED, player_pos=self.player.rect.center)
-                        self.player.rects['attack'] = pygame.Rect(0,0,0,0)
+                        self.player.rects['attack'] = pg.Rect(0,0,0,0)
                         self.player.state['next'] = IDLE
 
     def check_player_win(self) -> None:
         # Player sprite reaches goal tile
-        if pygame.sprite.spritecollide(self.player,self.player_in_out_sprites,False):
-            if pygame.sprite.spritecollide(self.player,self.player_in_out_sprites,False)[0].inout == 'out':  # first colliding sprite
+        if pg.sprite.spritecollide(self.player,self.player_in_out_sprites,False):
+            if pg.sprite.spritecollide(self.player,self.player_in_out_sprites,False)[0].inout == 'out':  # first colliding sprite
                 logging.debug('WIN! Level complete')
                 self.gs.level_complete = True
 
     def check_coll_player_hazard(self) -> None:
         # Player + hazard group collision 
-        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.hazards_sprites,False) and self.player.state['active'] not in (DYING, DEAD):
+        if pg.sprite.spritecollide(self.player.hitbox_sprite,self.hazards_sprites,False) and self.player.state['active'] not in (DYING, DEAD):
             self.player.hazard_damage(100, hits_per_second=10)
             self.bubble_list.append(BubbleMessage(self.screen, 'Ouch! Ouch!', 1000, 0, 'spikes', self.player))
 
     def check_coll_player_projectile(self) -> None:
     # Player + projectile collision (arrows etc.) AND player's attack collision (so attacking arrows in flight for example)
-        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.projectile_sprites,False) and self.player.state['active'] != DYING:
-            for projectile in pygame.sprite.spritecollide(self.player.hitbox_sprite,self.projectile_sprites,False):
+        if pg.sprite.spritecollide(self.player.hitbox_sprite,self.projectile_sprites,False) and self.player.state['active'] != DYING:
+            for projectile in pg.sprite.spritecollide(self.player.hitbox_sprite,self.projectile_sprites,False):
                 self.particles_blood(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery, RED, projectile.turned)  # add blood particles whne player is hit
                 self.player.hit(self.arrow_damage, projectile.turned, self.terrain_sprites)
                 projectile.kill()
         for projectile in self.projectile_sprites.sprites():
             # We can attack and destroy projectiles as well
             if self.player.state['active'] == ATTACKING:
-                if  pygame.Rect.colliderect(self.player.rects['attack'], projectile.rect):
+                if  pg.Rect.colliderect(self.player.rects['attack'], projectile.rect):
                     # play some sound # TODO
                     projectile.kill()
 
     def check_coll_player_spell(self) -> None:
         # Player + spell collision
-        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.spell_sprites,False) and self.player.state['active'] != DYING:
-            for _ in pygame.sprite.spritecollide(self.player,self.spell_sprites,False):
+        if pg.sprite.spritecollide(self.player.hitbox_sprite,self.spell_sprites,False) and self.player.state['active'] != DYING:
+            for _ in pg.sprite.spritecollide(self.player,self.spell_sprites,False):
                 self.player.hazard_damage(100, hits_per_second=2)
     
     def check_coll_player_pickup(self) -> None:
         # Animated objects pickup / collision
-        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.pickups_sprites,False) and self.player.state['active'] != DYING:
-            for pickup in pygame.sprite.spritecollide(self.player,self.pickups_sprites,False):
+        if pg.sprite.spritecollide(self.player.hitbox_sprite,self.pickups_sprites,False) and self.player.state['active'] != DYING:
+            for pickup in pg.sprite.spritecollide(self.player,self.pickups_sprites,False):
                 if pickup.name == 'health potion':
                     self.audio.pickups['health'].play()
                     self.player.heal(500)
@@ -277,8 +282,8 @@ class Level():
                     pickup.kill()
 
     def check_coll_player_triggered_objects(self) -> None:
-        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.triggered_objects_sprites,False) and self.player.state['active'] != DYING:
-            for sprite in pygame.sprite.spritecollide(self.player,self.triggered_objects_sprites,False):
+        if pg.sprite.spritecollide(self.player.hitbox_sprite,self.triggered_objects_sprites,False) and self.player.state['active'] != DYING:
+            for sprite in pg.sprite.spritecollide(self.player,self.triggered_objects_sprites,False):
                 if sprite.name in ('door-left', 'door-right', 'end-of-level'):
                         if any('key' in sublist for sublist in self.gs.player_inventory): # do we have key?
                             sprite.animation.frame_number = 0
@@ -304,8 +309,8 @@ class Level():
 
     def check_coll_player_drops(self) -> None:
     # Dropped objects pickup / collision
-        if pygame.sprite.spritecollide(self.player.hitbox_sprite,self.drops_sprites,False) and self.player.state['active'] != DYING:
-            for drop in pygame.sprite.spritecollide(self.player.hitbox_sprite,self.drops_sprites,False):
+        if pg.sprite.spritecollide(self.player.hitbox_sprite,self.drops_sprites,False) and self.player.state['active'] != DYING:
+            for drop in pg.sprite.spritecollide(self.player.hitbox_sprite,self.drops_sprites,False):
                 if drop.drop_type == 'key':
                     self.gs.player_inventory.append(('key', self.key_img))  # inventory of items and their animations
                     self.audio.pickups['key'].play()
@@ -318,11 +323,11 @@ class Level():
     def check_coll_stomp_monster(self) -> None:
         # Mobs caught in stomp blast effect
         if self.stomp_effects.sprite:
-            stomp_collision = pygame.sprite.spritecollide(self.stomp_effects.sprite, self.monsters_sprites,False)
+            stomp_collision = pg.sprite.spritecollide(self.stomp_effects.sprite, self.monsters_sprites,False)
             if stomp_collision:
                 for monster in stomp_collision:
                     if monster.state not in (DYING, DEAD):
-                        if pygame.Rect.colliderect(self.stomp_effects.sprite.rect, monster.hitbox): 
+                        if pg.Rect.colliderect(self.stomp_effects.sprite.rect, monster.hitbox): 
                             monster.state_change(STUNNED, player_pos=self.player.rect.center, deadly=True)
                             self.gs.player_score += monster.data.points_reward
                             self.player.stomp_counter += 1
@@ -330,18 +335,18 @@ class Level():
 
     def check_coll_player_monster(self) -> None:
         # Player + mobs group collision
-        monster_collisions = pygame.sprite.spritecollide(self.player.hitbox_sprite, self.monsters_sprites,False)
+        monster_collisions = pg.sprite.spritecollide(self.player.hitbox_sprite, self.monsters_sprites,False)
         if monster_collisions and self.player.state['active'] not in (DYING, STOMPING):
             for monster in monster_collisions:
                 if monster.state != DYING and monster.state != DEAD:  # we only deal with the living
-                    if pygame.Rect.colliderect(self.player.rects['hitbox'], monster.hitbox):  # sprite collision not enough, we now check hitboxes
+                    if pg.Rect.colliderect(self.player.rects['hitbox'], monster.hitbox):  # sprite collision not enough, we now check hitboxes
                        if monster.state not in (DYING, STOMPING):  # check to avoid repeat damage
                             # Player gets bumped _away_ from mob:
                             self.player.hit(100, monster.turned, self.terrain_sprites)  # bump player _away_ from monster
 
     def check_monsters(self) -> None:
         # Monsters can be up to several things, which we check for here
-        now = pygame.time.get_ticks()
+        now = pg.time.get_ticks()
         for monster in self.monsters_sprites.sprites():
             if monster.state != DYING and monster.state != DEAD:  # only dealing with the living
                 #  --> casting spells=
@@ -353,7 +358,7 @@ class Level():
                     monster.cast_anim_list = []
 
                 # --> detecting (or no longer detecting) the player and switch to/from ATTACK mode
-                if pygame.Rect.colliderect(self.player.rects['hitbox'], monster.rect_detect) and self.player.state['active'] not in (DYING, DEAD):
+                if pg.Rect.colliderect(self.player.rects['hitbox'], monster.rect_detect) and self.player.state['active'] not in (DYING, DEAD):
                     if monster.state == WALKING:
                         monster.state_change(ATTACKING)    
                 else:  # Mob not detecting player
@@ -361,7 +366,7 @@ class Level():
                         monster.state_change(WALKING)  # if we move out of range, the mob will stop attacking
 
                 # --> attacking the player and hitting or not the player's hitbox (or launching arrow or not)                
-                if pygame.Rect.colliderect(self.player.rects['hitbox'], monster.rect_attack) and monster.state == ATTACKING and self.player.state['active'] != STOMPING:
+                if pg.Rect.colliderect(self.player.rects['hitbox'], monster.rect_attack) and monster.state == ATTACKING and self.player.state['active'] != STOMPING:
                     if monster.data.attack_instant_damage:  
                         self.player.hit(monster.data.attack_damage, monster.turned, self.terrain_sprites)  # melee hit
                         self.particles_blood(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery, RED, monster.turned)  # add blood particles whne player is hit
@@ -372,8 +377,8 @@ class Level():
                             self.projectile_sprites.add(arrow)
                             monster.last_arrow = now
 
-    def create_tile_group(self,layout,type) -> pygame.sprite.Group:
-        sprite_group = pygame.sprite.Group()
+    def create_tile_group(self,layout,type) -> pg.sprite.Group:
+        sprite_group = pg.sprite.Group()
 
         for row_index, row in enumerate(layout):
             for col_index,val in enumerate(row):
@@ -663,17 +668,17 @@ class Level():
         # DEBUGGING
         # self._debug_show_state()
         if DEBUG_HITBOXES:
-            pygame.draw.rect(self.screen, (255,255,255), self.player.rect, 4 )  # self.rect - WHITE
+            pg.draw.rect(self.screen, (255,255,255), self.player.rect, 4 )  # self.rect - WHITE
             if self.player.rects['hitbox']:
-                pygame.draw.rect(self.screen, (128,128,128), self.player.rects['hitbox'], 2 )  # Hitbox rect (grey)
+                pg.draw.rect(self.screen, (128,128,128), self.player.rects['hitbox'], 2 )  # Hitbox rect (grey)
             if self.player.rects['attack']:
-                pygame.draw.rect(self.screen, (255, 0, 0), self.player.rects['attack'], 4 )  # attack rect - RED
+                pg.draw.rect(self.screen, (255, 0, 0), self.player.rects['attack'], 4 )  # attack rect - RED
             if self.player.collision_sprite.rect:
-                pygame.draw.rect(self.screen, ('#e75480'), self.player.collision_sprite.rect, 2 )  # Collsion rect - PINK
+                pg.draw.rect(self.screen, ('#e75480'), self.player.collision_sprite.rect, 2 )  # Collsion rect - PINK
 
         # Vertical scroll lines
-        #pygame.draw.line(self.screen, RED, (0, V_SCROLL_THRESHOLD), (SCREEN_WIDTH, V_SCROLL_THRESHOLD), width=3)
-        #pygame.draw.line(self.screen, RED, (0, SCREEN_HEIGHT - V_SCROLL_THRESHOLD), (SCREEN_WIDTH, SCREEN_HEIGHT - V_SCROLL_THRESHOLD), width=3)
+        #pg.draw.line(self.screen, RED, (0, V_SCROLL_THRESHOLD), (SCREEN_WIDTH, V_SCROLL_THRESHOLD), width=3)
+        #pg.draw.line(self.screen, RED, (0, SCREEN_HEIGHT - V_SCROLL_THRESHOLD), (SCREEN_WIDTH, SCREEN_HEIGHT - V_SCROLL_THRESHOLD), width=3)
         #print(f"Player's centerY: {self.player.rects['player'].centery} and world Y pos: {self.player.world_y_pos} and the delta: {self.player.world_y_pos - self.player.rects['player'].centery}")
 
         # --> Check player condition and actions <--

@@ -41,6 +41,8 @@ class MonsterData():
             self.sound_attack_volume = 0.5
             self.sound_death = pygame.mixer.Sound('assets/sound/monster/elven-archer/death.wav') 
             self.sound_death_volume = 0.3
+            self.sound_hit = pygame.mixer.Sound('assets/sound/monster/elven-archer/hit.wav') 
+            self.sound_hit_volume = 0.5
             self.blood_color = pygame.Color('#ac3232')
  
         if monster == 'skeleton-boss':
@@ -122,5 +124,7 @@ class MonsterData():
             self.sound_attack = pygame.mixer.Sound('assets/sound/monster/beholder/attack.flac')
             self.sound_attack_volume = 0.5
             self.sound_death = pygame.mixer.Sound('assets/sound/monster/beholder/death.flac')
-            self.sound_death_volume = 0.5
+            self.sound_death_volume = 1
+            self.sound_cast = None
+            self.sound_cast_volume = None
             self.blood_color = pygame.Color('#99e550') 

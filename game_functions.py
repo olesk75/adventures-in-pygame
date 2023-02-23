@@ -1,4 +1,4 @@
-import pygame
+import pygame as pg
 import pickle
 import glob
 import re
@@ -20,9 +20,9 @@ def check_none_values(d) -> bool:
     return False
 
 # --- Draw on screen ---
-def draw_text(text, surface, text_col, x, y, font: pygame.font.Font=None, align: str=None)-> None:
+def draw_text(text, surface, text_col, x, y, font: pg.font.Font=None, align: str=None)-> None:
     if not font:
-        font = pygame.font.Font("assets/font/Silver.ttf", 32)  # 16, 32, 48
+        font = pg.font.Font("assets/font/Silver.ttf", 32)  # 16, 32, 48
     """ Output text on screen """
     img = font.render(text, True, text_col)
     
@@ -34,14 +34,14 @@ def draw_text(text, surface, text_col, x, y, font: pygame.font.Font=None, align:
 
 def fade_to_color(color, screen, gs) -> None:
     # Fades to color
-    now = pygame.time.get_ticks()
+    now = pg.time.get_ticks()
 
     if now - gs.game_fade_last_update > 50 and gs.game_fade_ready:
-        color = pygame.Color(color)
+        color = pg.Color(color)
         gs.last_fade_update = now
         
         rect = screen.get_rect()
-        rectsurf = pygame.Surface(rect.size,pygame.SRCALPHA)
+        rectsurf = pg.Surface(rect.size,pg.SRCALPHA)
         if gs.game_fade_counter < 255:
             color.a = gs.game_fade_counter  # we set the alpha of the color, from 0 to 255
             gs.game_fade_counter += 10
@@ -72,7 +72,7 @@ def import_tile_graphics(path :str) -> list:
     tile_files.sort(key=lambda var:[int(x) if x.isdigit() else x for x in re.findall(r'\D|\D+', var)])
 
     for filename in tile_files:  # read tile files sorted by name
-        tiles.append(pygame.image.load(filename).convert_alpha())
+        tiles.append(pg.image.load(filename).convert_alpha())
    
     return tiles
 
@@ -82,7 +82,7 @@ def import_tile_sheet_graphics(ss_file :str) -> list:
     from animation import SpriteSheet
 
     tiles = []
-    ss_image = pygame.image.load(ss_file).convert_alpha()
+    ss_image = pg.image.load(ss_file).convert_alpha()
     ss_tile_rows = int(ss_image.get_height() / TILE_SIZE)  # get number of columns
     ss_tile_cols = int(ss_image.get_width() / TILE_SIZE)  # get number of tiles in row
 

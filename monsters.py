@@ -17,11 +17,8 @@ class Monster(pg.sprite.Sprite):
         self.data = MonsterData(monster_type)
         self.screen = surface
 
-        from animation_data import anim
-
-        # Setting up state animations
-
         # Setting up animations
+        from animation_data import anim
         self.animations = {
             'walk': copy.copy(anim[monster_type]['walk']),
             'attack': copy.copy(anim[monster_type]['attack']),
@@ -49,6 +46,16 @@ class Monster(pg.sprite.Sprite):
         
         self.rect_detect = pg.Rect(0,0,0,0)
         self.rect_attack = pg.Rect(0,0,0,0)
+
+        # Setting the volumes for the various sounds 
+        try:
+            self.data.sound_attack.set_volume(self.data.sound_attack_volume)
+            self.data.sound_death.set_volume(self.data.sound_death_volume)
+            self.data.sound_cast.set_volume(self.data.sound_attack_volume)
+            self.data.sound_hit.set_volume(self.data.sound_hit_volume)
+        except AttributeError:
+            logging.debug(f'Missing sound effect for {monster_type}')
+            
    
         self.vel_x = 0
         self.vel_y = 0
@@ -231,7 +238,6 @@ class Monster(pg.sprite.Sprite):
                     self.last_attack = pg.time.get_ticks()  # recording time of last attack
 
                     if self.data.sound_attack:
-                        self.data.sound_attack.set_volume(self.data.sound_attack_volume)
                         self.data.sound_attack.play()
 
             elif new_state == WALKING:
@@ -251,6 +257,7 @@ class Monster(pg.sprite.Sprite):
 
             elif new_state == STUNNED:
                 # Typically only as a result of a successful player attack
+                self.data.sound_hit.play()
                 self.stun_start = pg.time.get_ticks()
                 self.invulnerable = True
                 self.die_after_stun = True if deadly else False
@@ -286,7 +293,6 @@ class Monster(pg.sprite.Sprite):
                     self.image = self.animation.frame[-1]
 
                     if self.data.sound_death:
-                        self.data.sound_death.set_volume(self.data.sound_death_volume)
                         self.data.sound_death.play()
 
             new_rect = self.animation.get_image().get_rect()  # we need to scale back to walking image size after an attack

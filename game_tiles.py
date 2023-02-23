@@ -1,7 +1,7 @@
 
-import pygame
+import pygame as pg
 
-class GameTile(pygame.sprite.Sprite):
+class GameTile(pg.sprite.Sprite):
 	"""
 	Customized Sprite class which allows update with h_scroll value, which will be triggerd by spritegroup.update(h_scroll)
 	"""
@@ -10,7 +10,7 @@ class GameTile(pygame.sprite.Sprite):
 		# slope indicates if tile is not flat, and slope_pos is used for other slope angles than 45 degree, where we need
 		# to know where in the multi-tile slope the current tile is
 		super().__init__()
-		self.image = pygame.transform.scale(surface, (size_x, size_y)).convert_alpha()
+		self.image = pg.transform.scale(surface, (size_x, size_y)).convert_alpha()
 
 		self.rect = self.image.get_rect(topleft = (x,y))
 
@@ -32,14 +32,14 @@ class GameTileAnimation(GameTile):
 	Also note taht we can have float values for x_vel and y_vel, they only get converted to int when added to x and y pos on update
 	"""
 	def __init__(self, size_x :int, size_y :int, x :int, y :int, animation: classmethod) -> None:
-		super().__init__(size_x, size_y, x, y, pygame.Surface((0,0)))
+		super().__init__(size_x, size_y, x, y, pg.Surface((0,0)))
 		
 		self.animation = animation  # the animation generates images for us
 		self.hidden = False  # we can make things invisible 
 
 		self.image = animation.get_image()
 		self.rect = self.image.get_rect(topleft = (x,y))
-		self.image_tranparent = pygame.Surface((size_x, size_y), pygame.SRCALPHA)  # Creates an empty per-pixel alpha Surface.
+		self.image_tranparent = pg.Surface((size_x, size_y), pg.SRCALPHA)  # Creates an empty per-pixel alpha Surface.
 
 
 		self.sprites = self.animation.sprites  # contains all sprites in the animation cycle
@@ -69,7 +69,7 @@ class MovingGameTile(GameTile):
 	def __init__(self, size_x, size_y, x, y, speed, distance, surface) -> None:
 		# Basic static sprite (always contains an image and a rect)
 		super().__init__(size_x, size_y, x, y, surface)
-		self.image = pygame.transform.scale(surface, (size_x, size_y)).convert_alpha()
+		self.image = pg.transform.scale(surface, (size_x, size_y)).convert_alpha()
 		self.speed = speed
 		self.distance = distance
 		self.moving = True
@@ -90,7 +90,7 @@ class MovingGameTile(GameTile):
 		self.rect.centerx += h_scroll
 		self.rect.centery += v_scroll
 
-		now = pygame.time.get_ticks()
+		now = pg.time.get_ticks()
 		if now - self.last_move > 30:
 			self.last_move = now
 			# print(f'{self.rect.centerx=}, {self.x_start_pos=} {self.distance=}')

@@ -150,10 +150,15 @@ class GameAudio():
             'portal': Sound('assets/sound/triggered-objects/portal.wav'),
             }
 
+        # Game ambient
+        self.ambient = {
+            'rainstorm': Sound('assets/sound/ambient/rainstorm.wav'),
+        }
+
         # Game music
         if level in (0, 1, 2):
             self.music = pg.mixer.music
-            self.music.load("assets/music/Hidden-Agenda.mp3")
+            self.music.load("assets/sound/music/Hidden-Agenda.mp3")
 
         # Setting default volume for sound effects
         self.pickups['health'].set_volume(0.5)

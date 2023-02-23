@@ -1,4 +1,4 @@
-import pygame
+import pygame as pg
 import logging
 import math
 
@@ -7,7 +7,7 @@ from decor_and_effects import ExpandingCircle, SpeedLines
 
 
 # Player class
-class Player(pygame.sprite.Sprite):
+class Player(pg.sprite.Sprite):
     def __init__(self, x, y, surface, audio, level_data: dict, game_state) -> None:
         # need also walk_anim, attack_anim, death_anim, sounds
         """
@@ -44,8 +44,8 @@ class Player(pygame.sprite.Sprite):
         }
 
         self.rects = {
-            'player': pygame.Rect,  # the rect for the full player sprite
-            'attack': pygame.Rect,  # the rect for the player attack, to test collision with monsters and projectiles
+            'player': pg.Rect,  # the rect for the full player sprite
+            'attack': pg.Rect,  # the rect for the player attack, to test collision with monsters and projectiles
         }
         
         self.animation = self.animations['idle']  # Idle by default
@@ -65,27 +65,27 @@ class Player(pygame.sprite.Sprite):
         self.destination = None  # we use this teleports and special effects wher the player is moved great distances in a flash (without a flash)
 
         # The main rect for the player sprite
-        self.rects['player'] = pygame.Rect(x,y, self.width, self.height)  
+        self.rects['player'] = pg.Rect(x,y, self.width, self.height)  
 
         x_reduction = 150  # making the hitbox narrower
         y_reduction = 28  # making the hitbox shorter to better fit player
 
-        self.rects['hitbox'] = pygame.Rect(0, 0, self.width - x_reduction, self.height - y_reduction)  # we ignore the x and y and center in next line instead
+        self.rects['hitbox'] = pg.Rect(0, 0, self.width - x_reduction, self.height - y_reduction)  # we ignore the x and y and center in next line instead
         self.rects['hitbox'].center = self.rects['player'].center
 
         # To do efficient sprite collision check against monster groups, the hitbox and collision box both need to be full Sprites, not just a rect, with an image
-        self.hitbox_sprite = pygame.sprite.Sprite()
-        self.collision_sprite = pygame.sprite.Sprite()
-        self.side_collision_sprite = pygame.sprite.Sprite()
+        self.hitbox_sprite = pg.sprite.Sprite()
+        self.collision_sprite = pg.sprite.Sprite()
+        self.side_collision_sprite = pg.sprite.Sprite()
 
-        empty_surf = pygame.Surface((self.width, self.height)).convert_alpha()
+        empty_surf = pg.Surface((self.width, self.height)).convert_alpha()
         empty_surf.fill((0, 0, 0, 0))
         self.hitbox_sprite.image = empty_surf
         self.collision_sprite.image = empty_surf
         self.side_collision_sprite.image = empty_surf
 
         self.hitbox_sprite.rect = self.rects['hitbox']
-        self.collision_sprite.rect = pygame.Rect(0, 0, self.width - (x_reduction + 5) , self.height - y_reduction)  # narrower to see better
+        self.collision_sprite.rect = pg.Rect(0, 0, self.width - (x_reduction + 5) , self.height - y_reduction)  # narrower to see better
         self.side_collision_sprite.rect = self.rects['hitbox']
         
         # Setting up sound effects
@@ -117,10 +117,10 @@ class Player(pygame.sprite.Sprite):
         self.collision_sprite.rect.centerx = self.hitbox_sprite.rect.centerx  # aligning center
         
         # Checking vertical collision with terrain (falling), taking slope into account
-        platform = pygame.sprite.spritecollideany(self.collision_sprite, platforms)
+        platform = pg.sprite.spritecollideany(self.collision_sprite, platforms)
         if platform and platform.solid == True:  # player has collided with a solid platform
             if DEBUG_HITBOXES:
-                pygame.draw.rect(self.screen, (128,128,255), platform.rect, 4 )  # self.rect - LIGHT BLUE
+                pg.draw.rect(self.screen, (128,128,255), platform.rect, 4 )  # self.rect - LIGHT BLUE
 
             if not platform.slope and platform.rect.top >= self.hitbox_sprite.rect.bottom:  # we are standing on the platform and it's a _flat_ platform
                 self.on_slope = False
@@ -179,22 +179,22 @@ class Player(pygame.sprite.Sprite):
             if dx < 0:  # going left
                 self.side_collision_sprite.rect.centerx = self.hitbox_sprite.rect.centerx - 10
 
-            platform = pygame.sprite.spritecollideany(self.side_collision_sprite, platforms)
+            platform = pg.sprite.spritecollideany(self.side_collision_sprite, platforms)
             if platform and platform.solid == True and not platform.slope:  # player has collided with a solid platform and is not walking a slope
                 dx = 0
            
             if DEBUG_HITBOXES:
-                pygame.draw.rect(self.screen, '#f6e445', self.side_collision_sprite.rect, 6)  # horizontal collision test, re-using collider sprite - YELLOW
+                pg.draw.rect(self.screen, '#f6e445', self.side_collision_sprite.rect, 6)  # horizontal collision test, re-using collider sprite - YELLOW
 
         return dx, dy
 
 
     def _flash(self) -> None:   # TODO: nothing works as a new image with be generated by move() before the screen is updated
-        coloured_image = pygame.Surface(self.image.get_size())
+        coloured_image = pg.Surface(self.image.get_size())
         coloured_image.fill(RED)
         
         final_image = self.image.copy()
-        final_image.blit(coloured_image, (0, 0), special_flags = pygame.BLEND_MULT)
+        final_image.blit(coloured_image, (0, 0), special_flags = pg.BLEND_MULT)
         self.image = final_image
     
 
@@ -239,7 +239,7 @@ class Player(pygame.sprite.Sprite):
 
                 # If we were stomping and have landed, we trigger effect right away, but we stay in state for one second
                 if self.state['active'] == STOMPING and self.on_ground:
-                    now = pygame.time.get_ticks()
+                    now = pg.time.get_ticks()
                     if now - self.stomp_start_timer > 500 and self.stomp_trigger_lock == True:
                         self.state['active'] = IDLE
                         self.animation = self.animations['idle']
@@ -332,10 +332,10 @@ class Player(pygame.sprite.Sprite):
             if self.state['next'] == DEAD:
                 self.state['active'] = DEAD
                 logging.debug('--- DEAD ---')
-                pygame.time.wait(3000)  # we freeze the game to look at your corpse for a moment
+                pg.time.wait(3000)  # we freeze the game to look at your corpse for a moment
 
              
-    def actions(self, platforms: pygame.sprite.Group ) -> tuple:
+    def actions(self, platforms: pg.sprite.Group ) -> tuple:
         """ Movement as a result of keypresses as well as gravity and collision """
         dx = 0
         dy = 0
@@ -351,7 +351,7 @@ class Player(pygame.sprite.Sprite):
         
         # If we've been hit, we're invincible - check if it's time to reset
         if self.gs.player_invincible and self.state['active'] not in (DYING, DEAD):
-            if pygame.time.get_ticks() - self.last_damage > self.invincibility_duration:
+            if pg.time.get_ticks() - self.last_damage > self.invincibility_duration:
                 self.gs.player_invincible = False
 
         # Making sure stomp is limited
@@ -398,7 +398,7 @@ class Player(pygame.sprite.Sprite):
             else:
                 x = self.rects['hitbox'].right
 
-            self.rects['attack'] = pygame.Rect(x, self.rects['player'].top + 30, self.rects['player'].right - self.rects['hitbox'].right, 100) 
+            self.rects['attack'] = pg.Rect(x, self.rects['player'].top + 30, self.rects['player'].right - self.rects['hitbox'].right, 100) 
         
         # if we are NOT attacking, remove the rectangle
         else:
@@ -483,9 +483,9 @@ class Player(pygame.sprite.Sprite):
         """
         # Once animation points to the correct state animation, we have our image
         anim_frame = self.animation.get_image().convert_alpha()
-        anim_frame = pygame.transform.flip( anim_frame, self.turned, False)
+        anim_frame = pg.transform.flip( anim_frame, self.turned, False)
         
-        self.image = pygame.Surface((self.width, self.height)).convert_alpha()
+        self.image = pg.Surface((self.width, self.height)).convert_alpha()
         self.image.fill((0, 0, 0, 0))
 
         x_adjustment = 25  # to center the player image in the sprite
@@ -520,7 +520,7 @@ class Player(pygame.sprite.Sprite):
                 self.audio.player['stomp'].play()
 
             if self.gs.user_input['attack']:
-                now = pygame.time.get_ticks()
+                now = pg.time.get_ticks()
                 if now - self.last_attack > self.attack_delay:
                     self.state['next'] = ATTACKING
                     self.gs.user_input['attack'] = False  # we reset to prevent repeated attacks by holding down the attack key/button
@@ -528,7 +528,7 @@ class Player(pygame.sprite.Sprite):
                     self.last_attack = now
 
             if self.gs.user_input['cast']:
-                now = pygame.time.get_ticks()
+                now = pg.time.get_ticks()
                 if now - self.last_cast > self.cast_delay:
                     self.state['next'] = CASTING
                     if not self.fx_attack_channel.get_busy():  # playing sound if not all channels busy
@@ -537,12 +537,12 @@ class Player(pygame.sprite.Sprite):
         
         if self.gs.user_input['quit']:
             logging.debug('Player quested quit - quitting...')
-            pygame.quit()
+            pg.quit()
             exit(0)
 
     def hazard_damage(self, damage: int, hits_per_second:int=0) -> None:
         """ Player has been in contact with enviromnmental damage, gets damage once or frequency per second """
-        now = pygame.time.get_ticks()
+        now = pg.time.get_ticks()
         if now > self.last_env_damage + 1000 / hits_per_second:
             self.audio.player['hit'].play()
             # Adjust health and bars
@@ -561,7 +561,7 @@ class Player(pygame.sprite.Sprite):
         if self.gs.player_health > self.gs.player_health_max:
             self.gs.player_health = self.gs.player_health_max
 
-    def hit(self, damage: int, turned: bool, platforms: pygame.sprite.Group) -> None:
+    def hit(self, damage: int, turned: bool, platforms: pg.sprite.Group) -> None:
         """ Player has been hit by mob or projectile, gets damage and bounces backs"""
         if not self.gs.player_invincible:  # we have half a sec of invincibility after damage to avoid repeat damage
             if damage:  # we also use hits without damage to bump the player
@@ -569,7 +569,7 @@ class Player(pygame.sprite.Sprite):
                 self.audio.player['hit'].play()
                 self.gs.player_invincible = True  # we want 
                 self.gs.player_hit = True
-                self.last_damage = pygame.time.get_ticks()  
+                self.last_damage = pg.time.get_ticks()  
                 self.gs.player_stomp_counter = 0  # reset stomp on hit
                 # Adjust health and bars
                 self.gs.player_health -= damage
@@ -584,7 +584,7 @@ class Player(pygame.sprite.Sprite):
 
                
 
-    def bounce(self, x: int, y: int, turned: bool, platforms: pygame.sprite.Group) -> None:
+    def bounce(self, x: int, y: int, turned: bool, platforms: pg.sprite.Group) -> None:
         direction = -1 if turned else 1
 
         # Bounce back
@@ -613,7 +613,7 @@ class Player(pygame.sprite.Sprite):
         return h_scroll, v_scroll
         
 
-class PlayerInOut(pygame.sprite.Sprite):
+class PlayerInOut(pg.sprite.Sprite):
     def __init__(self, x, y, inout) -> None:
         super().__init__()
 
@@ -627,7 +627,7 @@ class PlayerInOut(pygame.sprite.Sprite):
             self.out_x = x
             self.out_y = y
         
-        self.image = pygame.Surface((TILE_SIZE_SCREEN, TILE_SIZE_SCREEN))  #  empty surface
+        self.image = pg.Surface((TILE_SIZE_SCREEN, TILE_SIZE_SCREEN))  #  empty surface
         self.rect = self.image.get_rect(center=(x + TILE_SIZE_SCREEN/2, y + TILE_SIZE_SCREEN/2))
 
     def update(self, h_scroll, v_scroll) -> None:

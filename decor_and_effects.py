@@ -1,4 +1,4 @@
-import pygame
+import pygame as pg
 from random import random, randint
 
 from random import randint
@@ -13,7 +13,7 @@ class BubbleMessage:
     """ Show floating info bubbles
         Meant to linger - 10 seconds between each message 
     """
-    def __init__(self, screen: pygame.display, msg: str, ttl: int, start_delay: int, msg_type: str, player: pygame.sprite.Sprite) -> None:
+    def __init__(self, screen: pg.display, msg: str, ttl: int, start_delay: int, msg_type: str, player: pg.sprite.Sprite) -> None:
         # Arguments:
         # ttl : durtaion of bubble in ms
         # msg_type: type of message, to avoid dupes
@@ -33,13 +33,13 @@ class BubbleMessage:
         self.min_delay = 1000*10  # 10 seconds
         self.last_time = -self.min_delay  # just to make sure we run the first time without delay
         self.start_time = 0
-        self.init_time = pygame.time.get_ticks()
+        self.init_time = pg.time.get_ticks()
         self.duration = ttl
         self.font_size = 64
         
-        self.font = pygame.font.Font("assets/font/Silver.ttf", self.font_size)  # 16, 32, 48
+        self.font = pg.font.Font("assets/font/Silver.ttf", self.font_size)  # 16, 32, 48
 
-        self.bubble_bg = pygame.image.load('assets/panel/bubble.png').convert_alpha()
+        self.bubble_bg = pg.image.load('assets/panel/bubble.png').convert_alpha()
         
         self.half_screen = screen.get_size()[0] // 2
 
@@ -49,8 +49,8 @@ class BubbleMessage:
         self.y_size = 10
         y_padding = 10
         for line in self.msg_list:
-            self.x_size += pygame.font.Font.size(self.font, line)[0]
-            self.y_size += pygame.font.Font.size(self.font, line)[1]
+            self.x_size += pg.font.Font.size(self.font, line)[0]
+            self.y_size += pg.font.Font.size(self.font, line)[1]
             self.y_size += y_padding
 
     def _display_msg(self) -> None:
@@ -58,29 +58,29 @@ class BubbleMessage:
             padding_y = 12
 
 
-            surf = pygame.transform.scale(self.bubble_bg,(self.x_size + int(self.x_size * 0.2), self.y_size))
+            surf = pg.transform.scale(self.bubble_bg,(self.x_size + int(self.x_size * 0.2), self.y_size))
 
             for row, msg_text in enumerate(self.msg_list):
                 text_img = self.font.render(msg_text, True, WHITE)
                 
             if self.player.rect.centerx < self.half_screen:  # On the left side of the screen we flip the bubble and move it right of the player
-                surf = pygame.transform.flip(surf, True, False)
-                surf.blit(text_img, (padding_x, padding_y + row * pygame.font.Font.size(self.font, msg_text)[1]))
+                surf = pg.transform.flip(surf, True, False)
+                surf.blit(text_img, (padding_x, padding_y + row * pg.font.Font.size(self.font, msg_text)[1]))
                 self.screen.blit(surf , (self.player.rect.centerx - self.x_size // 5 , self.player.rect.top - self.y_size))
             else:
-                surf.blit(text_img, (padding_x, padding_y + row * pygame.font.Font.size(self.font, msg_text)[1]))
+                surf.blit(text_img, (padding_x, padding_y + row * pg.font.Font.size(self.font, msg_text)[1]))
                 self.screen.blit(surf, (self.player.rect.centerx - self.x_size, self.player.rect.top - self.y_size))
 
 
     def show(self) -> None:
         # we compensate for scrolling
-        now = pygame.time.get_ticks()
+        now = pg.time.get_ticks()
         if now - self.init_time > self.start_delay:
             # First we show the message and freeze for a brief moment
             if now > self.last_time + self.min_delay and not self.active:
                 self._display_msg()
                 self.active = True
-                pygame.time.wait(50)
+                pg.time.wait(50)
                 self.last_time = now
                 self.start_time = now
 
@@ -100,11 +100,11 @@ class BubbleMessage:
 
 
 # --- Various environmental effects
-class EnvironmentalEffects(pygame.sprite.Group):
+class EnvironmentalEffects(pg.sprite.Group):
     """
     Class for adding non-interactive environmental effects, like blowing leaves, snow, raid etc.
     """
-    def __init__(self, effect, screen) -> pygame.sprite.Group:
+    def __init__(self, effect, screen) -> pg.sprite.Group:
         super().__init__()
         from animation_data import leaves_ss
         from animation import Animation
@@ -126,7 +126,7 @@ class EnvironmentalEffects(pygame.sprite.Group):
         self.frequency = 10  # times per second we update the environmental effects
 
     def _add_leaf(self) -> None:
-        now = pygame.time.get_ticks() 
+        now = pg.time.get_ticks() 
         if random.random() < 1/30: # making sure we've waited long enough
             leaf = GameTileAnimation(16,16,randint(SCREEN_WIDTH, SCREEN_WIDTH*3), randint(0, SCREEN_HEIGHT/4), self.Anim(self.ss, frames=10, speed=100, repeat=True))  # TODO: They ALL use the SAME Animation instance, so all animate identically
             leaf.x_vel = random.uniform(-4, -1)  # starting horisontal speed
@@ -142,7 +142,7 @@ class EnvironmentalEffects(pygame.sprite.Group):
     def update(self, h_scroll, v_scroll) -> None:
         # Here we set the x_vel for each sprite to match the wind at their respective vertical position
         # Each particle is assumed to float in the wind, minus the enertia for each category (snow less than leaves etc.)
-        now = pygame.time.get_ticks()
+        now = pg.time.get_ticks()
         if now - self.last_run >  1000 / self.frequency:
             if now - self.last_gust_change > 1000 * 10:
                 self.gust_strength = randint(1,3)  # every 10 seconds we change the wind gust speed 
@@ -177,7 +177,7 @@ class EnvironmentalEffects(pygame.sprite.Group):
 
 # --- Expanding circle effects for spells
 class ExpandingCircle:
-    def __init__(self, x: int, y: int, color: pygame.Color, thickness: int, radius_max: int, frame_delay: int) -> None:
+    def __init__(self, x: int, y: int, color: pg.Color, thickness: int, radius_max: int, frame_delay: int) -> None:
         self.x = x
         self.y = y
         self.color = color
@@ -194,7 +194,7 @@ class ExpandingCircle:
         # It's fire-and-forget
         self.x += h_scroll
         self.y += v_scroll
-        now = pygame.time.get_ticks()
+        now = pg.time.get_ticks()
 
         if now - self.last_update > self.frame_delay:
             self.radius += 3
@@ -205,13 +205,13 @@ class ExpandingCircle:
 
     def draw(self, screen) -> None:
         if not self.done:
-            pygame.draw.circle(screen, (self.color), (self.x,self.y), self.radius, width=self.width)
+            pg.draw.circle(screen, (self.color), (self.x,self.y), self.radius, width=self.width)
 
 
 # --- Shows panel on top of screen with score and inventory
 class GamePanel:
     """ Class to show a panel on top left corner of the screen """
-    def __init__(self, screen: pygame.display, game_state)-> None:
+    def __init__(self, screen: pg.display, game_state)-> None:
         from animation_data import anim
         self.heart_anim = anim['decor']['beating-heart']
         self.heart_anim.active = False
@@ -221,12 +221,12 @@ class GamePanel:
         self.gs = game_state
 
         self.screen = screen
-        self.window_size = pygame.display.get_window_size()# screen.get_window_size()
+        self.window_size = pg.display.get_window_size()# screen.get_window_size()
         
         self.inventory = []
 
         # Define fonts
-        self.font_small = pygame.font.Font("assets/font/Silver.ttf", 36)
+        self.font_small = pg.font.Font("assets/font/Silver.ttf", 36)
 
         self.blink_counter = 0
         self.blink = False
@@ -234,7 +234,7 @@ class GamePanel:
         self.old_inv = []  # track changes in player in ventory to highlight
         
         # Panel background image
-        self.panel_bg = pygame.image.load('assets/panel/game-panel.png').convert_alpha()
+        self.panel_bg = pg.image.load('assets/panel/game-panel.png').convert_alpha()
 
     def setup_bars(self) -> None:
         # Health bars + stompometer
@@ -246,7 +246,7 @@ class GamePanel:
         if self.blink == True:
             if self.blink_counter < duration:
                 self.blink_counter += 1
-                pygame.draw.rect(self.screen, (255,0,0), (20,40,self.health_bar_max_length+4,20) ,2 )
+                pg.draw.rect(self.screen, (255,0,0), (20,40,self.health_bar_max_length+4,20) ,2 )
             else:
                 self.blink_counter = 0
                 self.blink = False
@@ -258,29 +258,29 @@ class GamePanel:
         # Flashes the health bar when hit
 
         # Play sound effect
-        audio_highlight = pygame.mixer.Sound('assets/sound/game/panel_highlight.wav')
+        audio_highlight = pg.mixer.Sound('assets/sound/game/panel_highlight.wav')
         audio_highlight.play()
 
         opacity = 128
         img2 = img
-        img2.fill((100, 100, 100, 0), special_flags=pygame.BLEND_RGBA_ADD)
+        img2.fill((100, 100, 100, 0), special_flags=pg.BLEND_RGBA_ADD)
         
-        surf = pygame.Surface(pygame.display.get_window_size())
+        surf = pg.Surface(pg.display.get_window_size())
         surf.set_alpha(opacity)  
         surf.fill((0,0,0)) # fill the entire surface
         self.screen.blit(surf, (0,0))  # blit to screen
-        pygame.display.update()
+        pg.display.update()
         screen_cpy = self.screen.copy()
-        pygame.time.wait(250)     
+        pg.time.wait(250)     
 
         for _ in range(10):
             self.screen.blit(img2, (x,y))
-            pygame.display.update()
-            pygame.time.wait(75)
+            pg.display.update()
+            pg.time.wait(75)
 
             self.screen.blit(screen_cpy, (0,0))  # starting over
-            pygame.display.update()
-            pygame.time.wait(75)
+            pg.display.update()
+            pg.time.wait(75)
         
     def draw(self) -> None:
 
@@ -291,7 +291,7 @@ class GamePanel:
         self.screen.blit(self.panel_bg, (0,0))
 
         # --> Health bar, white and semi transparent
-        health_bar_frame = pygame.Surface((self.health_bar_max_length+4,20), pygame.SRCALPHA)   # per-pixel alpha
+        health_bar_frame = pg.Surface((self.health_bar_max_length+4,20), pg.SRCALPHA)   # per-pixel alpha
         health_bar_frame.fill((255,255,255,128))  # with alpha
         self.screen.blit(health_bar_frame, (20,40))
         self._blink_bar(10)  # blink if we should
@@ -299,7 +299,7 @@ class GamePanel:
         GREEN = 255 * ratio
         RED = 255 * (1-ratio)
         BLUE = 0
-        health_bar = pygame.Surface((self.health_bar_length,16), pygame.SRCALPHA)   # per-pixel alpha
+        health_bar = pg.Surface((self.health_bar_length,16), pg.SRCALPHA)   # per-pixel alpha
         health_bar.fill((RED,GREEN,BLUE,200))                         # notice the alpha value in the color
         self.screen.blit(health_bar, (22,42))     
         self.last_health = self.gs.player_health
@@ -314,17 +314,17 @@ class GamePanel:
 
         # --> Stomp bar (we reuse the health surface)
         stomp_bar_length = SCREEN_WIDTH // 6
-        stomp_bar_frame = pygame.Surface((stomp_bar_length + 4 ,20), pygame.SRCALPHA)
+        stomp_bar_frame = pg.Surface((stomp_bar_length + 4 ,20), pg.SRCALPHA)
         stomp_bar_frame.fill((255,255,255,128))  # notice the alpha value in the color
         self.screen.blit(stomp_bar_frame, (SCREEN_WIDTH - stomp_bar_length -20,40))
-        ORANGE = pygame.Color('#f7b449')
+        ORANGE = pg.Color('#f7b449')
 
 
         if self.gs.player_stomp_counter > PLAYER_STOMP:  # max
             self.gs.player_stomp_counter = PLAYER_STOMP
 
         stomp_bar_length = (stomp_bar_length /PLAYER_STOMP) * self.gs.player_stomp_counter
-        stomp_bar = pygame.Surface((stomp_bar_length,16), pygame.SRCALPHA)
+        stomp_bar = pg.Surface((stomp_bar_length,16), pg.SRCALPHA)
         stomp_bar.fill(ORANGE)
         self.screen.blit(stomp_bar, (SCREEN_WIDTH - stomp_bar_length -18,42))     
         
@@ -346,37 +346,37 @@ class GamePanel:
 
         for items in self.inventory:
             if items[0] == 'key':
-                img = pygame.transform.scale(items[1], (40,50))
+                img = pg.transform.scale(items[1], (40,50))
                 self.screen.blit(img, (key_x,key_y))
 
         if len(self.inventory) > len(self.old_inv):  # new items! 
             new_items = [x for x in self.inventory if x not in self.old_inv]
             for items in new_items:
                 if items[0] == 'key':
-                    img = pygame.transform.scale(items[1], (40,50))
+                    img = pg.transform.scale(items[1], (40,50))
                     self._flash_show(img, key_x, key_y)
 
             self.old_inv = self.inventory
 
 
 # --- Shows info pop-up over doors etc.
-class InfoPopup(pygame.sprite.Sprite):
+class InfoPopup(pg.sprite.Sprite):
     def __init__(self, msg_text, x, y) -> None:
         super().__init__()
 
-        font = pygame.font.Font("assets/font/Silver.ttf", 48)  # 16, 32, 48
+        font = pg.font.Font("assets/font/Silver.ttf", 48)  # 16, 32, 48
 
-        self.image = pygame.Surface((TILE_SIZE_SCREEN * 4,TILE_SIZE_SCREEN), pygame.SRCALPHA)
+        self.image = pg.Surface((TILE_SIZE_SCREEN * 4,TILE_SIZE_SCREEN), pg.SRCALPHA)
         self.image.fill((0, 0, 0, 0)) # Set the surface to be completely transparent
-        self.full_image = pygame.Surface((TILE_SIZE_SCREEN * 4,TILE_SIZE_SCREEN), pygame.SRCALPHA)
+        self.full_image = pg.Surface((TILE_SIZE_SCREEN * 4,TILE_SIZE_SCREEN), pg.SRCALPHA)
         self.full_image.fill((0, 0, 0, 0)) 
 
-        pygame.draw.line(self.full_image, WHITE, (1,10), (10,1), width=5)  # diagonal line
-        pygame.draw.line(self.full_image, WHITE, (10,1), (200,1), width=5)  # horizontal line
+        pg.draw.line(self.full_image, WHITE, (1,10), (10,1), width=5)  # diagonal line
+        pg.draw.line(self.full_image, WHITE, (10,1), (200,1), width=5)  # horizontal line
         text_img = font.render(msg_text, True, WHITE)
         self.full_image.blit(text_img, (25,5))
 
-        self.rect = pygame.Rect(x, y - TILE_SIZE_SCREEN, TILE_SIZE_SCREEN * 4,TILE_SIZE_SCREEN)
+        self.rect = pg.Rect(x, y - TILE_SIZE_SCREEN, TILE_SIZE_SCREEN * 4,TILE_SIZE_SCREEN)
         self.ticks_since_last = 0
         self.x = x
         self.y = y
@@ -398,7 +398,7 @@ class InfoPopup(pygame.sprite.Sprite):
         if self.state == 'roll-in':
             direction = -1
         
-        now = pygame.time.get_ticks()
+        now = pg.time.get_ticks()
         if now - self.ticks_since_last > 10:
             if self.state in ('roll-in', 'roll-out'):
                 self.image.fill((0, 0, 0, 0)) # Set the surface to be completely transparent
@@ -413,7 +413,7 @@ class InfoPopup(pygame.sprite.Sprite):
         
 
 # --- Stomp splash effect
-class LightEffect1(pygame.sprite.Sprite):
+class LightEffect1(pg.sprite.Sprite):
     """
     Class which gives light effect consisting of vertical lines shooting up from the ground
     """
@@ -435,7 +435,7 @@ class LightEffect1(pygame.sprite.Sprite):
         self.line_seg_height = 4
         self.max_segments = self.line_max_height // self.line_seg_height
 
-        self.image = pygame.Surface((self.line_width * self.line_numbers, self.line_max_height)).convert_alpha()
+        self.image = pg.Surface((self.line_width * self.line_numbers, self.line_max_height)).convert_alpha()
         self.working_image = self.image.copy()
         self.rect = self.image.get_rect()
         self.firelines = []  # list or columns, with list of segments for each column
@@ -452,8 +452,8 @@ class LightEffect1(pygame.sprite.Sprite):
             padding = self.max_segments - color_segments * 4 + 4  # the last 4 is just to wipe any remaining non-black pixels when moving down
 
             # We add the segments in reverse order, so we start with the top
-            segment_list = [pygame.Color('#000000')] * padding + [pygame.Color('#df7126')] * color_segments + [pygame.Color('#fbf236') ] * color_segments \
-                            + [pygame.Color('#fffa8c')] * color_segments + [pygame.Color('#ffffff')] * color_segments 
+            segment_list = [pg.Color('#000000')] * padding + [pg.Color('#df7126')] * color_segments + [pg.Color('#fbf236') ] * color_segments \
+                            + [pg.Color('#fffa8c')] * color_segments + [pg.Color('#ffffff')] * color_segments 
             
             self.firelines.append(segment_list)
 
@@ -462,10 +462,10 @@ class LightEffect1(pygame.sprite.Sprite):
                 for count, line in enumerate(self.firelines):     
                     image_x =  count * self.line_width
                     image_y = step * self.line_seg_height 
-                    pygame.draw.rect(self.working_image, line[step], (image_x, image_y, self.line_width, self.line_seg_height))
+                    pg.draw.rect(self.working_image, line[step], (image_x, image_y, self.line_width, self.line_seg_height))
         
     def update(self, h_scroll, v_scroll) -> None:
-        now = pygame.time.get_ticks()
+        now = pg.time.get_ticks()
         self.start_x += h_scroll
                         
         if now - self.last_run > self.step_delay:
@@ -496,7 +496,7 @@ class ParticleSystem:
                 'center': list,
                 'velocity': list,
                 'radius': float,
-                'color':pygame.Color,
+                'color':pg.Color,
             }
         self.last_run = 0
         self.update_delay = 15
@@ -505,7 +505,7 @@ class ParticleSystem:
         self.all_particles.append(particle)
         
     def update(self, h_scroll, v_scroll) -> None:
-        now = pygame.time.get_ticks()
+        now = pg.time.get_ticks()
         if now - self.last_run > self.update_delay:
             for particle in self.all_particles:
                 # Updating velocities
@@ -528,7 +528,7 @@ class ParticleSystem:
             side = int(particle['radius'] * 4)
             x = int(particle['center'][0] - side/2)
             y = int(particle['center'][1] - side/2)
-            pygame.draw.rect(screen, particle['color'], pygame.Rect(x, y, side, side ))
+            pg.draw.rect(screen, particle['color'], pg.Rect(x, y, side, side ))
 
 
 # --- Shows the multilevel parallax background
@@ -552,20 +552,20 @@ class ParallaxBackground:
             self.bg_color = background['background_color']
         else:
             # We find the scaling factor based only on height, as images cvan be wider than the screen - using cloud texture for this
-            self.bg_clouds = pygame.image.load(background['clouds']).convert_alpha()
+            self.bg_clouds = pg.image.load(background['clouds']).convert_alpha()
             scale = SCREEN_HEIGHT / self.bg_clouds.get_height()
             x_size = self.bg_clouds.get_width() * scale
 
-            self.bg_clouds = pygame.transform.scale(self.bg_clouds, (x_size, SCREEN_HEIGHT))
-            self.bg_white = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            self.bg_clouds = pg.transform.scale(self.bg_clouds, (x_size, SCREEN_HEIGHT))
+            self.bg_white = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
             self.bg_white.fill(WHITE)
 
             self.bg_sky = self.bg_clouds  # we can replace this to create effects
         
-            self.bg_near = pygame.transform.scale(pygame.image.load(background['near']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
-            self.bg_medium = pygame.transform.scale(pygame.image.load(background['medium']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
-            self.bg_further = pygame.transform.scale(pygame.image.load(background['further']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
-            self.bg_far = pygame.transform.scale(pygame.image.load(background['far']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
+            self.bg_near = pg.transform.scale(pg.image.load(background['near']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
+            self.bg_medium = pg.transform.scale(pg.image.load(background['medium']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
+            self.bg_further = pg.transform.scale(pg.image.load(background['further']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
+            self.bg_far = pg.transform.scale(pg.image.load(background['far']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
 
             self.cloud_width = self.bg_clouds.get_width()  # clouds are potentially much larger
             self.width = self.bg_near.get_width()
@@ -585,7 +585,7 @@ class ParallaxBackground:
     def update(self,bg_scroll) -> None:
         if not self.only_bg_color:
             self.bg_scroll += bg_scroll
-            now = pygame.time.get_ticks()
+            now = pg.time.get_ticks()
 
             if now - self.cloud_timer > self.cloud_drift:
                 self.cloud_movement += 1
@@ -651,12 +651,12 @@ class Weather():
             self.started = True
 
         if self.weather_type == 'rain' and self.started:
-            now = pygame.time.get_ticks()
+            now = pg.time.get_ticks()
             if now - self.weather_timer > self.weather_delay:
 
                 for i, particle in enumerate(self.drops):
                     #print(particle['x1'])
-                    pygame.draw.line(surface, particle['color'], (particle['x1'], particle['y1']), \
+                    pg.draw.line(surface, particle['color'], (particle['x1'], particle['y1']), \
                                     (particle['x2'], particle['y2']), particle['width'])
                     self.drops[i]['x1'] += self.x_movement + h_scroll
                     self.drops[i]['y1'] += self.y_movement + v_scroll
@@ -681,7 +681,7 @@ class Weather():
 
 # --- Speed line effect, used by player stomp
 class SpeedLines:
-    def __init__(self, rect: pygame.rect.Rect, frame_delay: int=100) -> None:
+    def __init__(self, rect: pg.rect.Rect, frame_delay: int=100) -> None:
         self.rect = rect
         self.x_start = self.rect.left
         self.y_start = self.rect.top
@@ -706,7 +706,7 @@ class SpeedLines:
             self.done = True
         self.previous_y = self.new_y_pos
 
-        now = pygame.time.get_ticks()
+        now = pg.time.get_ticks()
         if now - self.last_update > self.frame_delay:
             self.height = self.new_y_pos - self.y_start 
             if self.height > self.margin:
@@ -717,7 +717,7 @@ class SpeedLines:
         if not self.done and self.height > 10:
             for n in range (self.max_width // width):
                 height = randint(0, self.height)
-                pygame.draw.rect(screen, WHITE, ((self.x_start + width * n, self.new_y_pos - height), (width, height)))
+                pg.draw.rect(screen, WHITE, ((self.x_start + width * n, self.new_y_pos - height), (width, height)))
 
 
 # --- Wind, used by particles and environmental effects

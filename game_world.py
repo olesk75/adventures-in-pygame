@@ -1,4 +1,5 @@
-import pygame, logging
+import pygame as pg
+import logging 
 
 from settings import *
 from game_functions import *
@@ -104,16 +105,16 @@ class Game:
         # user interface 
         self.panel = GamePanel(self.screen, self.gs)
         self.panel.setup_bars() 
-        self.font = pygame.font.Font("assets/font/Silver.ttf", 64)  
+        self.font = pg.font.Font("assets/font/Silver.ttf", 64)  
 
         # damage overlay (red tendrils)
-        self.damage_img = pygame.image.load('assets/panel/damage.png').convert_alpha()
+        self.damage_img = pg.image.load('assets/panel/damage.png').convert_alpha()
 
         # map screen background
-        self.map_img = pygame.image.load('assets/map/map.png').convert_alpha()
+        self.map_img = pg.image.load('assets/map/map.png').convert_alpha()
 
         # welcome screen background
-        self.welcome_img = pygame.image.load('assets/map/welcome-screen.png').convert_alpha()
+        self.welcome_img = pg.image.load('assets/map/welcome-screen.png').convert_alpha()
 
         self.last_run = 0
         self.last_fade_update = 0
@@ -125,7 +126,7 @@ class Game:
         
         if MUSIC_ON:
             self.level_audio = GameAudio(current_level)
-            self.level_audio.music.play(-1,0.0)
+            self.level_audio.music.play(loops=-1)
             self.level_audio.music.set_volume(0.4)
 
     def check_level_complete(self) -> None:
@@ -149,13 +150,13 @@ class Game:
         global FPS
         if self.gs.game_slowmo == True:
             self.screen.blit(self.damage_img, (0,0))
-            if pygame.time.get_ticks() - self.last_run > 500:  # 1 second of slow-motion after a hit
+            if pg.time.get_ticks() - self.last_run > 500:  # 1 second of slow-motion after a hit
                 FPS = 60
                 self.gs.game_slowmo = False 
         elif self.gs.player_hit:
             FPS = 10
             self.gs.game_slowmo = True
-            self.last_run = pygame.time.get_ticks()
+            self.last_run = pg.time.get_ticks()
             self.gs.player_hit = False
             # TODO: add slo-mo for stomp as well, and player boss death
 
@@ -169,12 +170,12 @@ class Game:
             draw_text(f"HIGH SCORE : 99999", self.screen, WHITE, 0, 400, align='center', font=self.font)
             draw_text("Press SPACE to try again,  Q to quit", self.screen, WHITE, 0, 500, align='center', font=self.font)
 
-            keys = pygame.key.get_pressed()
+            keys = pg.key.get_pressed()
 
-            if keys[pygame.K_q]:
+            if keys[pg.K_q]:
                 self.gs.game_state = GS_QUIT
                 
-            if keys[pygame.K_SPACE]:
+            if keys[pg.K_SPACE]:
                 self.gs.reset()
                 self.gs.game_state = GS_PLAYING
                 self.gs.player_health = self.gs.player_health_max
@@ -190,43 +191,43 @@ class Game:
             draw_text(f"HIGH SCORE : 99999", self.screen, WHITE, 0, 400, align='center')
             draw_text("Press ENTER to continue to the world map,  Q to quit", self.screen, WHITE, 0, 500, align='center')
 
-            keys = pygame.key.get_pressed()
+            keys = pg.key.get_pressed()
 
-            if keys[pygame.K_q]:
+            if keys[pg.K_q]:
                 self.gs.game_state = GS_QUIT
                 
-            if keys[pygame.K_RETURN]:
+            if keys[pg.K_RETURN]:
                 self.gs.game_state = GS_MAP_SCREEN
 
     def map_screen(self) -> None:
         """ Show the worldmap_img map screen """
-        map_bg = pygame.transform.scale(self.map_img, (SCREEN_WIDTH, SCREEN_HEIGHT)).convert_alpha()
+        map_bg = pg.transform.scale(self.map_img, (SCREEN_WIDTH, SCREEN_HEIGHT)).convert_alpha()
 
         self.screen.blit(map_bg,(0,0))                      
 
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_q]:
+        keys = pg.key.get_pressed()
+        if keys[pg.K_q]:
             self.gs.game_state = GS_QUIT
             
-        if keys[pygame.K_SPACE]:
+        if keys[pg.K_SPACE]:
             self.create_level(self.gs.level_current + 1)  # next level!
             self.gs.game_state = GS_PLAYING
 
     def welcome_screen(self) -> None:
         """ Show the welcome screen """
-        welcome_bg = pygame.transform.scale(self.welcome_img, (SCREEN_WIDTH, SCREEN_HEIGHT)).convert_alpha()
+        welcome_bg = pg.transform.scale(self.welcome_img, (SCREEN_WIDTH, SCREEN_HEIGHT)).convert_alpha()
         
         self.screen.blit(welcome_bg,(0,0))                      
 
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_q]:
+        keys = pg.key.get_pressed()
+        if keys[pg.K_q]:
             self.gs.game_state = GS_QUIT
             
-        if keys[pygame.K_SPACE]:
+        if keys[pg.K_SPACE]:
             self.create_level(FIRST_LEVEL)
             self.gs.game_state = GS_PLAYING
 
-        if keys[pygame.K_a]:
+        if keys[pg.K_a]:
             # We're going to the arena
             self.create_level(0)
             logging.debug('Starting level 0 - the Arena')
@@ -245,7 +246,7 @@ class Game:
             self.check_game_over()
 
 
-class GameTile(pygame.sprite.Sprite):
+class GameTile(pg.sprite.Sprite):
     """
     Customized Sprite class which allows update with scroll value, which will be triggerd by spritegroup.update(scroll)
     """

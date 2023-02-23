@@ -1,54 +1,54 @@
-import pygame
+import pygame as pg
 from animation import Animation, SpriteSheet
 
 BLACK = (0,0,0)
 
 """ Loading sprite sheets """
 # Player (I call him Stabby, as he ... stabs a lot)
-stabby_ss_walk = SpriteSheet(pygame.image.load('assets/spritesheets/stabby-walking.png').convert_alpha(), 32, 32, 4)
-stabby_ss_idle = SpriteSheet(pygame.image.load('assets/spritesheets/stabby-idle.png').convert_alpha(), 32, 32, 4)
-stabby_ss_attack = SpriteSheet(pygame.image.load('assets/spritesheets/stabby-attack.png').convert_alpha(), 32, 32, 4)
-stabby_ss_stomp = SpriteSheet(pygame.image.load('assets/spritesheets/stabby-stomp.png').convert_alpha(), 32, 32, 4)
-stabby_ss_death = SpriteSheet(pygame.image.load('assets/spritesheets/stabby-death.png').convert_alpha(), 32, 32, 4)
-stabby_ss_cast = SpriteSheet(pygame.image.load('assets/spritesheets/stabby-casting.png').convert_alpha(), 32, 32, 4)
+stabby_ss_walk = SpriteSheet(pg.image.load('assets/spritesheets/stabby-walking.png').convert_alpha(), 32, 32, 4)
+stabby_ss_idle = SpriteSheet(pg.image.load('assets/spritesheets/stabby-idle.png').convert_alpha(), 32, 32, 4)
+stabby_ss_attack = SpriteSheet(pg.image.load('assets/spritesheets/stabby-attack.png').convert_alpha(), 32, 32, 4)
+stabby_ss_stomp = SpriteSheet(pg.image.load('assets/spritesheets/stabby-stomp.png').convert_alpha(), 32, 32, 4)
+stabby_ss_death = SpriteSheet(pg.image.load('assets/spritesheets/stabby-death.png').convert_alpha(), 32, 32, 4)
+stabby_ss_cast = SpriteSheet(pg.image.load('assets/spritesheets/stabby-casting.png').convert_alpha(), 32, 32, 4)
 
 # Monsters
-elven_archer_running_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/elven-archer-running.png').convert_alpha(), 32, 32, 4)
-elven_archer_attacking_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/elven-archer-attacking.png').convert_alpha(), 32, 32, 4)
-elven_archer_dying_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/elven-archer-dying.png').convert_alpha(), 32, 32, 4)
+elven_archer_running_ss = SpriteSheet(pg.image.load('assets/spritesheets/monsters/elven-archer-running.png').convert_alpha(), 32, 32, 4)
+elven_archer_attacking_ss = SpriteSheet(pg.image.load('assets/spritesheets/monsters/elven-archer-attacking.png').convert_alpha(), 32, 32, 4)
+elven_archer_dying_ss = SpriteSheet(pg.image.load('assets/spritesheets/monsters/elven-archer-dying.png').convert_alpha(), 32, 32, 4)
 
-skeleton_boss_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/skeleton-boss-sprites.png').convert_alpha(), 64, 64, 4)
-skeleton_boss_attack_ss = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/skeleton-boss-sprites-attack.png').convert_alpha(), 64*3, 64*3, 4)
-beholder_ss_walk = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/beholder-walking.png').convert_alpha(), 32, 32, 4)
-beholder_ss_attack = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/beholder-attacking.png').convert_alpha(), 32, 32, 4)
-beholder_ss_death = SpriteSheet(pygame.image.load('assets/spritesheets/monsters/beholder-dying.png').convert_alpha(), 32, 32, 4)
+skeleton_boss_ss = SpriteSheet(pg.image.load('assets/spritesheets/monsters/skeleton-boss-sprites.png').convert_alpha(), 64, 64, 4)
+skeleton_boss_attack_ss = SpriteSheet(pg.image.load('assets/spritesheets/monsters/skeleton-boss-sprites-attack.png').convert_alpha(), 64*3, 64*3, 4)
+beholder_ss_walk = SpriteSheet(pg.image.load('assets/spritesheets/monsters/beholder-walking.png').convert_alpha(), 32, 32, 4)
+beholder_ss_attack = SpriteSheet(pg.image.load('assets/spritesheets/monsters/beholder-attacking.png').convert_alpha(), 32, 32, 4)
+beholder_ss_death = SpriteSheet(pg.image.load('assets/spritesheets/monsters/beholder-dying.png').convert_alpha(), 32, 32, 4)
 
 # Drops and animated objects
-health_potion_ss =  SpriteSheet(pygame.image.load('assets/spritesheets/objects/lifepotion.png').convert_alpha(), 32, 32, 3)
-stomp_potion_ss =  SpriteSheet(pygame.image.load('assets/spritesheets/objects/stomppotion.png').convert_alpha(), 32, 32, 3)
-mana_potion_ss =  SpriteSheet(pygame.image.load('assets/spritesheets/objects/manapotion.png').convert_alpha(), 32, 32, 3)
-key_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/key.png').convert_alpha(), 32, 32, 2)
-door_left_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/door-left.png').convert_alpha(), 32, 64, 2)
-door_right_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/door-right.png').convert_alpha(), 32, 64, 2)
-chest_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/chest.png').convert_alpha(), 32, 32, 4)
-portal_ss = SpriteSheet(pygame.image.load('assets/spritesheets/objects/portal.png').convert_alpha(), 32, 32, 4)
+health_potion_ss =  SpriteSheet(pg.image.load('assets/spritesheets/objects/lifepotion.png').convert_alpha(), 32, 32, 3)
+stomp_potion_ss =  SpriteSheet(pg.image.load('assets/spritesheets/objects/stomppotion.png').convert_alpha(), 32, 32, 3)
+mana_potion_ss =  SpriteSheet(pg.image.load('assets/spritesheets/objects/manapotion.png').convert_alpha(), 32, 32, 3)
+key_ss = SpriteSheet(pg.image.load('assets/spritesheets/objects/key.png').convert_alpha(), 32, 32, 2)
+door_left_ss = SpriteSheet(pg.image.load('assets/spritesheets/objects/door-left.png').convert_alpha(), 32, 64, 2)
+door_right_ss = SpriteSheet(pg.image.load('assets/spritesheets/objects/door-right.png').convert_alpha(), 32, 64, 2)
+chest_ss = SpriteSheet(pg.image.load('assets/spritesheets/objects/chest.png').convert_alpha(), 32, 32, 4)
+portal_ss = SpriteSheet(pg.image.load('assets/spritesheets/objects/portal.png').convert_alpha(), 32, 32, 4)
 
 # Hazards
-fire_ss = SpriteSheet(pygame.image.load('assets/spritesheets/hazards/fire-loop-sheet.png').convert_alpha(), 16,24, 4)
-spike_ss = SpriteSheet(pygame.image.load('assets/spritesheets/hazards/spikes.png').convert_alpha(), 32, 32, 2)
+fire_ss = SpriteSheet(pg.image.load('assets/spritesheets/hazards/fire-loop-sheet.png').convert_alpha(), 16,24, 4)
+spike_ss = SpriteSheet(pg.image.load('assets/spritesheets/hazards/spikes.png').convert_alpha(), 32, 32, 2)
 
 # Spells
-fire_spell_ss = SpriteSheet(pygame.image.load('assets/spritesheets/spells/fire-spell.png').convert_alpha(), 24,32, 2)
+fire_spell_ss = SpriteSheet(pg.image.load('assets/spritesheets/spells/fire-spell.png').convert_alpha(), 24,32, 2)
 
 # Environmental effects
-leaves_ss = SpriteSheet(pygame.image.load('assets/spritesheets/env/leaf.png').convert_alpha(), 16,16, 2)
+leaves_ss = SpriteSheet(pg.image.load('assets/spritesheets/env/leaf.png').convert_alpha(), 16,16, 2)
 
 # Effects
-dust_ss = SpriteSheet(pygame.image.load('assets/spritesheets/effects/dust-landing.png').convert_alpha(), 52,16, 2)
+dust_ss = SpriteSheet(pg.image.load('assets/spritesheets/effects/dust-landing.png').convert_alpha(), 52,16, 2)
 
 # Decor
-heart_ss = SpriteSheet(pygame.image.load('assets/spritesheets/decor/heart-beating.png').convert_alpha(), 16, 16, 2)
-stomp_ss = SpriteSheet(pygame.image.load('assets/spritesheets/decor/boot-stomping.png').convert_alpha(), 16, 16, 2)
+heart_ss = SpriteSheet(pg.image.load('assets/spritesheets/decor/heart-beating.png').convert_alpha(), 16, 16, 2)
+stomp_ss = SpriteSheet(pg.image.load('assets/spritesheets/decor/boot-stomping.png').convert_alpha(), 16, 16, 2)
 
 """ Create main animation dict 
     Note: this creates ONE animation for each situation. So two objects being assigned the same animation will have 
