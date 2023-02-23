@@ -128,10 +128,6 @@ levels = {
 class GameAudio():
     def __init__(self, level) -> None:
 
-        # Initializing
-        pg.mixer.pre_init(44100, -16, 2, 512)
-        pg.mixer.init()
-
         # Load audio for player
         self.player = {
             'attack': Sound('assets/sound/player/attack.wav'),

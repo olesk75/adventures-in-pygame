@@ -23,7 +23,10 @@ if len(sys.argv):
         logging.debug('Sound effects are OFF')
 
 # pg setup
+# Initializing
+pg.mixer.pre_init(44100, -16, 2, 512)
 pg.init()
+pg.mixer.init()
 
 gs = GameState()
 
