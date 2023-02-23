@@ -116,7 +116,7 @@ level_2 = {
 
 
 levels = {
-    0: level_0,  # test level
+    0: level_0,  # arena level
 	1: level_1,
 	2: level_2,
 	# 3: level_3,
@@ -159,6 +159,8 @@ class GameAudio():
         if level in (0, 1, 2):
             self.music = pg.mixer.music
             self.music.load("assets/sound/music/Hidden-Agenda.mp3")
+            self.music.set_volume(0.4)
+
 
         # Setting default volume for sound effects
         self.pickups['health'].set_volume(0.5)

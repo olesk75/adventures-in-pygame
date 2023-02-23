@@ -3,7 +3,7 @@ monsters[]          : list of known monsters in game
 MonsterAI(class)    : contains monster data
 """
 
-import pygame
+import pygame as pg
 from settings import *
 
 
@@ -18,6 +18,11 @@ class MonsterData():
             raise ValueError(f'Monster "{monster}" not in list of known monsters: {known_monsters}')
 
         self.monster = monster
+
+
+        # Some practical defaults for all monsters, overwritten in specific declarations
+        self.sound_cast = pg.mixer.Sound('assets/sound/monster/_generic_/thud.wav')
+        self.sound_cast.set_volume(0.5)
 
         if monster == 'elven-archer':
             self.boss = False
@@ -37,13 +42,13 @@ class MonsterData():
             self.random_turns = 0.15
             self.hitbox_width = 65 
             self.hitbox_height = 110
-            self.sound_attack = pygame.mixer.Sound('assets/sound/monster/elven-archer/attack.wav')
-            self.sound_attack_volume = 0.5
-            self.sound_death = pygame.mixer.Sound('assets/sound/monster/elven-archer/death.wav') 
-            self.sound_death_volume = 0.3
-            self.sound_hit = pygame.mixer.Sound('assets/sound/monster/elven-archer/hit.wav') 
-            self.sound_hit_volume = 0.5
-            self.blood_color = pygame.Color('#ac3232')
+            self.sound_attack = pg.mixer.Sound('assets/sound/monster/elven-archer/attack.wav')
+            self.sound_attack.set_volume(0.5)
+            self.sound_death = pg.mixer.Sound('assets/sound/monster/elven-archer/death.wav') 
+            self.sound_death.set_volume(0.3)
+            self.sound_hit = pg.mixer.Sound('assets/sound/monster/elven-archer/hit.wav') 
+            self.sound_hit.set_volume(0.5)
+            self.blood_color = pg.Color('#ac3232')
  
         if monster == 'skeleton-boss':
             self.boss = True
@@ -63,18 +68,20 @@ class MonsterData():
             self.random_turns = 0.3
             self.hitbox_width = 65
             self.hitbox_height = 110
-            self.sound_attack = pygame.mixer.Sound('assets/sound/monster/skeleton-boss/roar.mp3')
-            self.sound_attack_volume = 0.1
-            self.sound_death = pygame.mixer.Sound('assets/sound/monster/skeleton-boss/death.wav')
-            self.sound_death_volume = 1
+            self.sound_attack = pg.mixer.Sound('assets/sound/monster/skeleton-boss/roar.mp3')
+            self.sound_attack.set_volume(0.1)
+            self.sound_death = pg.mixer.Sound('assets/sound/monster/skeleton-boss/death.wav')
+            self.sound_death.set_volume(1)
+            self.sound_hit = pg.mixer.Sound('assets/sound/monster/elven-archer/hit.wav') 
+            self.sound_hit.set_volume(0.5)
             self.blood_color = BLACK
  
             # Boss specific
             self.boss_attacks = [('firewalker', 0.01)] 
             self.cast_delay = 2000
             self.item_drop = ['key', 'health']
-            self.sound_cast = pygame.mixer.Sound('assets/sound/spell/fire-spell.aif')
-            self.sound_cast_volume = 0.5
+            self.sound_cast = pg.mixer.Sound('assets/sound/spell/fire-spell.aif')
+            self.sound_cast.set_volume(0.5)
 
         if monster == 'elven-caster':
             self.boss = False
@@ -94,13 +101,15 @@ class MonsterData():
             self.random_turns = 0.15
             self.hitbox_width = 65 
             self.hitbox_height = 110
-            self.sound_attack = None,
-            self.sound_attack_volume = 0.5
-            self.sound_death = pygame.mixer.Sound('assets/sound/monster/elven-caster/death.ogg')
-            self.sound_death_volume = 0.5
-            self.sound_cast = pygame.mixer.Sound('assets/sound/monster/elven-caster/cast.wav')
-            self.sound_cast_volume = 0.5
-            self.blood_color = pygame.Color('#ac3232')
+            self.sound_attack = pg.mixer.Sound('assets/sound/monster/elven-caster/death.ogg')
+            self.sound_attack.set_volume(0.5)
+            self.sound_death = pg.mixer.Sound('assets/sound/monster/elven-caster/death.ogg')
+            self.sound_death.set_volume(0.5)
+            self.sound_cast = pg.mixer.Sound('assets/sound/monster/elven-caster/cast.wav')
+            self.sound_cast.set_volume(0.5)
+            self.sound_hit = pg.mixer.Sound('assets/sound/monster/elven-archer/hit.wav') 
+            self.sound_hit.set_volume(0.5)
+            self.blood_color = pg.Color('#ac3232')
 
         if monster == 'beholder':  # TODO: make unique
             self.boss = False  # bosses have unique behaviour, not just wondering around
@@ -121,10 +130,10 @@ class MonsterData():
             self.hitbox_width = 65 
             self.hitbox_height = 110
             self.sound_attack = False
-            self.sound_attack = pygame.mixer.Sound('assets/sound/monster/beholder/attack.flac')
-            self.sound_attack_volume = 0.5
-            self.sound_death = pygame.mixer.Sound('assets/sound/monster/beholder/death.flac')
-            self.sound_death_volume = 1
-            self.sound_cast = None
-            self.sound_cast_volume = None
-            self.blood_color = pygame.Color('#99e550') 
+            self.sound_attack = pg.mixer.Sound('assets/sound/monster/beholder/attack.flac')
+            self.sound_attack.set_volume(0.5)
+            self.sound_death = pg.mixer.Sound('assets/sound/monster/beholder/death.flac')
+            self.sound_death.set_volume(1)
+            self.sound_hit = pg.mixer.Sound('assets/sound/monster/elven-archer/hit.wav') 
+            self.sound_hit.set_volume(0.5)
+            self.blood_color = pg.Color('#99e550') 

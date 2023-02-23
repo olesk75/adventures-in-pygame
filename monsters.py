@@ -45,17 +45,7 @@ class Monster(pg.sprite.Sprite):
         self.hitbox = pg.Rect(x,y, self.width - self.X_ADJ, self.height - self.Y_ADJ)
         
         self.rect_detect = pg.Rect(0,0,0,0)
-        self.rect_attack = pg.Rect(0,0,0,0)
-
-        # Setting the volumes for the various sounds 
-        try:
-            self.data.sound_attack.set_volume(self.data.sound_attack_volume)
-            self.data.sound_death.set_volume(self.data.sound_death_volume)
-            self.data.sound_cast.set_volume(self.data.sound_attack_volume)
-            self.data.sound_hit.set_volume(self.data.sound_hit_volume)
-        except AttributeError:
-            logging.debug(f'Missing sound effect for {monster_type}')
-            
+        self.rect_attack = pg.Rect(0,0,0,0) 
    
         self.vel_x = 0
         self.vel_y = 0

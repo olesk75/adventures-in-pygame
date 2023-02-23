@@ -127,7 +127,6 @@ class Game:
         if MUSIC_ON:
             self.level_audio = GameAudio(current_level)
             self.level_audio.music.play(loops=-1)
-            self.level_audio.music.set_volume(0.4)
 
     def check_level_complete(self) -> None:
         """ Check if player has successfully reached end of the level """

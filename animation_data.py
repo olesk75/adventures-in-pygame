@@ -5,12 +5,12 @@ BLACK = (0,0,0)
 
 """ Loading sprite sheets """
 # Player (I call him Stabby, as he ... stabs a lot)
-stabby_ss_walk = SpriteSheet(pg.image.load('assets/spritesheets/stabby-walking.png').convert_alpha(), 32, 32, 4)
-stabby_ss_idle = SpriteSheet(pg.image.load('assets/spritesheets/stabby-idle.png').convert_alpha(), 32, 32, 4)
-stabby_ss_attack = SpriteSheet(pg.image.load('assets/spritesheets/stabby-attack.png').convert_alpha(), 32, 32, 4)
-stabby_ss_stomp = SpriteSheet(pg.image.load('assets/spritesheets/stabby-stomp.png').convert_alpha(), 32, 32, 4)
-stabby_ss_death = SpriteSheet(pg.image.load('assets/spritesheets/stabby-death.png').convert_alpha(), 32, 32, 4)
-stabby_ss_cast = SpriteSheet(pg.image.load('assets/spritesheets/stabby-casting.png').convert_alpha(), 32, 32, 4)
+stabby_ss_walk = SpriteSheet(pg.image.load('assets/spritesheets/player/stabby-walking.png').convert_alpha(), 32, 32, 4)
+stabby_ss_idle = SpriteSheet(pg.image.load('assets/spritesheets/player/stabby-idle.png').convert_alpha(), 32, 32, 4)
+stabby_ss_attack = SpriteSheet(pg.image.load('assets/spritesheets/player/stabby-attack.png').convert_alpha(), 32, 32, 4)
+stabby_ss_stomp = SpriteSheet(pg.image.load('assets/spritesheets/player/stabby-stomp.png').convert_alpha(), 32, 32, 4)
+stabby_ss_death = SpriteSheet(pg.image.load('assets/spritesheets/player/stabby-death.png').convert_alpha(), 32, 32, 4)
+stabby_ss_cast = SpriteSheet(pg.image.load('assets/spritesheets/player/stabby-casting.png').convert_alpha(), 32, 32, 4)
 
 # Monsters
 elven_archer_running_ss = SpriteSheet(pg.image.load('assets/spritesheets/monsters/elven-archer-running.png').convert_alpha(), 32, 32, 4)
@@ -19,9 +19,12 @@ elven_archer_dying_ss = SpriteSheet(pg.image.load('assets/spritesheets/monsters/
 
 skeleton_boss_ss = SpriteSheet(pg.image.load('assets/spritesheets/monsters/skeleton-boss-sprites.png').convert_alpha(), 64, 64, 4)
 skeleton_boss_attack_ss = SpriteSheet(pg.image.load('assets/spritesheets/monsters/skeleton-boss-sprites-attack.png').convert_alpha(), 64*3, 64*3, 4)
+
 beholder_ss_walk = SpriteSheet(pg.image.load('assets/spritesheets/monsters/beholder-walking.png').convert_alpha(), 32, 32, 4)
 beholder_ss_attack = SpriteSheet(pg.image.load('assets/spritesheets/monsters/beholder-attacking.png').convert_alpha(), 32, 32, 4)
 beholder_ss_death = SpriteSheet(pg.image.load('assets/spritesheets/monsters/beholder-dying.png').convert_alpha(), 32, 32, 4)
+
+skelteon_warrior_ss_walk = SpriteSheet(pg.image.load('assets/spritesheets/monsters/skelteon-warrior-walking.png').convert_alpha(), 32, 32, 4)
 
 # Drops and animated objects
 health_potion_ss =  SpriteSheet(pg.image.load('assets/spritesheets/objects/lifepotion.png').convert_alpha(), 32, 32, 3)
