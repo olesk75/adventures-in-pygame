@@ -134,7 +134,7 @@ class MonsterData():
             self.sound_attack.set_volume(0.5)
             self.sound_death = pg.mixer.Sound('assets/sound/monster/beholder/death.flac')
             self.sound_death.set_volume(1)
-            self.sound_hit = pg.mixer.Sound('assets/sound/monster/elven-archer/hit.wav') 
+            self.sound_hit = pg.mixer.Sound('assets/sound/monster/beholder/hit.wav') 
             self.sound_hit.set_volume(0.5)
             self.blood_color = pg.Color('#99e550') 
 
@@ -157,10 +157,10 @@ class MonsterData():
             self.hitbox_width = 65 
             self.hitbox_height = 110
             self.sound_attack = False
-            self.sound_attack = pg.mixer.Sound('assets/sound/monster/beholder/attack.flac')
+            self.sound_attack = pg.mixer.Sound('assets/sound/monster/skeleton-warrior/attack.wav')
             self.sound_attack.set_volume(0.5)
-            self.sound_death = pg.mixer.Sound('assets/sound/monster/beholder/death.flac')
+            self.sound_death = pg.mixer.Sound('assets/sound/monster/skeleton-warrior/death.wav')
             self.sound_death.set_volume(1)
-            self.sound_hit = pg.mixer.Sound('assets/sound/monster/elven-archer/hit.wav') 
+            self.sound_hit = pg.mixer.Sound('assets/sound/monster/skeleton-warrior/hit.wav') 
             self.sound_hit.set_volume(0.5)
             self.blood_color = BLACK

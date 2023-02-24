@@ -281,9 +281,9 @@ class Monster(pg.sprite.Sprite):
                     self.animation.active = False
                     self.animation.start_over()  # make ready for next death from same monster, as we reuse the same animation instance
                     self.image = self.animation.frame[-1]
-
-                    if self.data.sound_death:
-                        self.data.sound_death.play()
+                    self.data.sound_death.play()
+                    self.data.sound_death.play()
+                    self.data.sound_death.play()
 
             new_rect = self.animation.get_image().get_rect()  # we need to scale back to walking image size after an attack
             new_rect.center = self.rect.center
