@@ -111,13 +111,13 @@ class MonsterData():
             self.sound_hit.set_volume(0.5)
             self.blood_color = pg.Color('#ac3232')
 
-        if monster == 'beholder':  # TODO: make unique
+        if monster == 'beholder': 
             self.boss = False  # bosses have unique behaviour, not just wondering around
             self.caster = False
             self.direction = 1  # right
             self.hitpoints = 2
             self.speed_walking = 3
-            self.speed_attacking = 5
+            self.speed_attacking = 7
             self.detection_range = 200
             self.detection_range_high = False
             self.attack_range = 50
@@ -137,3 +137,30 @@ class MonsterData():
             self.sound_hit = pg.mixer.Sound('assets/sound/monster/elven-archer/hit.wav') 
             self.sound_hit.set_volume(0.5)
             self.blood_color = pg.Color('#99e550') 
+
+        if monster == 'skeleton-warrior':
+            self.boss = False  # bosses have unique behaviour, not just wondering around
+            self.caster = False
+            self.direction = 1  # right
+            self.hitpoints = 3
+            self.speed_walking = 3
+            self.speed_attacking = 4
+            self.detection_range = 200
+            self.detection_range_high = False
+            self.attack_range = 50
+            self.attack_jumper = False
+            self.attack_instant_damage = True 
+            self.attack_delay = 20  # delay between attacks (ms)
+            self.attack_damage = 300
+            self.points_reward = 100
+            self.random_turns = 0.001
+            self.hitbox_width = 65 
+            self.hitbox_height = 110
+            self.sound_attack = False
+            self.sound_attack = pg.mixer.Sound('assets/sound/monster/beholder/attack.flac')
+            self.sound_attack.set_volume(0.5)
+            self.sound_death = pg.mixer.Sound('assets/sound/monster/beholder/death.flac')
+            self.sound_death.set_volume(1)
+            self.sound_hit = pg.mixer.Sound('assets/sound/monster/elven-archer/hit.wav') 
+            self.sound_hit.set_volume(0.5)
+            self.blood_color = BLACK

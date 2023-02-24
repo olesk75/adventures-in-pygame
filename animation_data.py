@@ -24,7 +24,7 @@ beholder_ss_walk = SpriteSheet(pg.image.load('assets/spritesheets/monsters/behol
 beholder_ss_attack = SpriteSheet(pg.image.load('assets/spritesheets/monsters/beholder-attacking.png').convert_alpha(), 32, 32, 4)
 beholder_ss_death = SpriteSheet(pg.image.load('assets/spritesheets/monsters/beholder-dying.png').convert_alpha(), 32, 32, 4)
 
-skelteon_warrior_ss_walk = SpriteSheet(pg.image.load('assets/spritesheets/monsters/skelteon-warrior-walking.png').convert_alpha(), 32, 32, 4)
+skeleton_warrior_ss_walk = SpriteSheet(pg.image.load('assets/spritesheets/monsters/skelteon-warrior-walking.png').convert_alpha(), 32, 32, 4)
 
 # Drops and animated objects
 health_potion_ss =  SpriteSheet(pg.image.load('assets/spritesheets/objects/lifepotion.png').convert_alpha(), 32, 32, 3)
