@@ -38,6 +38,7 @@ class MonsterData():
             self.attack_instant_damage = False  # the mob spawns an arrow wchi the player can evade
             self.attack_delay = 200  # delay between attacks (ms)
             self.attack_damage = 600
+            self.stun_time = 500
             self.points_reward = 150
             self.random_turns = 0.15
             self.hitbox_width = 65 
@@ -64,6 +65,7 @@ class MonsterData():
             self.attack_instant_damage = True
             self.attack_delay = 0  # delay between attacks (ms)
             self.attack_damage = 100
+            self.stun_time = 500
             self.points_reward = 500
             self.random_turns = 0.3
             self.hitbox_width = 65
@@ -97,6 +99,7 @@ class MonsterData():
             self.attack_instant_damage = False  # the mob spawns an arrow wchi the player can evade
             self.attack_delay = 2000  # delay between attacks (ms)
             self.attack_damage = 600
+            self.stun_time = 500
             self.points_reward = 150
             self.random_turns = 0.15
             self.hitbox_width = 65 
@@ -125,6 +128,7 @@ class MonsterData():
             self.attack_instant_damage = True 
             self.attack_delay = 20  # delay between attacks (ms)
             self.attack_damage = 300
+            self.stun_time = 500
             self.points_reward = 100
             self.random_turns = 0.001
             self.hitbox_width = 65 
@@ -152,6 +156,7 @@ class MonsterData():
             self.attack_instant_damage = True 
             self.attack_delay = 20  # delay between attacks (ms)
             self.attack_damage = 300
+            self.stun_time = 500
             self.points_reward = 100
             self.random_turns = 0.001
             self.hitbox_width = 65 

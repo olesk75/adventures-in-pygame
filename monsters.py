@@ -201,10 +201,12 @@ class Monster(pg.sprite.Sprite):
 
             elif self.state == STUNNED:
                 # Typically only as a result of a successful player attack
-                self.stun_start = pg.time.get_ticks()
+                #self.stun_start = pg.time.get_ticks()
                 self.animation.active = False  #  monster is frozen for the duration
                 self.rect_attack = pg.Rect(0,0,0,0)  # not attacking for the duration
                 self.rect_detect = pg.Rect(0,0,0,0)  # not detecting for the duration
+                if pg.time.get_ticks() - self.stun_start > self.data.stun_time:
+                    self.state_change(ATTACKING)
 
             else:
                 logging.error(f'ERROR, wrong state for monster in boss fight: {self.state}')
@@ -326,7 +328,7 @@ class Monster(pg.sprite.Sprite):
 
                 dx = self.vel_x
                 now = pg.time.get_ticks()
-                if now - self.stun_start > MONSTER_STUN_TIME:
+                if now - self.stun_start > self.data.stun_time:
                     self.vel_x = 0
                     self.invulnerable = False
                     self.create_rects()
