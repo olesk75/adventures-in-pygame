@@ -144,7 +144,7 @@ class MonsterData():
             self.direction = 1  # right
             self.hitpoints = 3
             self.speed_walking = 3
-            self.speed_attacking = 4
+            self.speed_attacking = 5
             self.detection_range = 200
             self.detection_range_high = False
             self.attack_range = 50
