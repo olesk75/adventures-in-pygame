@@ -7,7 +7,7 @@ import pygame as pg
 from game_data.settings import *
 
 
-known_monsters = ['beholder', 'elven-archer', 'skeleton-boss', 'skeleton-warrior', 'elven-caster']  # used to recognize tiles from level files - order must match tile numbering 
+known_monsters = ['beholder', 'elven-archer', 'skeleton-keybearer', 'skeleton-warrior', 'elven-caster']  # used to recognize tiles from level files - order must match tile numbering 
 
 arrow_damage = 100
 
@@ -50,7 +50,7 @@ class MonsterData():
             self.sound_hit.set_volume(0.5)
             self.blood_color = pg.Color('#ac3232')
  
-        if monster == 'skeleton-boss':
+        if monster == 'skeleton-keybearer':
             self.boss = True
             self.caster = True
             self.direction = 1  # right
@@ -68,11 +68,11 @@ class MonsterData():
             self.random_turns = 0.3
             self.hitbox_width = 65
             self.hitbox_height = 110
-            self.sound_attack = pg.mixer.Sound('assets/sound/monster/skeleton-boss/roar.mp3')
+            self.sound_attack = pg.mixer.Sound('assets/sound/monster/skeleton-keybearer/roar.mp3')
             self.sound_attack.set_volume(0.1)
-            self.sound_death = pg.mixer.Sound('assets/sound/monster/skeleton-boss/death.wav')
+            self.sound_death = pg.mixer.Sound('assets/sound/monster/skeleton-keybearer/death.wav')
             self.sound_death.set_volume(1)
-            self.sound_hit = pg.mixer.Sound('assets/sound/monster/elven-archer/hit.wav') 
+            self.sound_hit = pg.mixer.Sound('assets/sound/monster/skeleton-keybearer/hit.wav') 
             self.sound_hit.set_volume(0.5)
             self.blood_color = BLACK
  

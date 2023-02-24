@@ -159,7 +159,7 @@ class Monster(pg.sprite.Sprite):
                     self.state_change(WALKING)
                     self.currently_casting = ''
 
-        if self.data.monster ==  'skeleton-boss':
+        if self.data.monster ==  'skeleton-keybearer':
             if self.state == ATTACKING:
                 # Random transitions from ATTACKING to CASTING
                 for attack in self.data.boss_attacks:

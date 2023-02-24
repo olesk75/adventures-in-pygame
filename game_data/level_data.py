@@ -152,7 +152,7 @@ class GameAudio():
 
         # Game ambient
         self.ambient = {
-            'rainstorm': Sound('assets/sound/ambient/rainstorm.wav'),
+            'lightning storm': Sound('assets/sound/ambient/rainstorm.wav'),
         }
 
         # Game music

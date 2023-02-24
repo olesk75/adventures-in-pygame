@@ -119,8 +119,9 @@ class Level():
         self.weather_effets = Weather(self.gs.level_weather)
         
         # ambient audio
-        self.audio.ambient['rainstorm'].set_volume(0.3)
-        self.audio.ambient['rainstorm'].play(loops=-1)
+        if self.gs.level_weather:
+            self.audio.ambient[self.gs.level_weather].set_volume(0.3)
+            self.audio.ambient[self.gs.level_weather].play(loops=-1)
 
         # stomp self image shadows and effect
         self.stomp_shadows = pg.sprite.Group()
@@ -216,8 +217,7 @@ class Level():
                         self.gs.player_score += monster.data.points_reward
                         self.gs.player_stomp_counter += 1
                         """ Adding drops from player death """
-                        # skeleton-boss is a key carrier
-                        if monster.data.monster == 'skeleton-boss':
+                        if monster.data.monster == 'skeleton-keybearer':
                             drop_key = Drop( monster.hitbox.centerx, monster.hitbox.centery - 25 , self.anim['pickups']['key'], turned = False, scale = 2, drop_type='key',)
                             self.drops_sprites.add(drop_key)
                             logging.debug(f'{monster.data.monster} dropped a key')
@@ -519,12 +519,12 @@ class Level():
                         if int(val) == 0:
                             sprite = Monster(x,y,tile_surface, 'beholder')
                             sprite.name = 'beholder'
-                        elif int(val) == 1:  # elven-archer
+                        elif int(val) == 1:
                             sprite = Monster(x,y,tile_surface, 'elven-archer')
                             sprite.name = 'elven-archer'
-                        elif int(val) == 2:  # skeleton-boss
-                            sprite = Monster(x,y,tile_surface, 'skeleton-boss')
-                            sprite.name = 'skeleton-boss'
+                        elif int(val) == 2:
+                            sprite = Monster(x,y,tile_surface, 'skeleton-keybearer')
+                            sprite.name = 'skeleton-keybearer'
                         else:
                             logging.error(f'Tile value {int(val)} for tile type "{type}" not recognized during level import')
                             exit(1)

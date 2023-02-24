@@ -404,7 +404,6 @@ class InfoPopup(pg.sprite.Sprite):
                 self.image.fill((0, 0, 0, 0)) # Set the surface to be completely transparent
                 self.image.blit(self.full_image, (0,0), (TILE_SIZE_SCREEN * 4 - self.roll_count, 0, self.roll_count, TILE_SIZE_SCREEN))
                 if self.roll_count < TILE_SIZE_SCREEN * 4 and self.roll_count > -1:  # used to vount both up and down
-                    print(self.roll_count)
                     self.roll_count += 10 * direction
 
             self.ticks_since_last = now
@@ -655,7 +654,6 @@ class Weather():
             if now - self.weather_timer > self.weather_delay:
 
                 for i, particle in enumerate(self.drops):
-                    #print(particle['x1'])
                     pg.draw.line(surface, particle['color'], (particle['x1'], particle['y1']), \
                                     (particle['x2'], particle['y2']), particle['width'])
                     self.drops[i]['x1'] += self.x_movement + h_scroll

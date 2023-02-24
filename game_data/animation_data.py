@@ -17,8 +17,10 @@ elven_archer_running_ss = SpriteSheet(pg.image.load('assets/spritesheets/monster
 elven_archer_attacking_ss = SpriteSheet(pg.image.load('assets/spritesheets/monsters/elven-archer-attacking.png').convert_alpha(), 32, 32, 4)
 elven_archer_dying_ss = SpriteSheet(pg.image.load('assets/spritesheets/monsters/elven-archer-dying.png').convert_alpha(), 32, 32, 4)
 
-skeleton_boss_ss = SpriteSheet(pg.image.load('assets/spritesheets/monsters/skeleton-boss-sprites.png').convert_alpha(), 64, 64, 4)
-skeleton_boss_attack_ss = SpriteSheet(pg.image.load('assets/spritesheets/monsters/skeleton-boss-sprites-attack.png').convert_alpha(), 64*3, 64*3, 4)
+skeleton_keybearer_walk_ss = SpriteSheet(pg.image.load('assets/spritesheets/monsters/skeleton-keybearer-walking.png').convert_alpha(), 64, 64, 4)
+skeleton_keybearer_attack_ss = SpriteSheet(pg.image.load('assets/spritesheets/monsters/skeleton-keybearer-attacking.png').convert_alpha(), 128, 64, 4)
+skeleton_keybearer_cast_ss = SpriteSheet(pg.image.load('assets/spritesheets/monsters/skeleton-keybearer-casting.png').convert_alpha(), 64, 64, 4)
+skeleton_keybearer_die_ss = SpriteSheet(pg.image.load('assets/spritesheets/monsters/skeleton-keybearer-dying.png').convert_alpha(), 64, 64, 4)
 
 beholder_ss_walk = SpriteSheet(pg.image.load('assets/spritesheets/monsters/beholder-walking.png').convert_alpha(), 32, 32, 4)
 beholder_ss_attack = SpriteSheet(pg.image.load('assets/spritesheets/monsters/beholder-attacking.png').convert_alpha(), 32, 32, 4)
@@ -76,12 +78,12 @@ anim = {
         'death': Animation(elven_archer_dying_ss, frames=7, speed=100, repeat=False),
         'cast': None
     },
-    'skeleton-boss': {
-        'walk': Animation(skeleton_boss_ss, row=11, frames=9, speed=50), 
-        'attack': Animation(skeleton_boss_attack_ss, row=3, frames=8, speed=75), 
-        'death': Animation(skeleton_boss_ss, row=20, frames=6, speed=75, repeat=False),
+    'skeleton-keybearer': {
+        'walk': Animation(skeleton_keybearer_walk_ss, frames=9, speed=50), 
+        'attack': Animation(skeleton_keybearer_attack_ss, frames=8, speed=75), 
+        'death': Animation(skeleton_keybearer_die_ss, frames=5, speed=75, repeat=False),
         'idle': None,
-        'cast': Animation(skeleton_boss_ss, row=2, frames=7, speed=100)
+        'cast': Animation(skeleton_keybearer_cast_ss, frames=7, speed=100)
     },
     'beholder': {
         'walk': Animation(beholder_ss_walk, frames=10, speed=25), 
