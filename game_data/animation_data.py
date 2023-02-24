@@ -25,6 +25,8 @@ beholder_ss_attack = SpriteSheet(pg.image.load('assets/spritesheets/monsters/beh
 beholder_ss_death = SpriteSheet(pg.image.load('assets/spritesheets/monsters/beholder-dying.png').convert_alpha(), 32, 32, 4)
 
 skeleton_warrior_ss_walk = SpriteSheet(pg.image.load('assets/spritesheets/monsters/skelteon-warrior-walking.png').convert_alpha(), 32, 32, 4)
+skeleton_warrior_ss_attack = SpriteSheet(pg.image.load('assets/spritesheets/monsters/skelteon-warrior-walking.png').convert_alpha(), 32, 32, 4)
+skeleton_warrior_ss_death = SpriteSheet(pg.image.load('assets/spritesheets/monsters/skelteon-warrior-walking.png').convert_alpha(), 32, 32, 4)
 
 # Drops and animated objects
 health_potion_ss =  SpriteSheet(pg.image.load('assets/spritesheets/objects/lifepotion.png').convert_alpha(), 32, 32, 3)
@@ -84,6 +86,13 @@ anim = {
         'walk': Animation(beholder_ss_walk, frames=10, speed=25), 
         'attack': Animation(beholder_ss_attack, frames=8, speed=50),
         'death': Animation(beholder_ss_death, frames=8, speed=100, repeat=False),
+        'idle': None,
+        'cast': None
+    },
+    'skeleton-warrior': {
+        'walk': Animation(skeleton_warrior_ss_walk, frames=8, speed=50), 
+        'attack': Animation(skeleton_warrior_ss_walk, frames=8, speed=50),
+        'death': Animation(skeleton_warrior_ss_walk, frames=8, speed=50, repeat=False),
         'idle': None,
         'cast': None
     },

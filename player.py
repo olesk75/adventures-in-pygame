@@ -2,7 +2,7 @@ import pygame as pg
 import logging
 import math
 
-from settings import *
+from game_data.settings import *
 from decor_and_effects import ExpandingCircle, SpeedLines
 
 
@@ -27,7 +27,7 @@ class Player(pg.sprite.Sprite):
         self.last_damage = 0
 
         # Setting up animations
-        from animation_data import anim
+        from game_data.animation_data import anim
 
         self.animations = {
             'idle': anim['player']['idle'],

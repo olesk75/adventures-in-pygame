@@ -3,7 +3,7 @@ import pygame as pg
 import logging
 import copy
 
-from settings import *
+from game_data.settings import *
 from game_data.monster_data import MonsterData
 
 
@@ -18,7 +18,7 @@ class Monster(pg.sprite.Sprite):
         self.screen = surface
 
         # Setting up animations
-        from animation_data import anim
+        from game_data.animation_data import anim
         self.animations = {
             'walk': copy.copy(anim[monster_type]['walk']),
             'attack': copy.copy(anim[monster_type]['attack']),

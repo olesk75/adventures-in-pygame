@@ -3,7 +3,7 @@ from random import random, randint
 
 from random import randint
 from game_data.level_data import *
-from settings import *
+from game_data.settings import *
 from game_tiles import GameTileAnimation
 from game_functions import *
 
@@ -106,7 +106,7 @@ class EnvironmentalEffects(pg.sprite.Group):
     """
     def __init__(self, effect, screen) -> pg.sprite.Group:
         super().__init__()
-        from animation_data import leaves_ss
+        from game_data.animation_data import leaves_ss
         from animation import Animation
         self.Anim = Animation
         self.ss = leaves_ss
@@ -212,7 +212,7 @@ class ExpandingCircle:
 class GamePanel:
     """ Class to show a panel on top left corner of the screen """
     def __init__(self, screen: pg.display, game_state)-> None:
-        from animation_data import anim
+        from game_data.animation_data import anim
         self.heart_anim = anim['decor']['beating-heart']
         self.heart_anim.active = False
         self.stomp_anim = anim['decor']['stomping-foot']

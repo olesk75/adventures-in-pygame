@@ -4,8 +4,7 @@ from pygame.locals import *
 import sys
 import logging
 
-from settings import * 
-
+from game_data.settings import * 
 from game_world import GameState, Game
 
 

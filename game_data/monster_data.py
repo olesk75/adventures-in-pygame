@@ -4,10 +4,10 @@ MonsterAI(class)    : contains monster data
 """
 
 import pygame as pg
-from settings import *
+from game_data.settings import *
 
 
-known_monsters = ['beholder', 'elven-archer', 'skeleton-boss', 'elven-caster']  # used to recognize tiles from level files - order must match tile numbering 
+known_monsters = ['beholder', 'elven-archer', 'skeleton-boss', 'skeleton-warrior', 'elven-caster']  # used to recognize tiles from level files - order must match tile numbering 
 
 arrow_damage = 100
 

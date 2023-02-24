@@ -1,7 +1,7 @@
 import pygame as pg
 import logging 
 
-from settings import *
+from game_data.settings import *
 from game_functions import *
 
 from level import Level

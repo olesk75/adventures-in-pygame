@@ -9,12 +9,13 @@ import pygame as pg
 import logging
 import random
 
-from settings import *
+from game_data.settings import *
 from decor_and_effects import *
 from game_functions import *
 
 from game_tiles import GameTile, GameTileAnimation, MovingGameTile
 from game_data.level_data import levels, GameAudio
+from game_data.monster_data import known_monsters
 from player import Player, PlayerInOut
 from monsters import Monster, Projectile, Spell, Drop
 
@@ -26,7 +27,7 @@ class Level():
         self.gs = game_state
         self.last_log = ''  # we do this to only log when something _new_ happens
 
-        from animation_data import anim  # we do this late, as we need to have display() up first
+        from game_data.animation_data import anim  # we do this late, as we need to have display() up first
         self.anim = anim
 
         # general setup
@@ -166,7 +167,6 @@ class Level():
     def check_arena_spawns(self) -> None:
         # Checks if player in the arena has requestd monster spawns
         if self.gs.level_current == 0 and len(self.gs.monster_spawn_queue):
-            known_monsters = ['beholder', 'elven-archer', 'skeleton-boss']
             for count, monster in enumerate(self.gs.monster_spawn_queue):
                 if monster < len(known_monsters) + 1:
                     self.monsters_sprites.add(Monster(SCREEN_WIDTH * 0.8, SCREEN_HEIGHT * 0.8, self.screen, known_monsters[monster-1]))

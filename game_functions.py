@@ -7,7 +7,7 @@ import math
 
 from csv import reader
 
-from settings import *
+from game_data.settings import *
 
 # Check if any values in a nested dict are None type
 def check_none_values(d) -> bool:
