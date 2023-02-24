@@ -2,7 +2,7 @@ import pygame as pg
 from random import random, randint
 
 from random import randint
-from level_data import *
+from game_data.level_data import *
 from settings import *
 from game_tiles import GameTileAnimation
 from game_functions import *

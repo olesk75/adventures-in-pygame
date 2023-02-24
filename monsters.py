@@ -4,7 +4,7 @@ import logging
 import copy
 
 from settings import *
-from monster_data import MonsterData
+from game_data.monster_data import MonsterData
 
 
 class Monster(pg.sprite.Sprite):

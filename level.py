@@ -14,11 +14,11 @@ from decor_and_effects import *
 from game_functions import *
 
 from game_tiles import GameTile, GameTileAnimation, MovingGameTile
-from level_data import levels, GameAudio
+from game_data.level_data import levels, GameAudio
 from player import Player, PlayerInOut
 from monsters import Monster, Projectile, Spell, Drop
 
-from monster_data import arrow_damage
+from game_data.monster_data import arrow_damage
 
 class Level():
     def __init__(self, surface, game_state) -> None:

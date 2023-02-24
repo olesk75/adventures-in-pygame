@@ -5,7 +5,7 @@ from settings import *
 from game_functions import *
 
 from level import Level
-from level_data import GameAudio  
+from game_data.level_data import GameAudio  
 from decor_and_effects import GamePanel
 
 class GameState:
