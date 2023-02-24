@@ -432,7 +432,6 @@ class Level():
                             sprite.solid = False
                         
                     if type == 'pos_decorations':
-                        print(self.decorations_tile_list)
                         tile_surface = self.decorations_tile_list[int(val)]
                         (x_size, y_size) = tile_surface.get_size()
                         x_size = x_size * 2 + 3

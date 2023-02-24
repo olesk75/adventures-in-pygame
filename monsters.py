@@ -227,8 +227,7 @@ class Monster(pg.sprite.Sprite):
 
                     self.last_attack = pg.time.get_ticks()  # recording time of last attack
 
-                    if self.data.sound_attack:
-                        self.data.sound_attack.play()
+                    self.data.sound_attack.play()
 
             elif new_state == WALKING:
                     self.animation = self.animations['walk']
@@ -271,6 +270,7 @@ class Monster(pg.sprite.Sprite):
 
             elif new_state == DYING:
                     self.animation = self.animations['death']
+                    self.data.sound_death.play()
                     self.animation.active = True
                     self.animation.start_over()
                     self.rect_attack = pg.Rect(0,0,0,0)
@@ -278,12 +278,9 @@ class Monster(pg.sprite.Sprite):
                     self.hitbox = pg.Rect(0,0,0,0)
 
             elif new_state == DEAD:
-                    self.animation.active = False
-                    self.animation.start_over()  # make ready for next death from same monster, as we reuse the same animation instance
-                    self.image = self.animation.frame[-1]
-                    self.data.sound_death.play()
-                    self.data.sound_death.play()
-                    self.data.sound_death.play()
+                    pass  # TODO: do we need this state for monsters?
+                    
+
 
             new_rect = self.animation.get_image().get_rect()  # we need to scale back to walking image size after an attack
             new_rect.center = self.rect.center
@@ -361,7 +358,7 @@ class Monster(pg.sprite.Sprite):
         
         # Dying, waiting for anim to run to the end
         if self.state == DYING and self.animation.on_last_frame:
-            self.state = DEAD
+            self.state_change(DEAD)
 
 
         # Updating the ready_to_attack flag 
