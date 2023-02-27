@@ -67,6 +67,7 @@ class Level():
         # terrain setup
         terrain_layout = import_csv_layout(self.level_data['pos_terrain'])
         self.terrain_sprites = self.create_tile_group(terrain_layout,'pos_terrain')
+        #self.terrain_surface = self.create_terrain_surface(terrain_layout)
 
         # decorations setup 
         decorations_layout = import_csv_layout(self.level_data['pos_decorations'])
@@ -170,7 +171,10 @@ class Level():
         if self.gs.level_current == 0 and len(self.gs.monster_spawn_queue):
             for count, monster in enumerate(self.gs.monster_spawn_queue):
                 if monster < len(known_monsters) + 1:
-                    self.monsters_sprites.add(Monster(SCREEN_WIDTH * 0.8, SCREEN_HEIGHT * 0.8, self.screen, known_monsters[monster-1]))
+                    try:
+                        self.monsters_sprites.add(Monster(SCREEN_WIDTH * 0.8, SCREEN_HEIGHT * 0.8, self.screen, known_monsters[monster-1]))
+                    except KeyError:
+                        logging.error(f'Tried to call {known_monsters[monster-1]}')
                 self.gs.monster_spawn_queue.pop(count)
 
     def check_player_stomp(self) -> None:
@@ -348,34 +352,66 @@ class Level():
         # Monsters can be up to several things, which we check for here
         now = pg.time.get_ticks()
         for monster in self.monsters_sprites.sprites():
-            if monster.state != DYING and monster.state != DEAD:  # only dealing with the living
-                #  --> casting spells=
-                if monster.cast_anim_list:
-                    for spell in monster.cast_anim_list:
-                        if spell[0] == 'fire':
-                            x, y = spell[1:3]
-                            self.spell_sprites.add(Spell(x,y, self.anim['fire']['fire-spell'], False, scale=1))
-                    monster.cast_anim_list = []
+            if 0 < monster.rect.centerx < SCREEN_WIDTH and 0 < monster.rect.centery < SCREEN_HEIGHT:
+                if monster.state != DYING and monster.state != DEAD:  # only dealing with the living
+                    #  --> casting spells=
+                    if monster.cast_anim_list:
+                        for spell in monster.cast_anim_list:
+                            if spell[0] == 'fire':
+                                x, y = spell[1:3]
+                                self.spell_sprites.add(Spell(x,y, self.anim['fire']['fire-spell'], False, scale=1))
+                        monster.cast_anim_list = []
 
-                # --> detecting (or no longer detecting) the player and switch to/from ATTACK mode
-                if pg.Rect.colliderect(self.player.rects['hitbox'], monster.rect_detect) and self.player.state['active'] not in (DYING, DEAD):
-                    if monster.state == WALKING:
-                        monster.state_change(ATTACKING)    
-                else:  # Mob not detecting player
-                    if monster.state == ATTACKING:
-                        monster.state_change(WALKING)  # if we move out of range, the mob will stop attacking
+                    # --> detecting (or no longer detecting) the player and switch to/from ATTACK mode
+                    if pg.Rect.colliderect(self.player.rects['hitbox'], monster.rect_detect) and self.player.state['active'] not in (DYING, DEAD):
+                        if monster.state == WALKING:
+                            monster.state_change(ATTACKING)    
+                    else:  # Mob not detecting player
+                        if monster.state == ATTACKING:
+                            monster.state_change(WALKING)  # if we move out of range, the mob will stop attacking
 
-                # --> attacking the player and hitting or not the player's hitbox (or launching arrow or not)                
-                if pg.Rect.colliderect(self.player.rects['hitbox'], monster.rect_attack) and monster.state == ATTACKING and self.player.state['active'] != STOMPING:
-                    if monster.data.attack_instant_damage:  
-                        self.player.hit(monster.data.attack_damage, monster.turned, self.terrain_sprites)  # melee hit
-                        self.particles_blood(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery, RED, monster.turned)  # add blood particles whne player is hit
-                    elif now - monster.last_arrow > monster.data.attack_delay:  # launching projectile 
-                        arrow = Projectile(monster.hitbox.centerx, monster.hitbox.centery-10, self.arrow_img, turned = monster.turned, scale = 3)
-                        # We only add the arrow once the bow animation is complete (and we know we're ATTACKING, so attack anim is active)
-                        if monster.animation.on_last_frame:
-                            self.projectile_sprites.add(arrow)
-                            monster.last_arrow = now
+                    # --> attacking the player and hitting or not the player's hitbox (or launching arrow or not)                
+                    if pg.Rect.colliderect(self.player.rects['hitbox'], monster.rect_attack) and monster.state == ATTACKING and self.player.state['active'] != STOMPING:
+                        if monster.data.attack_instant_damage:  
+                            self.player.hit(monster.data.attack_damage, monster.turned, self.terrain_sprites)  # melee hit
+                            self.particles_blood(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery, RED, monster.turned)  # add blood particles whne player is hit
+                        elif now - monster.last_arrow > monster.data.attack_delay:  # launching projectile 
+                            arrow = Projectile(monster.hitbox.centerx, monster.hitbox.centery-10, self.arrow_img, turned = monster.turned, scale = 3) 
+                            # We only add the arrow once the bow animation is complete (and we know we're ATTACKING, so attack anim is active)
+                            if monster.animation.on_last_frame:
+                                self.projectile_sprites.add(arrow)
+                                monster.last_arrow = now
+
+    def create_terrain_surface(self, layout) -> pg.Surface:
+        terrain_surf = pg.Surface((SCREEN_HEIGHT, SCREEN_WIDTH)).convert_alpha()
+
+        for row_index, row in enumerate(layout):
+            for col_index,val in enumerate(row):
+                if val != '-1':
+                    x = col_index * TILE_SIZE_SCREEN
+                    y = row_index * TILE_SIZE_SCREEN
+
+                    """ Loading terrain tiles  
+                    """
+                    tile_surface = self.terrain_tilesheet_list[int(val)]
+                    
+                    (x_size, y_size) = tile_surface.get_size()
+                    if not x_size == y_size == TILE_SIZE:
+                        logging.debug(f'Terrain tiles are of size {x_size}x{y_size}, but we have TILE_SIZE {TILE_SIZE} in settings')
+                    
+                    # Tile-scaling factors: 8 matches 16x16 size sprites while 4 gives 32x32
+                    x_size = x_size * 2
+                    y_size = y_size * 2
+
+                    tile_surface = pg.transform.scale2x(tile_surface)
+
+                    if int(val) not in self.level_data['moving_horiz']:  # we only want static terrain
+                        terrain_surf.blit(tile_surface, (x, y))
+
+        return terrain_surf 
+                    
+
+
 
     def create_tile_group(self,layout,type) -> pg.sprite.Group:
         sprite_group = pg.sprite.Group()
@@ -586,6 +622,7 @@ class Level():
         # terrain
         self.terrain_sprites.update(self.h_scroll, self.v_scroll)
         self.terrain_sprites.draw(self.screen)
+        #self.screen.blit(self.terrain_surface, (0,0))
 
         # decorations  
         self.decorations_sprites.update(self.h_scroll, self.v_scroll)

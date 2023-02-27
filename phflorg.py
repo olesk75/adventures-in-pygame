@@ -12,7 +12,7 @@ FPS = 60
 logging.basicConfig(level=logging.DEBUG)
 
 
-# Command lind arguments
+# Command line arguments
 if len(sys.argv):
     if '--no-music' in sys.argv:
         MUSIC_ON = False
@@ -47,11 +47,10 @@ else:
 current_screen = pg.display.Info()
 monitor_res = ( current_screen.current_w, current_screen.current_h)
 width, height = SCREEN_WIDTH, SCREEN_HEIGHT
-if current_screen.current_w < SCREEN_WIDTH or current_screen.current_h < SCREEN_HEIGHT:
-    width  = SCREEN_WIDTH // 1.5
-    height  = SCREEN_HEIGHT // 1.5
-    print(width,height, monitor_res)
-_screen = pg.display.set_mode((width, height)) 
+
+  
+logging.debug(f'Screen resolution : width: {width}, height:{height}, {monitor_res})')
+_screen = pg.display.set_mode((width, height), SCALED) 
 screen = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 clock = pg.time.Clock()
@@ -153,7 +152,10 @@ while True:
         fps_text = font.render(f'FPS: {clock.get_fps():.2f}', True, (255, 255, 0))
         screen.blit(fps_text, (10, 100))
 
-    _screen.blit(pg.transform.scale(screen, (width, height)), (0, 0))
+    #_screen.blit(pg.transform.scale(screen, (width, height)), (0, 0))
+    _screen.blit(screen, (0, 0))
 
     pg.display.update()
     clock.tick(FPS)
+
+

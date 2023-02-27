@@ -1,6 +1,5 @@
 import pygame as pg
 import logging
-import math
 
 from game_data.settings import *
 from decor_and_effects import ExpandingCircle, SpeedLines
@@ -155,7 +154,7 @@ class Player(pg.sprite.Sprite):
                 else:
                     logging.error(f'Invalid value {platform.slope=}')
                 
-                y = math.ceil(y)  # only integers for coordinate positions
+                y = round(y)  # only integers for coordinate positions
 
 
                 dy = platform.rect.bottom - self.rects['hitbox'].bottom - y - adjustment  # from the bottom, as we add y which starts at platform.rect.bottom

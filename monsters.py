@@ -206,6 +206,7 @@ class Monster(pg.sprite.Sprite):
                 self.rect_attack = pg.Rect(0,0,0,0)  # not attacking for the duration
                 self.rect_detect = pg.Rect(0,0,0,0)  # not detecting for the duration
                 if pg.time.get_ticks() - self.stun_start > self.data.stun_time:
+                    self.invulnerable=False
                     self.state_change(ATTACKING)
 
             else:
@@ -289,6 +290,8 @@ class Monster(pg.sprite.Sprite):
             self.rect = new_rect
 
     def update(self, h_scroll, v_scroll, obstacle_sprite_group, player) -> None:
+            
+            
         dx = self.vel_x
         dy = self.vel_y  # Newton would be proud!
 
@@ -344,7 +347,7 @@ class Monster(pg.sprite.Sprite):
 
         # we compensate for graivty
         self.vel_y += GRAVITY  # gravity component gets added to the vel_y, which we add to dy at the top
-       
+    
         
         # Update rectangle position
         self.rect.x += dx * self.data.direction

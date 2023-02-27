@@ -532,12 +532,30 @@ class ParticleSystem:
 
 # --- Shows the multilevel parallax background
 class ParallaxBackground:
-    """ Class for showing and scrolling a multi-level parallax background """
+    """ Class for showing and scrolling a multi-level parallax background 
+        We only update the bg_surf surface whenever one of the backgrounds needs to scroll, 
+        and blit bg_surf once
+    """
     def __init__(self,level,screen) -> None:
         self.screen = screen
-        background = levels[level]['background']
-        self.bg_scroll = 0
-        self.level_width = levels[level]['size_x'] * TILE_SIZE
+        self.full_surf = pg.Surface(self.screen.get_size())
+        self.full_surf.set_alpha() 
+
+        self.background = levels[level]['background']
+
+        self.scroll_factor = {   # TODO: hard coded!
+            'near':     0.7,
+            'medium':   0.3,
+            'further':  0.1,
+            'far':      0.05,
+            }
+
+        
+        self.scrolled_dist = {}
+        self.bg_surf = {}
+        self.bg_width = {}
+        self.bg_y = {}
+        self.copies = {}
 
         self.env_effect = levels[level]['environmental_effect']
         if self.env_effect == 'lightning storm':
@@ -545,74 +563,84 @@ class ParallaxBackground:
             self.last_lighting = 0
             self.lightning_timer = 3000
 
-        self.only_bg_color = check_none_values(background)  # if there are one or more maps missing
+        self.only_bg_color = False if not levels[level]['only_bg_color'] else levels[level]['only_bg_color']
 
         if self.only_bg_color:
-            self.bg_color = background['background_color']
+            logging.debug('No background specified - using color only')
         else:
             # We find the scaling factor based only on height, as images cvan be wider than the screen - using cloud texture for this
-            self.bg_clouds = pg.image.load(background['clouds']).convert_alpha()
+            self.bg_clouds = pg.image.load(self.background['clouds']).convert_alpha()
             scale = SCREEN_HEIGHT / self.bg_clouds.get_height()
             x_size = self.bg_clouds.get_width() * scale
 
             self.bg_clouds = pg.transform.scale(self.bg_clouds, (x_size, SCREEN_HEIGHT))
             self.bg_white = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
             self.bg_white.fill(WHITE)
-
-            self.bg_sky = self.bg_clouds  # we can replace this to create effects
-        
-            self.bg_near = pg.transform.scale(pg.image.load(background['near']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
-            self.bg_medium = pg.transform.scale(pg.image.load(background['medium']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
-            self.bg_further = pg.transform.scale(pg.image.load(background['further']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
-            self.bg_far = pg.transform.scale(pg.image.load(background['far']).convert_alpha(), (SCREEN_WIDTH, SCREEN_HEIGHT))
-
             self.cloud_width = self.bg_clouds.get_width()  # clouds are potentially much larger
-            self.width = self.bg_near.get_width()
 
-            self.y_adjust = {
-                'near': background['y_adjust'][0],
-                'medium': background['y_adjust'][1],
-                'far': background['y_adjust'][2],
-                'further': background['y_adjust'][3],
-                'bg': background['y_adjust'][4],
-            }
-
-            self.cloud_drift =  background['cloud_drift']
+            self.cloud_drift =  levels[level]['cloud_drift']
             self.cloud_timer = 0
             self.cloud_movement = 0
+
+            self.bg_sky = self.bg_clouds  # we can replace this to create effects
+         
+            # Calculating all the values for each parallax distance
+            for distance in self.background:  # ignoring clouds
+                if distance != 'clouds' and self.background[distance]:  # IF "None", we skip
+                    bg_surf = pg.image.load(self.background[distance]).convert_alpha()
+                    self.bg_surf[distance] = pg.transform.scale_by(bg_surf, int(SCREEN_WIDTH/bg_surf.get_width()))
+                    self.bg_width[distance] = self.bg_surf[distance].get_width()
+                    self.bg_y[distance] = SCREEN_HEIGHT - self.bg_surf[distance].get_height()
+                    self.scrolled_dist[distance] = 0
+                    self.copies[distance]= round(SCREEN_WIDTH/self.bg_width[distance])
+
+            self.update_needed = True  # avoid updating when not needed
     
     def update(self,bg_scroll) -> None:
+        self.update_needed = False
         if not self.only_bg_color:
-            self.bg_scroll += bg_scroll
             now = pg.time.get_ticks()
 
             if now - self.cloud_timer > self.cloud_drift:
                 self.cloud_movement += 1
-                self.cloud_timer = now
+
             
-            # We replace the sky tecture with a bright white surface to indicate lightning
-            if self.env_effect == 'lightning storm':
-                if now - self.last_lighting > self.lightning_timer + randint(5000, 15000):
-                    self.bg_sky = self.bg_white
-                    self.last_lighting = now
-                else:
-                    self.bg_sky = self.bg_clouds
+                # We replace the sky tecture with a bright white surface to indicate lightning
+                if self.env_effect == 'lightning storm':
+                    if now - self.last_lighting > self.lightning_timer + randint(5000, 15000):
+                        self.bg_sky = self.bg_white
+                        self.last_lighting = now
+                    else:
+                        self.bg_sky = self.bg_clouds
+
+                x = - self.cloud_width + SCREEN_WIDTH + self.cloud_movement
+                self.full_surf.blit(self.bg_sky,  (x, 0))  # clouds are special  
+                if self.cloud_movement >= self.cloud_width:
+                    self.cloud_movement = 0
+
+            
+            # We keep track of parallax scroll speeds and only blit when it's time to shift
+            for distance in ['far', 'further', 'medium', 'near']:  # We specify manually to ensure correct order: far to near
+                if distance != 'clouds' and self.background[distance]:
+                    self.scrolled_dist[distance] += bg_scroll * self.scroll_factor[distance]
+
+                    if self.scrolled_dist[distance] >= self.bg_width[distance] or self.scrolled_dist[distance] <= -self.bg_width[distance]:
+                        self.scrolled_dist[distance] = 0
+
+                    for n in range(-1, self.copies[distance] + 1):
+                        self.full_surf.blit(self.bg_surf[distance], (self.scrolled_dist[distance] + n * self.bg_width[distance], self.bg_y[distance]))
 
     
     def draw(self, surface) -> None:
         if self.only_bg_color:
-            surface.fill(self.bg_color)  
+            surface.fill(self.only_bg_color)  
         
         else:
-            # for x in range((self.level_width // self.width) + 1) :
-            for x in range(-1, 3):
-                surface.blit(self.bg_sky,  ((x * self.cloud_width) + self.cloud_movement, 0))  # clouds are special  
-                surface.blit(self.bg_far,     ((x * self.width) + self.bg_scroll * 0.05, 0))
-                surface.blit(self.bg_further, ((x * self.width) + self.bg_scroll * 0.1,  0))
-                surface.blit(self.bg_medium,  ((x * self.width) + self.bg_scroll * 0.3,  0))
-                surface.blit(self.bg_near,    ((x * self.width) + self.bg_scroll * 0.7,  0))
-
+            surface.blit(self.full_surf, (0,0))
+            
+            
     # TODO: right now the parallax factor is hard coded; move to level_data.py to allow different factors for different levels
+    # TODO: this is KILLING performance
 
 
 class Weather():

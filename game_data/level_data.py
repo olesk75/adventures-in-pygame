@@ -26,9 +26,9 @@ level_0 = {
         'further': None,
         'far': None,
         'clouds': None,
-        'background_color': (130, 181, 255),
-        'y_adjust': [0,150,400,450,0],
     },
+    'only_bg_color': pg.Color('#0000cc'),
+    'cloud_drift': 50,
     'tileset': 'mountain',
     'solid_tiles': range(32),  # the tiles that will keep a player or monster up
     'sloping_tiles': {  # all the tiles that are non-flat (which the player can walk on)
@@ -54,18 +54,16 @@ level_1 = {
     'pos_player':               'lvl/lvl 1 - mountains/level1_player.csv',
     'environmental_effect': 'lightning storm',
     'terrain_ts': 'assets/tile/tilesets/mountain-tileset-brown.png',
+    
     'background': {
-        #'drop_background': None,  # DEBUG: just to remove background
-        #'near': 'assets/backgrounds/lvl1/near.png',
-        'near': 'assets/backgrounds/lvl1/medium.png',  # diabling for now, as the trees are ugly and distracting (repeat the medium tecture, as None cancels all)
-        'medium': 'assets/backgrounds/lvl1/medium.png',
-        'further': 'assets/backgrounds/lvl1/further.png',
-        'far': 'assets/backgrounds/lvl1/far.png',
+        'near': None, # 'assets/backgrounds/lvl1/mountains-dark-near.png',  # diabling for now, as the trees are ugly and distracting (repeat the medium tecture, as None cancels all)
+        'medium': 'assets/backgrounds/lvl1/mountains-dark-middle.png',
+        'further': 'assets/backgrounds/lvl1/mountains-dark-further.png',
+        'far': 'assets/backgrounds/lvl1/mountains-dark-far.png',
         'clouds': 'assets/backgrounds/lvl1/clouds_full.png',
-        'cloud_drift': 50,  # ticks between each scroll value
-        'background_color': (130, 181, 255),
-        'y_adjust': [0,0,0,0,0],
     },
+    'only_bg_color': False,
+    'cloud_drift': 50,
     'tileset': 'mountain',
     'solid_tiles': range(32),  # the tiles that will keep a player or monster up
     'sloping_tiles': {  # all the tiles that are non-flat (which the player can walk on)
@@ -97,10 +95,9 @@ level_2 = {
         'further': 'assets/backgrounds/lvl1/further.png',
         'far': 'assets/backgrounds/lvl1/far.png',
         'clouds': 'assets/backgrounds/lvl1/clouds.png',
-        'cloud_drift': 50,  # ticks between each scroll value
-        'background_color': (130, 181, 255),
-        'y_adjust': [0,150,400,450,0],
     },
+    'only_bg_color': False,
+    'cloud_drift': 50,
     'tileset': 'mountain',
     'solid_tiles': range(32),  # the tiles that will keep a player or monster up
     'sloping_tiles': {  # all the tiles that are non-flat (which the player can walk on)

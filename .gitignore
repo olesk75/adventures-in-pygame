@@ -1,5 +1,8 @@
 /.vscode
 /__pycache__
+game_data/__pycache__
 TODO.txt
 /assets/WIP
 .DS_Store
+.prof
+game_data/__pycache__/
