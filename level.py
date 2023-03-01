@@ -166,6 +166,16 @@ class Level():
         if self.player.state['active'] == STOMPING:
             pg.draw.rect(self.screen, (255,0,255), (SCREEN_WIDTH - 50,0,50,50))
 
+        x = self.player.world_x_pos // SCREEN_WIDTH  # how many screen widths in we are 
+        x = self.player.world_x_pos - x * SCREEN_WIDTH
+
+        y = self.player.world_y_pos // SCREEN_HEIGHT  # how many screen widths in we are 
+        y = self.player.world_y_pos - y * SCREEN_HEIGHT
+
+        pg.draw.line(self.screen, WHITE, (x,0), (x,SCREEN_HEIGHT)) 
+        pg.draw.line(self.screen, WHITE, (0,y), (SCREEN_WIDTH,y)) 
+
+
 # --> Checking functions
     def check_arena_spawns(self) -> None:
         # Checks if player in the arena has requestd monster spawns
@@ -574,6 +584,8 @@ class Level():
                         if int(val) == 1:  # the level exit tile
                             sprite = PlayerInOut(x, y, 'out')
                             self.lvl_exit = (x,y)
+
+                    
                     try:
                         sprite_group.add(sprite)
                     except UnboundLocalError:
@@ -622,18 +634,20 @@ class Level():
         self.monsters_nearby = pg.sprite.Group()  # we empty every iteration
         self.monsters_nearby = self.monsters_sprites
 
+
+        #print(self.player.world_x_pos)
         # for monster in self.monsters_sprites.sprites():
         #     if self.player.world_x_pos - SCREEN_WIDTH < monster.rect.centerx < self.player.world_x_pos + SCREEN_WIDTH:
         #         if self.player.world_y_pos - SCREEN_HEIGHT < monster.rect.centerx < self.player.world_y_pos + SCREEN_HEIGHT:
         #             print(f'added {monster.data.monster} from total list of {len(self.monsters_sprites.sprites())} monsters')
         #             self.monsters_nearby.add(monster)
 
-        for monster in self.monsters_sprites.sprites():
-            print(f'{monster.data.monster=} and {monster.rect.centerx=} and {self.player.world_x_pos=}')
-            if self.player.world_x_pos - 200 < monster.rect.centerx < self.player.world_x_pos + 200:
-                #if self.player.world_y_pos - SCREEN_HEIGHT < monster.rect.centerx < self.player.world_y_pos + SCREEN_HEIGHT:
-                print(f'added {monster.data.monster} from total list of {len(self.monsters_sprites.sprites())} monsters')
-                self.monsters_nearby.add(monster)
+        # for monster in self.monsters_sprites.sprites():
+        #     print(f'{monster.data.monster=} and {monster.rect.centerx=} and {self.player.world_x_pos=}')
+        #     if self.player.world_x_pos - 200 < monster.rect.centerx < self.player.world_x_pos + 200:
+        #         #if self.player.world_y_pos - SCREEN_HEIGHT < monster.rect.centerx < self.player.world_y_pos + SCREEN_HEIGHT:
+        #         print(f'added {monster.data.monster} from total list of {len(self.monsters_sprites.sprites())} monsters')
+        #         self.monsters_nearby.add(monster)
             
         # --> UPDATE ALL SPRITE GROUPS <---
 
@@ -721,7 +735,7 @@ class Level():
                     self.player.cast_active.remove(cast)
 
         # DEBUGGING
-        # self._debug_show_state()
+        self._debug_show_state()
         if DEBUG_HITBOXES:
             pg.draw.rect(self.screen, (255,255,255), self.player.rect, 4 )  # self.rect - WHITE
             if self.player.rects['hitbox']:

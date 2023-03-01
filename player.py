@@ -103,7 +103,7 @@ class Player(pg.sprite.Sprite):
         self.cast_delay = 500
         self.cast_active = []  # all player spells
         self.world_x_pos = x + self.rects['player'].width / 2 # player center x position across the whole world, not just screen
-        self.world_y_pos = y - self.rects['player'].height / 2 # player center y position across the whole world, not just screen (remember: up is negative y)
+        self.world_y_pos = y + self.rects['player'].height / 2 # player center y position across the whole world, not just screen (remember: up is negative y)
         self.v_scroll_initial = self.world_y_pos - V_SCROLL_THRESHOLD # just for the "camera" to see the player on the initial placement if he's not in the topleft screen
 
 
@@ -463,8 +463,8 @@ class Player(pg.sprite.Sprite):
         self.rects['player'].x += dx + h_scroll
         self.rects['player'].y += dy + v_scroll
 
-        self.world_x_pos += dx
-        self.world_y_pos += dy
+        self.world_x_pos += dx + h_scroll
+        self.world_y_pos += dy + v_scroll
         #print(f"Player's centerY: {self.rects['player'].centery} and world_y_pos: {self.world_y_pos} - scroll threshold towards bottom is: {TILE_SIZE_SCREEN * self.level_data['size_y'] - V_SCROLL_THRESHOLD}, and death at {TILE_SIZE_SCREEN * self.level_data['size_y']}")
 
         # If we fall off the world we die

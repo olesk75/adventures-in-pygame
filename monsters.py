@@ -290,11 +290,12 @@ class Monster(pg.sprite.Sprite):
             self.rect = new_rect
 
     def update(self, h_scroll, v_scroll, obstacle_sprite_group, player) -> None:
-            
+ 
+        # We only update postiontion and velocities of monsters who are on-screen        
+        on_screen = True if player.world_x_pos - SCREEN_WIDTH < self.rect.centerx < player.world_x_pos + SCREEN_WIDTH else False
             
         dx = self.vel_x
         dy = self.vel_y  # Newton would be proud!
-
 
         """ Boss battles have separate logic depending on each boss - if they cast anything, we get a list of animations back as well
             the boss_battle function updates self.vel_y directly and adds self.
@@ -345,17 +346,20 @@ class Monster(pg.sprite.Sprite):
         self.rect.x += h_scroll
         self.rect.y += v_scroll
 
-        # we compensate for graivty
-        self.vel_y += GRAVITY  # gravity component gets added to the vel_y, which we add to dy at the top
-    
+        if on_screen:
+            # we compensate for graivty
+            self.vel_y += GRAVITY  # gravity component gets added to the vel_y, which we add to dy at the top
         
-        # Update rectangle position
-        self.rect.x += dx * self.data.direction
-        self.rect.y += dy 
+            
+            # Update rectangle position
+            self.rect.x += dx * self.data.direction
+            self.rect.y += dy 
 
-        # Checking detection, hitbox and attack rects as well as platform rects for collision
-        self.create_rects()
-        self._check_platform_collision(dx, dy, obstacle_sprite_group)
+            # Checking detection, hitbox and attack rects as well as platform rects for collision
+        
+            self.create_rects()
+            self._check_platform_collision(dx, dy, obstacle_sprite_group)
+
         if self.state in (DEAD, DYING):
             self.rect_attack = None
             self.rect_detect = None
@@ -386,7 +390,7 @@ class Monster(pg.sprite.Sprite):
         else:
             logging.error(f'Monster state {self.state} unknown, aborting...')
             exit(1)
-            
+                
         self.image = pg.transform.flip(self.image, self.turned, False)        
 
 class Projectile(pg.sprite.Sprite):
