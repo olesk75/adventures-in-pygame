@@ -574,7 +574,7 @@ class ParallaxBackground:
             x_size = self.bg_clouds.get_width() * scale
 
             self.bg_clouds = pg.transform.scale(self.bg_clouds, (x_size, SCREEN_HEIGHT))
-            self.bg_white = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+            self.bg_white = pg.Surface(self.bg_clouds.get_size())
             self.bg_white.fill(WHITE)
             self.cloud_width = self.bg_clouds.get_width()  # clouds are potentially much larger
 

@@ -89,6 +89,7 @@ class Level():
         # monsters 
         monsters_layout = import_csv_layout(self.level_data['pos_monsters'])
         self.monsters_sprites = self.create_tile_group(monsters_layout,'pos_monsters')
+        self.monsters_nearby = pg.sprite.Group()
 
         # ---> Composite map groups
         # group of all (potential) collision sprites for monsters - mostly terrain, but also things like doors, barriers and hazards
@@ -172,7 +173,7 @@ class Level():
             for count, monster in enumerate(self.gs.monster_spawn_queue):
                 if monster < len(known_monsters) + 1:
                     try:
-                        self.monsters_sprites.add(Monster(SCREEN_WIDTH * 0.8, SCREEN_HEIGHT * 0.8, self.screen, known_monsters[monster-1]))
+                        self.monsters_nearby.add(Monster(SCREEN_WIDTH * 0.8, SCREEN_HEIGHT * 0.8, self.screen, known_monsters[monster-1]))
                     except KeyError:
                         logging.error(f'Tried to call {known_monsters[monster-1]}')
                 self.gs.monster_spawn_queue.pop(count)
@@ -207,7 +208,7 @@ class Level():
                 sprite.kill()
     
     def check_player_attack(self) -> None:
-        for monster in self.monsters_sprites.sprites():
+        for monster in self.monsters_nearby.sprites():
             # --> We check if the player is attacking and if the attack hits a monster
             if self.player.state['active'] == ATTACKING and monster.state not in (DYING, DEAD) and monster.invulnerable == False:
                 # Check if mob hit
@@ -327,7 +328,7 @@ class Level():
     def check_coll_stomp_monster(self) -> None:
         # Mobs caught in stomp blast effect
         if self.stomp_effects.sprite:
-            stomp_collision = pg.sprite.spritecollide(self.stomp_effects.sprite, self.monsters_sprites,False)
+            stomp_collision = pg.sprite.spritecollide(self.stomp_effects.sprite, self.monsters_nearby,False)
             if stomp_collision:
                 for monster in stomp_collision:
                     if monster.state not in (DYING, DEAD):
@@ -339,7 +340,7 @@ class Level():
 
     def check_coll_player_monster(self) -> None:
         # Player + mobs group collision
-        monster_collisions = pg.sprite.spritecollide(self.player.hitbox_sprite, self.monsters_sprites,False)
+        monster_collisions = pg.sprite.spritecollide(self.player.hitbox_sprite, self.monsters_nearby,False)
         if monster_collisions and self.player.state['active'] not in (DYING, STOMPING):
             for monster in monster_collisions:
                 if monster.state != DYING and monster.state != DEAD:  # we only deal with the living
@@ -351,7 +352,7 @@ class Level():
     def check_monsters(self) -> None:
         # Monsters can be up to several things, which we check for here
         now = pg.time.get_ticks()
-        for monster in self.monsters_sprites.sprites():
+        for monster in self.monsters_nearby.sprites():
             if 0 < monster.rect.centerx < SCREEN_WIDTH and 0 < monster.rect.centery < SCREEN_HEIGHT:
                 if monster.state != DYING and monster.state != DEAD:  # only dealing with the living
                     #  --> casting spells=
@@ -617,6 +618,23 @@ class Level():
         self.background.update(self.h_scroll)  # only scroll horizontally
         self.background.draw(self.screen)
 
+        # --> PULL MONSTERS FROM ALL-MONSTER SPRITE GROUP, TO NEARBY MONSTERS SPRITE GROUP
+        self.monsters_nearby = pg.sprite.Group()  # we empty every iteration
+        self.monsters_nearby = self.monsters_sprites
+
+        # for monster in self.monsters_sprites.sprites():
+        #     if self.player.world_x_pos - SCREEN_WIDTH < monster.rect.centerx < self.player.world_x_pos + SCREEN_WIDTH:
+        #         if self.player.world_y_pos - SCREEN_HEIGHT < monster.rect.centerx < self.player.world_y_pos + SCREEN_HEIGHT:
+        #             print(f'added {monster.data.monster} from total list of {len(self.monsters_sprites.sprites())} monsters')
+        #             self.monsters_nearby.add(monster)
+
+        for monster in self.monsters_sprites.sprites():
+            print(f'{monster.data.monster=} and {monster.rect.centerx=} and {self.player.world_x_pos=}')
+            if self.player.world_x_pos - 200 < monster.rect.centerx < self.player.world_x_pos + 200:
+                #if self.player.world_y_pos - SCREEN_HEIGHT < monster.rect.centerx < self.player.world_y_pos + SCREEN_HEIGHT:
+                print(f'added {monster.data.monster} from total list of {len(self.monsters_sprites.sprites())} monsters')
+                self.monsters_nearby.add(monster)
+            
         # --> UPDATE ALL SPRITE GROUPS <---
 
         # terrain
@@ -653,8 +671,8 @@ class Level():
         self.triggered_objects_sprites.draw(self.screen)
 
         # monsters 
-        self.monsters_sprites.update(self.h_scroll, self.v_scroll, self.collision_sprites, self.player)
-        self.monsters_sprites.draw(self.screen)
+        self.monsters_nearby.update(self.h_scroll, self.v_scroll, self.collision_sprites, self.player)
+        self.monsters_nearby.draw(self.screen)
 
         # stomp shadows
         self.stomp_shadows.update(self.h_scroll, self.v_scroll)
@@ -742,4 +760,3 @@ class Level():
         
         # --> Check effects and particle system <--
         self.show_bubbles()
-        
