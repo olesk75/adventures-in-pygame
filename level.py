@@ -355,7 +355,7 @@ class Level():
         # Monsters can be up to several things, which we check for here
         now = pg.time.get_ticks()
         for monster in self.monsters_nearby.sprites():
-            if monster.state != DYING and monster.state != DEAD:  # only dealing with the living
+            if monster.state not in (DYING , DEAD):  # only dealing with the living
                 #  --> casting spells=
                 if monster.cast_anim_list:
                     for spell in monster.cast_anim_list:
@@ -376,7 +376,7 @@ class Level():
                 if pg.Rect.colliderect(self.player.rects['hitbox'], monster.rect_attack) and monster.state == ATTACKING and self.player.state['active'] != STOMPING:
                     if monster.data.attack_instant_damage:  
                         self.player.hit(monster.data.attack_damage, monster.turned, self.terrain_sprites)  # melee hit
-                        self.particles_blood(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery, RED, monster.turned)  # add blood particles whne player is hit
+                        self.particles_blood(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery, RED, monster.turned)  # add blood particles when player is hit
                     elif now - monster.last_arrow > monster.data.attack_delay:  # launching projectile 
                         arrow = Projectile(monster.hitbox.centerx, monster.hitbox.centery-10, self.arrow_img, turned = monster.turned, scale = 3) 
                         # We only add the arrow once the bow animation is complete (and we know we're ATTACKING, so attack anim is active)
@@ -659,8 +659,6 @@ class Level():
         # info pop-ups
         self.info_sprites.update(self.h_scroll, self.v_scroll)
         self.info_sprites.draw(self.screen)
-
-        
 
         # entry and exit points
         self.player_in_out_sprites.update(self.h_scroll, self.v_scroll)  

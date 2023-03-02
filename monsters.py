@@ -266,9 +266,10 @@ class Monster(pg.sprite.Sprite):
 
                 direction = 1 if self.turned else -1
 
-                self.vel_x = 5 * self.data.direction * direction
-                self.vel_y = -10
-                self.on_bottom = False
+                if not self.die_after_stun:
+                    self.vel_x = 5 * self.data.direction * direction
+                    self.vel_y = -10
+                    self.on_bottom = False
 
                 self.animation.active = False  #  monster is frozen for the duration
                 self.rect_attack = pg.Rect(0,0,0,0)  # not attacking for the duration
@@ -294,7 +295,9 @@ class Monster(pg.sprite.Sprite):
     def update(self, h_scroll, v_scroll, obstacle_sprite_group, player) -> None:
  
         # We only update postiontion and velocities of monsters who are on-screen (with some margin)      
-        on_screen = True if player.rects['player'].centerx - SCREEN_WIDTH < self.rect.centerx < player.rects['player'].centerx + SCREEN_WIDTH else False
+        on_screen_x = True if player.rects['player'].centerx - SCREEN_WIDTH < self.rect.centerx < player.rects['player'].centerx + SCREEN_WIDTH else False
+        on_screen_y = True if player.rects['player'].centery - SCREEN_HEIGHT< self.rect.centery < player.rects['player'].centery + SCREEN_HEIGHT else False
+        on_screen = on_screen_x * on_screen_y
             
         dx = self.vel_x
         dy = self.vel_y  # Newton would be proud!
@@ -333,15 +336,16 @@ class Monster(pg.sprite.Sprite):
                     self.vel_x = 0
 
                 dx = self.vel_x
-                now = pg.time.get_ticks()
-                if now - self.stun_start > self.data.stun_time:
-                    self.vel_x = 0
-                    self.invulnerable = False
-                    self.create_rects()
-                    if not self.die_after_stun:
+
+                if not self.die_after_stun: 
+                    now = pg.time.get_ticks()
+                    if now - self.stun_start > self.data.stun_time:
+                        self.vel_x = 0
+                        self.invulnerable = False
+                        self.create_rects()        
                         self.state_change(ATTACKING)
-                    else: 
-                        self.state_change(DYING)
+                else: 
+                    self.state_change(DYING)  # instant death if no more health
 
 
         # we compensate for scrolling

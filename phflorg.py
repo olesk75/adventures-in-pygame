@@ -50,7 +50,8 @@ width, height = SCREEN_WIDTH, SCREEN_HEIGHT
 
   
 logging.debug(f'Screen resolution : width: {width}, height:{height}, {monitor_res})')
-_screen = pg.display.set_mode((width, height), SCALED) 
+flags = SCALED
+_screen = pg.display.set_mode((width, height), flags) 
 screen = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 clock = pg.time.Clock()
