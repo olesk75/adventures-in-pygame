@@ -69,7 +69,7 @@ class MonsterData():
             self.points_reward = 500
             self.random_turns = 0.3
             self.hitbox_width = 65
-            self.hitbox_height = 110
+            self.hitbox_height = 180
             self.sound_attack = pg.mixer.Sound('assets/sound/monster/skeleton-keybearer/roar.mp3')
             self.sound_attack.set_volume(0.1)
             self.sound_death = pg.mixer.Sound('assets/sound/monster/skeleton-keybearer/death.wav')
@@ -79,7 +79,11 @@ class MonsterData():
             self.blood_color = BLACK
  
             # Boss specific
-            self.boss_attacks = [('firewalker', 0.01)] 
+            self.boss_attacks = [ {
+                'name': 'firewalker',
+                'prob': 0.01
+                }
+            ] 
             self.cast_delay = 2000
             self.item_drop = ['key', 'health']
             self.sound_cast = pg.mixer.Sound('assets/sound/spell/fire-spell.aif')

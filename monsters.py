@@ -99,6 +99,9 @@ class Monster(pg.sprite.Sprite):
             else:
                 self.rect_attack = pg.Rect(x , y, self.data.attack_range, height) 
 
+        pg.draw.rect(self.screen, (255,255,255), self.rect, 4 )  # self.rect - WHITE
+        pg.draw.rect(self.screen, (128,128,128), self.hitbox, 2 )  # Hitbox rect (grey)
+
     def _check_platform_collision(self, dx, dy, obstacle_sprite_group) -> None:
          #
         # Checking platform collision to prevent falling and to turn when either at end of platform or hitting a solid tile
@@ -107,7 +110,7 @@ class Monster(pg.sprite.Sprite):
         for obstacle in all_obstacles:
             if obstacle.solid == True:
                 # collision in the y direction only, using a collision rect indicating _next_ position (y + dy)
-                moved_hitbox = self.hitbox.move(0, dy - 2)  # move in place - remove 2 to anchor the sprites on the ground properly
+                moved_hitbox = self.hitbox.move(0, dy - 2)  # move in place, the minus 2 lifts the monsters up a few pixels
             
                 if obstacle.rect.colliderect(moved_hitbox):  # we are standing on a platform essentially
                     # Preventing falling through platforms
@@ -163,10 +166,9 @@ class Monster(pg.sprite.Sprite):
             if self.state == ATTACKING:
                 # Random transitions from ATTACKING to CASTING
                 for attack in self.data.boss_attacks:
-                    attack_type = attack[0]
-                    attack_prob = attack[1]
-                    if attack_prob > random.random() and not player.vel_y and not self.vel_y:  # Random roll, if neither player nor mob is not in the air
-                        self.state_change(CASTING, attack_type=attack_type, player_pos=(player.rect.centerx, player.rect.bottom))
+                    # TODO: fix self.vel_y increasing print(self.vel_y)
+                    if attack['prob'] > random.random() and not player.vel_y:  # Random roll, if player not in the air
+                        self.state_change(CASTING, attack_type=attack['name'], player_pos=(player.rect.centerx, player.rect.bottom))
                         dx = 0  # we stop to cast
                     else:
                         dx = self.data.speed_attacking  # if not, we just keep the attack speed
@@ -174,9 +176,10 @@ class Monster(pg.sprite.Sprite):
                         # Sometimes a jumping mob can jump if player is higher than the mob and mob is attacking
                         max_dist_centery = -7
                         player_above_mob = player.rect.centery -  (self.rect.centery + max_dist_centery)
-                        if self.data.attack_jumper and player_above_mob < 0 and self.vel_y == 0:  # player is higher up and we're not already jumping
+                        if self.data.attack_jumper and player_above_mob < 20 and self.vel_y == 0:  # player is higher up and we're not already jumping
                             if 0.01  > random.random():  # hardcoded jump probability
-                                self.vel_y = -10
+                                print('BOSS JUMPING')
+                                self.vel_y = -50
 
             elif self.state == CASTING:
                 _casting()
@@ -284,7 +287,6 @@ class Monster(pg.sprite.Sprite):
                     pass  # TODO: do we need this state for monsters?
                     
 
-
             new_rect = self.animation.get_image().get_rect()  # we need to scale back to walking image size after an attack
             new_rect.center = self.rect.center
             self.rect = new_rect
@@ -301,7 +303,6 @@ class Monster(pg.sprite.Sprite):
             the boss_battle function updates self.vel_y directly and adds self.
         """
         if self.data.boss:
-            print(self.rect.centerx)
             dx, dy = self._boss_battle(player)
         else:
         # Regular mobs simply walk around mostly
