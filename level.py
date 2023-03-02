@@ -35,6 +35,8 @@ class Level():
         self.h_scroll = 0
         self.v_scroll = 0
 
+        self.first_run = True   # we need to update all tile positions in the y-direction to scroll down to the player spawn point
+
         self.arrow_damage = arrow_damage
 
         self.last_stomp = 0  # used to time player's stomp shadows (effect)
@@ -147,7 +149,7 @@ class Level():
         
 
         # debugging
-        logging.debug(f"Level created {levels[self.gs.level_current]['size_x']} by {levels[self.gs.level_current]['size_y']} tiles large, or {levels[self.gs.level_current]['size_x']*TILE_SIZE} by {levels[self.gs.level_current]['size_y']*TILE_SIZE} pixels")
+        logging.debug(f"Level created {levels[self.gs.level_current]['size_x']} by {levels[self.gs.level_current]['size_y']} tiles large, or {levels[self.gs.level_current]['size_x']*TILE_SIZE_SCREEN} by {levels[self.gs.level_current]['size_y']*TILE_SIZE_SCREEN} pixels")
   
     def _debug_show_state(self) -> None:
         """ DEBUG ZONE """
@@ -165,15 +167,6 @@ class Level():
             pg.draw.rect(self.screen, (255,255,0), (SCREEN_WIDTH - 50,0,50,50))
         if self.player.state['active'] == STOMPING:
             pg.draw.rect(self.screen, (255,0,255), (SCREEN_WIDTH - 50,0,50,50))
-
-        x = self.player.world_x_pos // SCREEN_WIDTH  # how many screen widths in we are 
-        x = self.player.world_x_pos - x * SCREEN_WIDTH
-
-        y = self.player.world_y_pos // SCREEN_HEIGHT  # how many screen widths in we are 
-        y = self.player.world_y_pos - y * SCREEN_HEIGHT
-
-        pg.draw.line(self.screen, WHITE, (x,0), (x,SCREEN_HEIGHT)) 
-        pg.draw.line(self.screen, WHITE, (0,y), (SCREEN_WIDTH,y)) 
 
 # --> Checking functions
     def check_arena_spawns(self) -> None:
@@ -362,38 +355,37 @@ class Level():
         # Monsters can be up to several things, which we check for here
         now = pg.time.get_ticks()
         for monster in self.monsters_nearby.sprites():
-            if 0 < monster.rect.centerx < SCREEN_WIDTH and 0 < monster.rect.centery < SCREEN_HEIGHT:
-                if monster.state != DYING and monster.state != DEAD:  # only dealing with the living
-                    #  --> casting spells=
-                    if monster.cast_anim_list:
-                        for spell in monster.cast_anim_list:
-                            if spell[0] == 'fire':
-                                x, y = spell[1:3]
-                                self.spell_sprites.add(Spell(x,y, self.anim['fire']['fire-spell'], False, scale=1))
-                        monster.cast_anim_list = []
+            if monster.state != DYING and monster.state != DEAD:  # only dealing with the living
+                #  --> casting spells=
+                if monster.cast_anim_list:
+                    for spell in monster.cast_anim_list:
+                        if spell[0] == 'fire':
+                            x, y = spell[1:3]
+                            self.spell_sprites.add(Spell(x,y, self.anim['fire']['fire-spell'], False, scale=1))
+                    monster.cast_anim_list = []
 
-                    # --> detecting (or no longer detecting) the player and switch to/from ATTACK mode
-                    if pg.Rect.colliderect(self.player.rects['hitbox'], monster.rect_detect) and self.player.state['active'] not in (DYING, DEAD):
-                        if monster.state == WALKING:
-                            monster.state_change(ATTACKING)    
-                    else:  # Mob not detecting player
-                        if monster.state == ATTACKING:
-                            monster.state_change(WALKING)  # if we move out of range, the mob will stop attacking
+                # --> detecting (or no longer detecting) the player and switch to/from ATTACK mode
+                if pg.Rect.colliderect(self.player.rects['hitbox'], monster.rect_detect) and self.player.state['active'] not in (DYING, DEAD):
+                    if monster.state == WALKING:
+                        monster.state_change(ATTACKING)    
+                else:  # Mob not detecting player
+                    if monster.state == ATTACKING:
+                        monster.state_change(WALKING)  # if we move out of range, the mob will stop attacking
 
-                    # --> attacking the player and hitting or not the player's hitbox (or launching arrow or not)                
-                    if pg.Rect.colliderect(self.player.rects['hitbox'], monster.rect_attack) and monster.state == ATTACKING and self.player.state['active'] != STOMPING:
-                        if monster.data.attack_instant_damage:  
-                            self.player.hit(monster.data.attack_damage, monster.turned, self.terrain_sprites)  # melee hit
-                            self.particles_blood(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery, RED, monster.turned)  # add blood particles whne player is hit
-                        elif now - monster.last_arrow > monster.data.attack_delay:  # launching projectile 
-                            arrow = Projectile(monster.hitbox.centerx, monster.hitbox.centery-10, self.arrow_img, turned = monster.turned, scale = 3) 
-                            # We only add the arrow once the bow animation is complete (and we know we're ATTACKING, so attack anim is active)
-                            if monster.animation.on_last_frame:
-                                self.projectile_sprites.add(arrow)
-                                monster.last_arrow = now
+                # --> attacking the player and hitting or not the player's hitbox (or launching arrow or not)                
+                if pg.Rect.colliderect(self.player.rects['hitbox'], monster.rect_attack) and monster.state == ATTACKING and self.player.state['active'] != STOMPING:
+                    if monster.data.attack_instant_damage:  
+                        self.player.hit(monster.data.attack_damage, monster.turned, self.terrain_sprites)  # melee hit
+                        self.particles_blood(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery, RED, monster.turned)  # add blood particles whne player is hit
+                    elif now - monster.last_arrow > monster.data.attack_delay:  # launching projectile 
+                        arrow = Projectile(monster.hitbox.centerx, monster.hitbox.centery-10, self.arrow_img, turned = monster.turned, scale = 3) 
+                        # We only add the arrow once the bow animation is complete (and we know we're ATTACKING, so attack anim is active)
+                        if monster.animation.on_last_frame:
+                            self.projectile_sprites.add(arrow)
+                            monster.last_arrow = now
 
 
-                    
+                
 
 
 
@@ -599,29 +591,20 @@ class Level():
         """ 
         Runs the entire level
         """
+
+        if self.first_run:
+            self.v_scroll = - (self.player.world_y_pos - 600)  # we scroll the "world", including the player, to move the "camera"
+            self.player.rects['player'].centery += self.v_scroll  # the player doesn't respond to self.v_scroll, so we need to update the vertical rect pos manually
+            self.first_run = False
+
         # --> UPDATE BACKGROUND <---
         self.background.update(self.h_scroll)  # only scroll horizontally
         self.background.draw(self.screen)
 
         # --> PULL MONSTERS FROM ALL-MONSTER SPRITE GROUP, TO NEARBY MONSTERS SPRITE GROUP
         self.monsters_nearby = pg.sprite.Group()  # we empty every iteration
-        self.monsters_nearby = self.monsters_sprites
+        self.monsters_nearby = self.monsters_sprites  # TODO: for later. for now we implemented proximity checks in the Monster class
 
-
-        #print(self.player.world_x_pos)
-        # for monster in self.monsters_sprites.sprites():
-        #     if self.player.world_x_pos - SCREEN_WIDTH < monster.rect.centerx < self.player.world_x_pos + SCREEN_WIDTH:
-        #         if self.player.world_y_pos - SCREEN_HEIGHT < monster.rect.centerx < self.player.world_y_pos + SCREEN_HEIGHT:
-        #             print(f'added {monster.data.monster} from total list of {len(self.monsters_sprites.sprites())} monsters')
-        #             self.monsters_nearby.add(monster)
-
-        # for monster in self.monsters_sprites.sprites():
-        #     print(f'{monster.data.monster=} and {monster.rect.centerx=} and {self.player.world_x_pos=}')
-        #     if self.player.world_x_pos - 200 < monster.rect.centerx < self.player.world_x_pos + 200:
-        #         #if self.player.world_y_pos - SCREEN_HEIGHT < monster.rect.centerx < self.player.world_y_pos + SCREEN_HEIGHT:
-        #         print(f'added {monster.data.monster} from total list of {len(self.monsters_sprites.sprites())} monsters')
-        #         self.monsters_nearby.add(monster)
-            
         # --> UPDATE ALL SPRITE GROUPS <---
 
         # terrain
@@ -677,11 +660,7 @@ class Level():
         self.info_sprites.update(self.h_scroll, self.v_scroll)
         self.info_sprites.draw(self.screen)
 
-
-
-        # player 
-        self.h_scroll, self.v_scroll = self.player.update(self.terrain_sprites)
-        self.player_sprites.draw(self.screen)
+        
 
         # entry and exit points
         self.player_in_out_sprites.update(self.h_scroll, self.v_scroll)  
@@ -698,6 +677,10 @@ class Level():
         # weather
         self.weather_effets.update_and_draw(self.h_scroll, self.v_scroll, self.screen)
 
+        # player 
+        self.h_scroll, self.v_scroll = self.player.update(self.terrain_sprites)
+        self.player_sprites.draw(self.screen)
+
         """ DEMO ZONE """
         # Testing player casting
         if len(self.player.cast_active):
@@ -708,7 +691,8 @@ class Level():
                     self.player.cast_active.remove(cast)
 
         # DEBUGGING
-        self._debug_show_state()
+        # self._debug_show_state()
+        #print (f'Player: ({self.player.rects["player"].centerx},{self.player.rects["player"].centery})                 World: ({self.player.world_x_pos},{self.player.world_y_pos})')    
         if DEBUG_HITBOXES:
             pg.draw.rect(self.screen, (255,255,255), self.player.rect, 4 )  # self.rect - WHITE
             if self.player.rects['hitbox']:
@@ -717,11 +701,6 @@ class Level():
                 pg.draw.rect(self.screen, (255, 0, 0), self.player.rects['attack'], 4 )  # attack rect - RED
             if self.player.collision_sprite.rect:
                 pg.draw.rect(self.screen, ('#e75480'), self.player.collision_sprite.rect, 2 )  # Collsion rect - PINK
-
-        # Vertical scroll lines
-        #pg.draw.line(self.screen, RED, (0, V_SCROLL_THRESHOLD), (SCREEN_WIDTH, V_SCROLL_THRESHOLD), width=3)
-        #pg.draw.line(self.screen, RED, (0, SCREEN_HEIGHT - V_SCROLL_THRESHOLD), (SCREEN_WIDTH, SCREEN_HEIGHT - V_SCROLL_THRESHOLD), width=3)
-        #print(f"Player's centerY: {self.player.rects['player'].centery} and world Y pos: {self.player.world_y_pos} and the delta: {self.player.world_y_pos - self.player.rects['player'].centery}")
 
         # --> Check player condition and actions <--
         self.check_player_attack()

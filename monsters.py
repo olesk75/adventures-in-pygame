@@ -291,8 +291,8 @@ class Monster(pg.sprite.Sprite):
 
     def update(self, h_scroll, v_scroll, obstacle_sprite_group, player) -> None:
  
-        # We only update postiontion and velocities of monsters who are on-screen        
-        on_screen = True if player.world_x_pos - SCREEN_WIDTH < self.rect.centerx < player.world_x_pos + SCREEN_WIDTH else False
+        # We only update postiontion and velocities of monsters who are on-screen (with some margin)      
+        on_screen = True if player.rects['player'].centerx - SCREEN_WIDTH < self.rect.centerx < player.rects['player'].centerx + SCREEN_WIDTH else False
             
         dx = self.vel_x
         dy = self.vel_y  # Newton would be proud!
@@ -301,6 +301,7 @@ class Monster(pg.sprite.Sprite):
             the boss_battle function updates self.vel_y directly and adds self.
         """
         if self.data.boss:
+            print(self.rect.centerx)
             dx, dy = self._boss_battle(player)
         else:
         # Regular mobs simply walk around mostly

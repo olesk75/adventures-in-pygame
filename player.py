@@ -103,9 +103,8 @@ class Player(pg.sprite.Sprite):
         self.cast_delay = 500
         self.cast_active = []  # all player spells
         self.world_x_pos = x + self.rects['player'].width / 2 # player center x position across the whole world, not just screen
-        self.world_y_pos = y + self.rects['player'].height / 2 # player center y position across the whole world, not just screen (remember: up is negative y)
-        self.v_scroll_initial = self.world_y_pos - 300 # just for the "camera" to see the player on the initial placement if he's not in the topleft screen
-
+        self.world_y_pos = y + self.rects['player'].height / 2 # player center y position across the whole world, not just screen (remember: up is negative y
+        self.bottom_buffer = TILE_SIZE_SCREEN * 4.7  # this precents vertical scrolling past the bottom of the level and indicates to the player that he's at the bottom of the level
 
     def _check_collision(self, dx, dy, platforms) -> tuple:
         """ 
@@ -341,12 +340,6 @@ class Player(pg.sprite.Sprite):
         h_scroll = 0
         v_scroll = 0
 
-        # Initial adjustment of "camera" on first update
-        if self.v_scroll_initial:
-            if self.v_scroll_initial > self.world_y_pos - V_SCROLL_THRESHOLD:
-                self.v_scroll_initial = self.world_y_pos - V_SCROLL_THRESHOLD
-            v_scroll = -self.v_scroll_initial
-            self.v_scroll_initial = False
         
         # If we've been hit, we're invincible - check if it's time to reset
         if self.gs.player_invincible and self.state['active'] not in (DYING, DEAD):
@@ -380,7 +373,6 @@ class Player(pg.sprite.Sprite):
         if self.state['active'] == JUMPING and self.vel_y == 0:
             self.state['next'] = IDLE
 
-          
         # STOMPING
         if self.state['active'] == STOMPING:
             if self.vel_y > 0:  # we're still airborne
@@ -407,7 +399,6 @@ class Player(pg.sprite.Sprite):
         if self.state['active'] == CASTING and self.animation.on_last_frame:
             self.state['next'] = IDLE
 
-
         # Gravity
         self.vel_y += GRAVITY
 
@@ -427,7 +418,6 @@ class Player(pg.sprite.Sprite):
         # Check collision with terrain
         (dx, dy) = self._check_collision(dx, dy, platforms)
 
-
         
          # Checking if we suddenly have a teleport destination and if so, we plonk straight over
         if self.destination:
@@ -443,37 +433,38 @@ class Player(pg.sprite.Sprite):
         """
         # Check if player has reached h_scroll threshold to the LEFT (and we're not on the far left) + we're walking left
         if dx < 0 and self.rects['player'].centerx <= H_SCROLL_THRESHOLD and self.world_x_pos > H_SCROLL_THRESHOLD + self.rects['hitbox'].width:
-            h_scroll = -dx  # We h_scroll left by the opposite of the player's x movement
+            h_scroll -= dx  # We h_scroll left by the opposite of the player's x movement
         
          # Check if player has reached h_scroll threshold to the right (and we're not on the far right) + we're walking right
         if dx > 0 and self.rects['player'].centerx >= SCREEN_WIDTH - H_SCROLL_THRESHOLD and self.world_x_pos < TILE_SIZE_SCREEN * self.level_data['size_x'] - H_SCROLL_THRESHOLD:
-            h_scroll = -dx  # We h_scroll right by the opposite of the player's x movement
+            h_scroll -= dx  # We h_scroll right by the opposite of the player's x movement
 
          # Check if player has reached v_scroll threshold on top of the screen (and we're not all the way to the top) + we're moving upwards
         if dy < 0 and self.rects['player'].top <= V_SCROLL_THRESHOLD:
-            v_scroll = -dy  # We scroll up by the opposite of the player's y movement
+            v_scroll -= dy  # We scroll up by the opposite of the player's y movement
 
          # Check if player has reached v_scroll threshold at bottom of the screen (and we're not all the way down at the bottom) + we're moving downwards
-        scroll_buffer_bottom = 120
-
-        if dy > 0 and self.rects['player'].bottom >= SCREEN_HEIGHT - V_SCROLL_THRESHOLD and self.world_y_pos < TILE_SIZE_SCREEN * self.level_data['size_y'] - V_SCROLL_THRESHOLD: #scroll_buffer_bottom:
-            v_scroll = -dy  # We h_scroll down by the opposite of the player's y movement
+        if dy > 0 and self.rects['player'].bottom >= SCREEN_HEIGHT - V_SCROLL_THRESHOLD \
+            and self.world_y_pos < TILE_SIZE_SCREEN * self.level_data['size_y'] - V_SCROLL_THRESHOLD \
+            and self.world_y_pos < (self.level_data['size_y'] * TILE_SIZE_SCREEN) - self.bottom_buffer:
+            v_scroll -= dy  # We h_scroll down by the opposite of the player's y movement
 
         # Update rectangle position
         self.rects['player'].x += dx + h_scroll
         self.rects['player'].y += dy + v_scroll
-
-        self.world_x_pos += dx + h_scroll
-        self.world_y_pos += dy + v_scroll
+        
+        # Update the global position for the player
+        self.world_x_pos += dx
+        self.world_y_pos += dy
         #print(f"Player's centerY: {self.rects['player'].centery} and world_y_pos: {self.world_y_pos} - scroll threshold towards bottom is: {TILE_SIZE_SCREEN * self.level_data['size_y'] - V_SCROLL_THRESHOLD}, and death at {TILE_SIZE_SCREEN * self.level_data['size_y']}")
   
         # If we fall off the world we die
-        if self.world_y_pos > TILE_SIZE_SCREEN * self.level_data['size_y']:
+        if self.world_y_pos > TILE_SIZE_SCREEN * self.level_data['size_y'] + self.rects['player'].height:
             self.state['next'] = DEAD
             logging.debug('DEAD: fell off the world')
             self._state_engine()  # we call the state engine to get an out-of-turn state update
 
-        return h_scroll, v_scroll
+        return (h_scroll, v_scroll)
     
 
     def get_anim_image(self) -> None:
