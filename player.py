@@ -104,7 +104,7 @@ class Player(pg.sprite.Sprite):
         self.cast_active = []  # all player spells
         self.world_x_pos = x + self.rects['player'].width / 2 # player center x position across the whole world, not just screen
         self.world_y_pos = y + self.rects['player'].height / 2 # player center y position across the whole world, not just screen (remember: up is negative y)
-        self.v_scroll_initial = self.world_y_pos - V_SCROLL_THRESHOLD # just for the "camera" to see the player on the initial placement if he's not in the topleft screen
+        self.v_scroll_initial = self.world_y_pos - 300 # just for the "camera" to see the player on the initial placement if he's not in the topleft screen
 
 
     def _check_collision(self, dx, dy, platforms) -> tuple:
@@ -450,14 +450,14 @@ class Player(pg.sprite.Sprite):
             h_scroll = -dx  # We h_scroll right by the opposite of the player's x movement
 
          # Check if player has reached v_scroll threshold on top of the screen (and we're not all the way to the top) + we're moving upwards
-        if dy < 0 and self.rects['player'].centery <= V_SCROLL_THRESHOLD and self.world_y_pos > V_SCROLL_THRESHOLD + self.rects['hitbox'].height:
+        if dy < 0 and self.rects['player'].top <= V_SCROLL_THRESHOLD:
             v_scroll = -dy  # We scroll up by the opposite of the player's y movement
 
          # Check if player has reached v_scroll threshold at bottom of the screen (and we're not all the way down at the bottom) + we're moving downwards
-        scroll_buffer_bottom = 320
-        if dy > 0 and self.rects['player'].centery >= SCREEN_HEIGHT - V_SCROLL_THRESHOLD and \
-            self.world_y_pos < TILE_SIZE_SCREEN * self.level_data['size_y']  - scroll_buffer_bottom:  # the very bottom
-            v_scroll += -dy  # We h_scroll down by the opposite of the player's y movement
+        scroll_buffer_bottom = 120
+
+        if dy > 0 and self.rects['player'].bottom >= SCREEN_HEIGHT - V_SCROLL_THRESHOLD and self.world_y_pos < TILE_SIZE_SCREEN * self.level_data['size_y'] - V_SCROLL_THRESHOLD: #scroll_buffer_bottom:
+            v_scroll = -dy  # We h_scroll down by the opposite of the player's y movement
 
         # Update rectangle position
         self.rects['player'].x += dx + h_scroll
@@ -466,7 +466,7 @@ class Player(pg.sprite.Sprite):
         self.world_x_pos += dx + h_scroll
         self.world_y_pos += dy + v_scroll
         #print(f"Player's centerY: {self.rects['player'].centery} and world_y_pos: {self.world_y_pos} - scroll threshold towards bottom is: {TILE_SIZE_SCREEN * self.level_data['size_y'] - V_SCROLL_THRESHOLD}, and death at {TILE_SIZE_SCREEN * self.level_data['size_y']}")
-
+  
         # If we fall off the world we die
         if self.world_y_pos > TILE_SIZE_SCREEN * self.level_data['size_y']:
             self.state['next'] = DEAD

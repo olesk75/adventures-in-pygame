@@ -4,5 +4,6 @@ game_data/__pycache__
 TODO.txt
 /assets/WIP
 .DS_Store
-.prof
+*.prof
 game_data/__pycache__/
+*.pyc

@@ -175,7 +175,6 @@ class Level():
         pg.draw.line(self.screen, WHITE, (x,0), (x,SCREEN_HEIGHT)) 
         pg.draw.line(self.screen, WHITE, (0,y), (SCREEN_WIDTH,y)) 
 
-
 # --> Checking functions
     def check_arena_spawns(self) -> None:
         # Checks if player in the arena has requestd monster spawns
@@ -393,33 +392,7 @@ class Level():
                                 self.projectile_sprites.add(arrow)
                                 monster.last_arrow = now
 
-    def create_terrain_surface(self, layout) -> pg.Surface:
-        terrain_surf = pg.Surface((SCREEN_HEIGHT, SCREEN_WIDTH)).convert_alpha()
 
-        for row_index, row in enumerate(layout):
-            for col_index,val in enumerate(row):
-                if val != '-1':
-                    x = col_index * TILE_SIZE_SCREEN
-                    y = row_index * TILE_SIZE_SCREEN
-
-                    """ Loading terrain tiles  
-                    """
-                    tile_surface = self.terrain_tilesheet_list[int(val)]
-                    
-                    (x_size, y_size) = tile_surface.get_size()
-                    if not x_size == y_size == TILE_SIZE:
-                        logging.debug(f'Terrain tiles are of size {x_size}x{y_size}, but we have TILE_SIZE {TILE_SIZE} in settings')
-                    
-                    # Tile-scaling factors: 8 matches 16x16 size sprites while 4 gives 32x32
-                    x_size = x_size * 2
-                    y_size = y_size * 2
-
-                    tile_surface = pg.transform.scale2x(tile_surface)
-
-                    if int(val) not in self.level_data['moving_horiz']:  # we only want static terrain
-                        terrain_surf.blit(tile_surface, (x, y))
-
-        return terrain_surf 
                     
 
 
@@ -448,7 +421,7 @@ class Level():
                         if not x_size == y_size == TILE_SIZE:
                             logging.debug(f'Terrain tiles are of size {x_size}x{y_size}, but we have TILE_SIZE {TILE_SIZE} in settings')
                         
-                        # Tile-scaling factors: 8 matches 16x16 size sprites while 4 gives 32x32
+                        # Tile scaling - 1 is original size
                         x_size = x_size * 2
                         y_size = y_size * 2
 

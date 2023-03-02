@@ -31,17 +31,15 @@ SCREEN_HEIGHT = 960
 # Pixels available is a quarter of that: 480x240, which is the native resolution
 
 # Derived values for scaling
-TILE_SIZE = 32  # x and y native resolution of standard tiles
-TILE_SIZE_SCREEN = SCREEN_WIDTH // TILE_SIZE 
+TILE_SIZE = 32  # x and y native resolution of standard tiles - this MUST match the actual resolution in the image file!
+TILE_SIZE_SCREEN = SCREEN_WIDTH // TILE_SIZE
 
 GRAVITY = 1
 MAX_PLATFORMS = 10
 JUMP_HEIGHT = 20
 H_SCROLL_THRESHOLD = 400
-V_SCROLL_THRESHOLD = TILE_SIZE_SCREEN * 3     
-ROWS = 16  # the number of rows we can see on screen at once
+V_SCROLL_THRESHOLD = 200 
 
-SCALE_FACTOR = 1
 TILE_TYPES = 18
 ANIMATION_TYPES = 3
 OBJECT_TYPES = 9
