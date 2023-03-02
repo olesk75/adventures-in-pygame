@@ -615,7 +615,7 @@ class ParallaxBackground:
 
                 x = - self.cloud_width + SCREEN_WIDTH + self.cloud_movement
                 self.full_surf.blit(self.bg_sky,  (x, 0))  # clouds are special  
-                if self.cloud_movement >= self.cloud_width:
+                if self.cloud_movement >= self.cloud_width - SCREEN_WIDTH:
                     self.cloud_movement = 0
 
             

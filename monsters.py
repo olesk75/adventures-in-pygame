@@ -178,8 +178,7 @@ class Monster(pg.sprite.Sprite):
                         player_above_mob = player.rect.centery -  (self.rect.centery + max_dist_centery)
                         if self.data.attack_jumper and player_above_mob < 20 and self.vel_y == 0:  # player is higher up and we're not already jumping
                             if 0.01  > random.random():  # hardcoded jump probability
-                                print('BOSS JUMPING')
-                                self.vel_y = -50
+                                self.vel_y = -10
 
             elif self.state == CASTING:
                 _casting()
@@ -267,9 +266,9 @@ class Monster(pg.sprite.Sprite):
                 direction = 1 if self.turned else -1
 
                 if not self.die_after_stun:
-                    self.vel_x = 5 * self.data.direction * direction
-                    self.vel_y = -10
-                    self.on_bottom = False
+                    self.vel_x = 5  * self.data.direction * direction
+                    self.vel_y = -5
+                    self.at_bottom = False
 
                 self.animation.active = False  #  monster is frozen for the duration
                 self.rect_attack = pg.Rect(0,0,0,0)  # not attacking for the duration
@@ -322,6 +321,7 @@ class Monster(pg.sprite.Sprite):
                 if self.data.attack_jumper and player_above_mob < 0 and self.vel_y == 0:  # player is higher up and we're not already jumping
                     if 0.01  > random.random():  # hardcoded jump probability
                         self.vel_y = -10
+
             if self.state == WALKING:
                 dx = self.data.speed_walking  #  we start at walking speed
 
@@ -353,18 +353,20 @@ class Monster(pg.sprite.Sprite):
         self.rect.y += v_scroll
 
         if on_screen:
-            # we compensate for graivty
+            # we compensate for gravity
             self.vel_y += GRAVITY  # gravity component gets added to the vel_y, which we add to dy at the top
-        
             
-            # Update rectangle position
-            self.rect.x += dx * self.data.direction
-            self.rect.y += dy 
+           
 
             # Checking detection, hitbox and attack rects as well as platform rects for collision
         
             self.create_rects()
             self._check_platform_collision(dx, dy, obstacle_sprite_group)
+            dy += self.vel_y  # TODO: supposed to help jumping for bosses, but doesn't work
+
+            # Update rectangle position
+            self.rect.x += dx * self.data.direction
+            self.rect.y += dy 
 
         if self.state in (DEAD, DYING):
             self.rect_attack = None
