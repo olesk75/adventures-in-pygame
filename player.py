@@ -431,6 +431,7 @@ class Player(pg.sprite.Sprite):
         """ Scrolling horizontally or vertically if player reaches either of the four scroll thresholds (left/right/top/bottom)
             These conditions should not be triggered by teleporting above
         """
+
         # Check if player has reached h_scroll threshold to the LEFT (and we're not on the far left) + we're walking left
         if dx < 0 and self.rects['player'].centerx <= H_SCROLL_THRESHOLD and self.world_x_pos > H_SCROLL_THRESHOLD + self.rects['hitbox'].width:
             h_scroll -= dx  # We h_scroll left by the opposite of the player's x movement

@@ -332,7 +332,7 @@ class Monster(pg.sprite.Sprite):
                     self.turned = not self.turned
 
             if self.state == STUNNED:
-                if self.on_bottom:
+                if self.at_bottom:
                     self.vel_x = 0
 
                 dx = self.vel_x

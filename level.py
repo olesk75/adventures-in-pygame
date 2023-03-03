@@ -322,7 +322,7 @@ class Level():
                     self.gs.player_inventory.append(('key', self.key_img))  # inventory of items and their animations
                     self.audio.pickups['key'].play()
                     drop.kill()
-                    self.bubble_list.append(BubbleMessage(self.screen, 'A key! All I need now is a lock.', 5000, 3000, 'key', self.player))
+                    self.bubble_list.append(BubbleMessage(self.screen, 'A key! All I need now is a lock.', 3000, 3000, 'key', self.player))
                
                 logging.debug(f'PICKUP: {drop.drop_type}')
                 logging.debug(f'Inventory: {self.gs.player_inventory}')   
