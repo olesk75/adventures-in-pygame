@@ -56,7 +56,7 @@ level_1 = {
     'terrain_ts': 'assets/tile/tilesets/mountain-tileset-brown.png',
     
     'background': {
-        'near': None, # 'assets/backgrounds/lvl1/mountains-dark-near.png',  # diabling for now, as the trees are ugly and distracting (repeat the medium tecture, as None cancels all)
+        'near': None, # 'assets/backgrounds/lvl1/mountains-dark-near.png',
         'medium': 'assets/backgrounds/lvl1/mountains-dark-middle.png',
         'further': 'assets/backgrounds/lvl1/mountains-dark-further.png',
         'far': 'assets/backgrounds/lvl1/mountains-dark-far.png',

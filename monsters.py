@@ -108,14 +108,13 @@ class Monster(pg.sprite.Sprite):
         #
         all_obstacles = obstacle_sprite_group.sprites()
         for obstacle in all_obstacles:
-            if obstacle.solid == True:
+            if obstacle.solid is True:
                 # collision in the y direction only, using a collision rect indicating _next_ position (y + dy)
                 moved_hitbox = self.hitbox.move(0, dy - 2)  # move in place, the minus 2 lifts the monsters up a few pixels
             
                 if obstacle.rect.colliderect(moved_hitbox):  # we are standing on a platform essentially
                     # Preventing falling through platforms
-                    if moved_hitbox.bottom > obstacle.rect.top:  # Is player above platform?
-                        if self.vel_y > 0:
+                    if moved_hitbox.bottom > obstacle.rect.top and self.vel_y > 0:
                             dy = 0
                             self.at_bottom = True                     
                             self.vel_y = 0
@@ -149,8 +148,7 @@ class Monster(pg.sprite.Sprite):
         
         def _casting() -> None:
             sprite_size = 32
-            if self.animation.on_last_frame:  # on last cast animation frame, trigger the spell
-                if self.currently_casting == 'firewalker':
+            if self.animation.on_last_frame and self.currently_casting == 'firewalker':
                     attack_width = 12
                     for a in range(attack_width):
                         player_center_x = self.cast_player_pos[0]
@@ -161,6 +159,7 @@ class Monster(pg.sprite.Sprite):
 
                     self.state_change(WALKING)
                     self.currently_casting = ''
+                
 
         if self.data.monster ==  'skeleton-keybearer':
             if self.state == ATTACKING:
@@ -176,8 +175,10 @@ class Monster(pg.sprite.Sprite):
                         # Sometimes a jumping mob can jump if player is higher than the mob and mob is attacking
                         max_dist_centery = -7
                         player_above_mob = player.rect.centery -  (self.rect.centery + max_dist_centery)
-                        if self.data.attack_jumper and player_above_mob < 20 and self.vel_y == 0:  # player is higher up and we're not already jumping
-                            if 0.01  > random.random():  # hardcoded jump probability
+                        if self.data.attack_jumper \
+                            and player_above_mob < 20 \
+                            and self.vel_y == 0 \
+                            and random.random()  < 0.01:  # hardcoded jump probability
                                 self.vel_y = -10
 
             elif self.state == CASTING:
@@ -254,7 +255,7 @@ class Monster(pg.sprite.Sprite):
                 self.data.sound_hit.play()
                 self.stun_start = pg.time.get_ticks()
                 self.invulnerable = True
-                self.die_after_stun = True if deadly else False
+                self.die_after_stun = bool(deadly)
 
                 if player_pos[0] < self.rect.centerx:
                     self.data.direction = -1
@@ -294,8 +295,8 @@ class Monster(pg.sprite.Sprite):
     def update(self, h_scroll, v_scroll, obstacle_sprite_group, player) -> None:
  
         # We only update postiontion and velocities of monsters who are on-screen (with some margin)      
-        on_screen_x = True if player.rects['player'].centerx - SCREEN_WIDTH < self.rect.centerx < player.rects['player'].centerx + SCREEN_WIDTH else False
-        on_screen_y = True if player.rects['player'].centery - SCREEN_HEIGHT< self.rect.centery < player.rects['player'].centery + SCREEN_HEIGHT else False
+        on_screen_x = player.rects["player"].centerx - SCREEN_WIDTH < self.rect.centerx < player.rects["player"].centerx + SCREEN_WIDTH
+        on_screen_y = player.rects["player"].centery - SCREEN_HEIGHT < self.rect.centery < player.rects["player"].centery + SCREEN_HEIGHT
         on_screen = on_screen_x * on_screen_y
             
         dx = self.vel_x
@@ -318,8 +319,10 @@ class Monster(pg.sprite.Sprite):
                 player_above_mob = player.rect.centery -  (self.rect.centery + max_dist_centery)
                 #print(f'player is this much above attacking mob: {player_above_mob}')
 
-                if self.data.attack_jumper and player_above_mob < 0 and self.vel_y == 0:  # player is higher up and we're not already jumping
-                    if 0.01  > random.random():  # hardcoded jump probability
+                if self.data.attack_jumper \
+                    and player_above_mob < 0 \
+                        and self.vel_y == 0 \
+                        and random.random()  < 0.01:  # hardcoded jump probability
                         self.vel_y = -10
 
             if self.state == WALKING:

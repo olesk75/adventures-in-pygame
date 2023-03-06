@@ -181,14 +181,14 @@ class Level():
                 self.gs.monster_spawn_queue.pop(count)
 
     def check_player_stomp(self) -> None:
-        if self.player.stomp_trigger == True and self.player.vel_y == 0:
+        if self.player.stomp_trigger is True and self.player.vel_y == 0:
             self.stomp_effects.add(LightEffect1(self.player.rects['hitbox'].centerx, self.player.rects['hitbox'].centery + 10))
             self.player.stomp_trigger = False
             self.player.stomp_counter = 0
             self.gs.game_slowmo = True
             # TODO add dust
         for sprite in self.stomp_effects.sprites():
-            if sprite.done == True:
+            if sprite.done is True:
                 sprite.kill()
 
     def check_player_dust(self) -> None:
@@ -212,9 +212,10 @@ class Level():
     def check_player_attack(self) -> None:
         for monster in self.monsters_nearby.sprites():
             # --> We check if the player is attacking and if the attack hits a monster
-            if self.player.state['active'] == ATTACKING and monster.state not in (DYING, DEAD) and monster.invulnerable == False:
-                # Check if mob hit
-                if pg.Rect.colliderect(self.player.rects['attack'], monster.hitbox): 
+            if self.player.state['active'] == ATTACKING \
+                and monster.state not in (DYING, DEAD) \
+                and monster.invulnerable is False \
+                and pg.Rect.colliderect(self.player.rects['attack'], monster.hitbox): 
                     # Add hit (blood) particles
                     self.particles_blood(monster.hitbox.centerx, monster.hitbox.centery, monster.data.blood_color, self.player.turned)
                     monster.data.hitpoints -= 1
@@ -240,8 +241,8 @@ class Level():
 
     def check_player_win(self) -> None:
         # Player sprite reaches goal tile
-        if pg.sprite.spritecollide(self.player,self.player_in_out_sprites,False):
-            if pg.sprite.spritecollide(self.player,self.player_in_out_sprites,False)[0].inout == 'out':  # first colliding sprite
+        if pg.sprite.spritecollide(self.player,self.player_in_out_sprites,False) \
+            and pg.sprite.spritecollide(self.player,self.player_in_out_sprites,False)[0].inout == 'out':  # first colliding sprite
                 logging.debug('WIN! Level complete')
                 self.gs.level_complete = True
 
@@ -260,8 +261,8 @@ class Level():
                 projectile.kill()
         for projectile in self.projectile_sprites.sprites():
             # We can attack and destroy projectiles as well
-            if self.player.state['active'] == ATTACKING:
-                if  pg.Rect.colliderect(self.player.rects['attack'], projectile.rect):
+            if self.player.state['active'] == ATTACKING \
+            and pg.Rect.colliderect(self.player.rects['attack'], projectile.rect):
                     # play some sound # TODO
                     projectile.kill()
 
@@ -298,7 +299,7 @@ class Level():
                         else:
                             self.player.bounce(-10, 0, -self.player.turned, self.terrain_sprites)
                             self.bubble_list.append(BubbleMessage(self.screen, 'I\'m missing a key!', 3000, 0, 'exit', self.player))
-                            self.info_sprites.add(InfoPopup('Locked door', sprite.rect.centerx, sprite.rect.centery))
+                            #self.info_sprites.add(InfoPopup('Locked door', sprite.rect.centerx, sprite.rect.centery))
                 elif sprite.name == 'chest':
                     # play some sound effect
                     sprite.animation.active = True
@@ -333,8 +334,7 @@ class Level():
             stomp_collision = pg.sprite.spritecollide(self.stomp_effects.sprite, self.monsters_nearby,False)
             if stomp_collision:
                 for monster in stomp_collision:
-                    if monster.state not in (DYING, DEAD):
-                        if pg.Rect.colliderect(self.stomp_effects.sprite.rect, monster.hitbox): 
+                    if monster.state not in (DYING, DEAD) and pg.Rect.colliderect(self.stomp_effects.sprite.rect, monster.hitbox): 
                             monster.state_change(STUNNED, player_pos=self.player.rect.center, deadly=True)
                             self.gs.player_score += monster.data.points_reward
                             self.player.stomp_counter += 1
@@ -345,11 +345,9 @@ class Level():
         monster_collisions = pg.sprite.spritecollide(self.player.hitbox_sprite, self.monsters_nearby,False)
         if monster_collisions and self.player.state['active'] not in (DYING, STOMPING):
             for monster in monster_collisions:
-                if monster.state != DYING and monster.state != DEAD:  # we only deal with the living
-                    if pg.Rect.colliderect(self.player.rects['hitbox'], monster.hitbox):  # sprite collision not enough, we now check hitboxes
-                       if monster.state not in (DYING, STOMPING):  # check to avoid repeat damage
-                            # Player gets bumped _away_ from mob:
-                            self.player.hit(100, monster.turned, self.terrain_sprites)  # bump player _away_ from monster
+                if monster.state not in (DYING, DEAD, STOMPING) \
+                    and pg.Rect.colliderect(self.player.rects['hitbox'], monster.hitbox):
+                        self.player.hit(100, monster.turned, self.terrain_sprites)  # bump player _away_ from monster
 
     def check_monsters(self) -> None:
         # Monsters can be up to several things, which we check for here
@@ -560,10 +558,7 @@ class Level():
 
 # --> Effect funtions 
     def particles_blood(self, x, y, color, turned) -> None:
-        if turned is True:
-            direction = -1 
-        else: 
-            direction = 1
+        direction = -1 if turned is True else 1
         for _ in range(50):   
             self.particle_system.add({
                 'center': [x + random() * 30, y + random() * 30],
@@ -687,10 +682,7 @@ class Level():
                 cast.draw(self.screen)
                 if cast.done:
                     self.player.cast_active.remove(cast)
-
-        # DEBUGGING
-        # self._debug_show_state()
-        #print (f'Player: ({self.player.rects["player"].centerx},{self.player.rects["player"].centery})                 World: ({self.player.world_x_pos},{self.player.world_y_pos})')    
+   
         if DEBUG_HITBOXES:
             pg.draw.rect(self.screen, (255,255,255), self.player.rect, 4 )  # self.rect - WHITE
             if self.player.rects['hitbox']:

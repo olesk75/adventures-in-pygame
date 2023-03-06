@@ -41,7 +41,7 @@ if joysticks:
         logging.debug(joys.get_numhats())
         logging.debug(joys.get_numbuttons())
 else:
-    logging.debug(f'No game controllers found')
+    logging.debug('No game controllers found')
 
 # Resolution and screen setup
 current_screen = pg.display.Info()
@@ -109,9 +109,7 @@ while True:
                 case 1: gs.user_input['cast'] = False
                 case 2: gs.user_input['attack'] = False
                 
-        if event.type == JOYAXISMOTION:
-            #print(event)
-            if event.axis == 0:
+        if event.type == JOYAXISMOTION and event.axis == 0:
                 if event.value < -0.1:
                     gs.user_input['left'] = True
                 elif event.value > 0.1:

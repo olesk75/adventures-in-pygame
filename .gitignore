@@ -7,3 +7,4 @@ TODO.txt
 *.prof
 game_data/__pycache__/
 *.pyc
+*.toml

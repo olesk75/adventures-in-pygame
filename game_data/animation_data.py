@@ -74,8 +74,8 @@ anim = {
     },
     'elven-archer': {
         'walk': Animation(elven_archer_running_ss, frames=8, speed=50),
-        'attack': Animation(elven_archer_attacking_ss, frames=8, speed=100),
-        'death': Animation(elven_archer_dying_ss, frames=7, speed=100, repeat=False),
+        'attack': Animation(elven_archer_attacking_ss, frames=8, speed=80),
+        'death': Animation(elven_archer_dying_ss, frames=7, speed=50, repeat=False),
         'cast': None
     },
     'skeleton-keybearer': {
@@ -88,7 +88,7 @@ anim = {
     'beholder': {
         'walk': Animation(beholder_ss_walk, frames=10, speed=25), 
         'attack': Animation(beholder_ss_attack, frames=8, speed=50),
-        'death': Animation(beholder_ss_death, frames=8, speed=100, repeat=False),
+        'death': Animation(beholder_ss_death, frames=8, speed=50, repeat=False),
         'idle': None,
         'cast': None
     },

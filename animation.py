@@ -54,9 +54,9 @@ class Animation():
         now = pygame.time.get_ticks()
         time_since_last = now - self.last_run  # ticks since last run
 
-        if now > self.repeat_start + repeat_delay:
-
-            if self.active == True and time_since_last > self.speed:  # time for a new frame
+        if now > self.repeat_start + repeat_delay \
+            and self.active is True \
+                and time_since_last > self.speed:  # time for a new frame
                 self.frame_number += 1
                 
                 if self.frame_number == self.frames -1:  # on the last frame

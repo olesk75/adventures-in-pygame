@@ -130,7 +130,7 @@ class Game:
 
     def check_level_complete(self) -> None:
         """ Check if player has successfully reached end of the level """
-        if self.gs.level_complete == True:
+        if self.gs.level_complete is True:
             self.gs.game_state = GS_LEVEL_COMPLETE
             logging.debug('GAME state: LEVEL COMPLETE ')
             
@@ -147,7 +147,7 @@ class Game:
     def check_damage_effects(self) -> None:
         """ Slow-motion effect after player loses health """
         global FPS
-        if self.gs.game_slowmo == True:
+        if self.gs.game_slowmo is True:
             self.screen.blit(self.damage_img, (0,0))
             if pg.time.get_ticks() - self.last_run > 500:  # 1 second of slow-motion after a hit
                 FPS = 60
@@ -160,13 +160,15 @@ class Game:
             # TODO: add slo-mo for stomp as well, and player boss death
 
     def game_over(self) -> None:
+        high_score = 9999  # TODO: placeholder
         """ Go to GAME OVER screen """
         if self.gs.game_fade_ready:
             fade_to_color(RED, self.screen, self.gs)  # fade to RED
         else:
+            
             draw_text("GAME OVER", self.screen, WHITE, 0, 200, align='center', font=self.font)
             draw_text(f"SCORE : {self.gs.player_score}", self.screen, WHITE, 0, 300, align='center', font=self.font)
-            draw_text(f"HIGH SCORE : 99999", self.screen, WHITE, 0, 400, align='center', font=self.font)
+            draw_text(f"HIGH SCORE : {high_score}", self.screen, WHITE, 0, 400, align='center', font=self.font)
             draw_text("Press SPACE to try again,  Q to quit", self.screen, WHITE, 0, 500, align='center', font=self.font)
 
             keys = pg.key.get_pressed()
@@ -182,12 +184,13 @@ class Game:
 
     def level_complete(self) -> None:
         """ Go to LEVEL COMPLETE SCREEN """
+        high_score = 9999  # TODO: placeholder
         if self.gs.game_fade_ready:
             fade_to_color(BLACK, self.screen, self.gs)  # fade to black
         else:
             draw_text(f"LEVEL {self.gs.level_current} COMPLETE", self.screen, WHITE, 0, 200, align='center')
             draw_text(f"SCORE : {self.gs.player_score}", self.screen, WHITE, 0, 300, align='center')
-            draw_text(f"HIGH SCORE : 99999", self.screen, WHITE, 0, 400, align='center')
+            draw_text(f"HIGH SCORE : {high_score}", self.screen, WHITE, 0, 400, align='center')
             draw_text("Press ENTER to continue to the world map,  Q to quit", self.screen, WHITE, 0, 500, align='center')
 
             keys = pg.key.get_pressed()

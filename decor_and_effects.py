@@ -1,7 +1,6 @@
 import pygame as pg
 from random import random, randint
 
-from random import randint
 from game_data.level_data import *
 from game_data.settings import *
 from game_tiles import GameTileAnimation
@@ -243,7 +242,7 @@ class GamePanel:
 
     def _blink_bar(self, duration) -> None:
         # Blinks the frame around the health bar red
-        if self.blink == True:
+        if self.blink is True:
             if self.blink_counter < duration:
                 self.blink_counter += 1
                 pg.draw.rect(self.screen, (255,0,0), (20,40,self.health_bar_max_length+4,20) ,2 )
