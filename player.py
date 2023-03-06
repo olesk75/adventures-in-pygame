@@ -116,7 +116,7 @@ class Player(pg.sprite.Sprite):
         
         # Checking vertical collision with terrain (falling), taking slope into account
         platform = pg.sprite.spritecollideany(self.collision_sprite, platforms)
-        if platform and platform.solid == True:  # player has collided with a solid platform
+        if platform and platform.solid is True:  # player has collided with a solid platform
             if DEBUG_HITBOXES:
                 pg.draw.rect(self.screen, (128,128,255), platform.rect, 4 )  # self.rect - LIGHT BLUE
 
@@ -124,7 +124,7 @@ class Player(pg.sprite.Sprite):
                 self.on_slope = False
                 dy = platform.rect.top - self.hitbox_sprite.rect.bottom  # the last y movement will cover the difference
             
-                if platform.moving == True:  # the platform we're standing on moves, and moves us
+                if platform.moving is True:  # the platform we're standing on moves, and moves us
                     self.rect.centerx += platform.dist_player_pushed
                     platform.dist_player_pushed = 0     
 
@@ -178,7 +178,7 @@ class Player(pg.sprite.Sprite):
                 self.side_collision_sprite.rect.centerx = self.hitbox_sprite.rect.centerx - 10
 
             platform = pg.sprite.spritecollideany(self.side_collision_sprite, platforms)
-            if platform and platform.solid == True and not platform.slope:  # player has collided with a solid platform and is not walking a slope
+            if platform and platform.solid is True and not platform.slope:  # player has collided with a solid platform and is not walking a slope
                 dx = 0
            
             if DEBUG_HITBOXES:
@@ -238,7 +238,7 @@ class Player(pg.sprite.Sprite):
                 # If we were stomping and have landed, we trigger effect right away, but we stay in state for one second
                 if self.state['active'] == STOMPING and self.on_ground:
                     now = pg.time.get_ticks()
-                    if now - self.stomp_start_timer > 500 and self.stomp_trigger_lock == True:
+                    if now - self.stomp_start_timer > 500 and self.stomp_trigger_lock is True:
                         self.state['active'] = IDLE
                         self.animation = self.animations['idle']
                         self.animation.start_over()
@@ -342,8 +342,9 @@ class Player(pg.sprite.Sprite):
 
         
         # If we've been hit, we're invincible - check if it's time to reset
-        if self.gs.player_invincible and self.state['active'] not in (DYING, DEAD):
-            if pg.time.get_ticks() - self.last_damage > self.invincibility_duration:
+        if self.gs.player_invincible \
+            and self.state['active'] not in (DYING, DEAD) \
+            and pg.time.get_ticks() - self.last_damage > self.invincibility_duration:
                 self.gs.player_invincible = False
 
         # Making sure stomp is limited
@@ -384,10 +385,7 @@ class Player(pg.sprite.Sprite):
         
         # ATTACKING: make rect
         if self.state['active'] == ATTACKING:
-            if self.turned:
-                x = self.rects['player'].left
-            else:
-                x = self.rects['hitbox'].right
+            x = self.rects["player"].left if self.turned else self.rects["hitbox"].right
 
             self.rects['attack'] = pg.Rect(x, self.rects['player'].top + 30, self.rects['player'].right - self.rects['hitbox'].right, 100) 
         
