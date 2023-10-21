@@ -78,8 +78,8 @@ level_1 = {
 }
 
 level_2 = {
-    'size_x': 120,
-    'size_y': 40,
+    'size_x': 30,
+    'size_y': 39,
     'pos_terrain': 'lvl/lvl 2 - snowy mountains/level2_terrain.csv',
     'pos_decorations': 'lvl/lvl 2 - snowy mountains/level2_decorations.csv',
     'pos_hazards':  'lvl/lvl 2 - snowy mountains/level2_hazards.csv',
@@ -87,7 +87,7 @@ level_2 = {
     'pos_triggered_objects': 'lvl/lvl 2 - snowy mountains/level2_triggered_objects.csv',
     'pos_monsters': 'lvl/lvl 2 - snowy mountains/level2_monsters.csv',
     'pos_player': 'lvl/lvl 2 - snowy mountains/level2_player.csv',
-    'environmental_effect': 'leaves',
+    'environmental_effect': None,  #'leaves',
     'terrain_ts': 'assets/tile/tilesets/terrain-tileset-snow-rocks.png',
     'background': {
         'near': 'assets/backgrounds/lvl1/near.png',

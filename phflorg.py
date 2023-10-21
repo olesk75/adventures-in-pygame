@@ -4,7 +4,7 @@ from pygame.locals import *
 import sys
 import logging
 
-from game_data.settings import * 
+from game_data.settings import *
 from game_world import GameState, Game
 
 
@@ -45,13 +45,13 @@ else:
 
 # Resolution and screen setup
 current_screen = pg.display.Info()
-monitor_res = ( current_screen.current_w, current_screen.current_h)
+monitor_res = (current_screen.current_w, current_screen.current_h)
 width, height = SCREEN_WIDTH, SCREEN_HEIGHT
 
-  
 logging.debug(f'Screen resolution : width: {width}, height:{height}, {monitor_res})')
 flags = SCALED
-_screen = pg.display.set_mode((width, height), flags) 
+flags = FULLSCREEN | HWSURFACE | SCALED
+_screen = pg.display.set_mode((width, height), flags)
 screen = pg.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 clock = pg.time.Clock()
@@ -108,30 +108,29 @@ while True:
                 case 0: gs.user_input['up'] = False
                 case 1: gs.user_input['cast'] = False
                 case 2: gs.user_input['attack'] = False
-                
+
         if event.type == JOYAXISMOTION and event.axis == 0:
-                if event.value < -0.1:
-                    gs.user_input['left'] = True
-                elif event.value > 0.1:
-                    gs.user_input['right'] = True
-                else:
-                    gs.user_input['left'] = False
-                    gs.user_input['right'] = False
+            if event.value < -0.1:
+                gs.user_input['left'] = True
+            elif event.value > 0.1:
+                gs.user_input['right'] = True
+            else:
+                gs.user_input['left'] = False
+                gs.user_input['right'] = False
 
         if event.type == JOYHATMOTION:
-            #print(event)
+            # print(event)
             pass
 
-    
     if gs.game_state == GS_PLAYING:
-        game.run() 
-    
+        game.run()
+
     if gs.game_state == GS_GAME_OVER:
         game.game_over()
 
     if gs.game_state == GS_QUIT:
-       pg.quit()
-       sys.exit()
+        pg.quit()
+        sys.exit()
 
     if gs.game_state == GS_LEVEL_COMPLETE:
         game.level_complete()
@@ -145,8 +144,7 @@ while True:
     if previous_state != gs.game_state:
         previous_state = gs.game_state
         gs.game_fade_ready = True
-        
-    
+
     if SHOW_FPS:
         fps_text = font.render(f'FPS: {clock.get_fps():.2f}', True, (255, 255, 0))
         screen.blit(fps_text, (10, 100))
@@ -156,5 +154,3 @@ while True:
 
     pg.display.update()
     clock.tick(FPS)
-
-

@@ -242,7 +242,7 @@ class GamePanel:
 
     def _blink_bar(self, duration) -> None:
         # Blinks the frame around the health bar red
-        if self.blink is True:
+        if self.blink:
             if self.blink_counter < duration:
                 self.blink_counter += 1
                 pg.draw.rect(self.screen, (255,0,0), (20,40,self.health_bar_max_length+4,20) ,2 )

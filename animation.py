@@ -28,7 +28,7 @@ class SpriteSheet():
 class Animation():
     """ Class which reads the sprite sheet and animates the images in sprites 
         Reads single rwo from the sprite sheet and builds list of images which
-        is iterated through (and looped over if repeat==True)
+        is iterated through (and looped over if repeat == True)
     """
 
     # Getting a sprite sheet
@@ -54,9 +54,7 @@ class Animation():
         now = pygame.time.get_ticks()
         time_since_last = now - self.last_run  # ticks since last run
 
-        if now > self.repeat_start + repeat_delay \
-            and self.active is True \
-                and time_since_last > self.speed:  # time for a new frame
+        if now > self.repeat_start + repeat_delay and self.active and time_since_last > self.speed:  # time for a new frame
                 self.frame_number += 1
                 
                 if self.frame_number == self.frames -1:  # on the last frame

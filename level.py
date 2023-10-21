@@ -188,7 +188,7 @@ class Level():
             self.gs.game_slowmo = True
             # TODO add dust
         for sprite in self.stomp_effects.sprites():
-            if sprite.done is True:
+            if sprite.done:
                 sprite.kill()
 
     def check_player_dust(self) -> None:
@@ -535,6 +535,9 @@ class Level():
                         elif int(val) == 2:
                             sprite = Monster(x,y,tile_surface, 'skeleton-keybearer')
                             sprite.name = 'skeleton-keybearer'
+                        elif int(val) == 3:
+                            sprite = Monster(x,y,tile_surface, 'skeleton-warrior')
+                            sprite.name = 'skeleton-warrior'
                         else:
                             logging.error(f'Tile value {int(val)} for tile type "{type}" not recognized during level import')
                             exit(1)
